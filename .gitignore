@@ -172,3 +172,31 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# === G1 / RobotDART project artifacts ===
+# Training outputs (checkpoints, wandb, tensorboard)
+wandb/
+runs/
+mvae/
+mld_denoiser/
+policy_train/
+
+# Claude Code local settings
+.claude/
+
+# Local data symlink target (data/ is a symlink to DATASETS)
+/data
+
+# Training stdout logs (keep markdown logs in logs/*.md)
+logs/*.log
+
+# Model checkpoints and renders
+*.pt
+*.pth
+*.mp4
+!stand_g1.pkl
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
