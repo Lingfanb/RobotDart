@@ -18,23 +18,22 @@ import torch
 from tqdm import tqdm
 from collections import Counter
 
-from utils.g1_utils import G1PrimitiveUtility
+from utils.g1_utils import G1PrimitiveUtility, G1PrimitiveUtility69
 from utils.misc_util import load_and_freeze_clip, encode_text
 
 
 class G1PrimitiveSequenceDataset:
     """Dataset for G1 pre-computed motion primitives.
 
-    Each sample is a dict with:
-        transl:                  (T, 3)   numpy
-        dof_6d:                  (T, 174) numpy
-        transl_delta:            (T, 3)   numpy
-        global_orient_delta_6d:  (T, 6)   numpy
-        link_pos:                (T, 87)  numpy
-        link_pos_delta:          (T, 87)  numpy
-        transf_rotmat:           (1, 3, 3)
-        transf_transl:           (1, 1, 3)
-        texts:                   list[str]
+    Auto-detects feature version from config.json:
+      - feature_version='69dim_textop' → G1PrimitiveUtility69 (69-dim TextOp-style)
+      - otherwise                        → G1PrimitiveUtility (360-dim original)
+
+    For 360-dim each sample has keys:
+        transl, dof_6d, transl_delta, global_orient_delta_6d, link_pos, link_pos_delta,
+        transf_rotmat, transf_transl, texts
+    For 69-dim each sample has keys:
+        features_69, init_p0, init_R0, init_yaw0, texts, act_cats
     """
 
     def __init__(self, dataset_name='g1_mp',
@@ -50,14 +49,20 @@ class G1PrimitiveSequenceDataset:
         self.device = device
         self.weight_scheme = weight_scheme
 
-        # G1 primitive utility (for dict<->tensor conversion)
-        self.primitive_utility = G1PrimitiveUtility(device=self.device)
-        self.motion_repr = self.primitive_utility.motion_repr
-
-        # Load config
+        # Load config first to decide which utility class to use
         config_path = pjoin(dataset_path, 'config.json')
         with open(config_path, 'r') as f:
             cfg = json.load(f)
+        self.feature_version = cfg.get('feature_version', '360dim_original')
+
+        if self.feature_version == '69dim_textop':
+            self.primitive_utility = G1PrimitiveUtility69(device=self.device)
+        else:
+            self.primitive_utility = G1PrimitiveUtility(device=self.device)
+        self.motion_repr = self.primitive_utility.motion_repr
+        print(f'G1 dataset feature_version={self.feature_version}, '
+              f'feature_dim={self.primitive_utility.feature_dim}')
+
         self.history_length = cfg['history_length']
         self.future_length = cfg['future_length']
         self.num_primitive = num_primitive
@@ -163,10 +168,15 @@ class G1PrimitiveSequenceDataset:
         # 1. Pre-convert all primitives to a single (N, T, D) tensor on device.
         print(f'  [{split}] Pre-converting {len(self.dataset)} primitives to tensor...')
         feature_dim = sum(self.motion_repr.values())
-        all_motion = torch.empty(
-            len(self.dataset), self.primitive_length, feature_dim, dtype=torch.float32)
-        for i, data in enumerate(self.dataset):
-            all_motion[i] = self._data_to_tensor(data)
+        if self.feature_version == '69dim_textop':
+            # Vectorized: single np.stack + one torch conversion (vs 66k torch.tensor calls)
+            all_np = np.stack([d['features_69'] for d in self.dataset], axis=0)
+            all_motion = torch.from_numpy(all_np).float()
+        else:
+            all_motion = torch.empty(
+                len(self.dataset), self.primitive_length, feature_dim, dtype=torch.float32)
+            for i, data in enumerate(self.dataset):
+                all_motion[i] = self._data_to_tensor(data)
         self.all_motion_tensor = all_motion.to(self.device)
         print(f'  [{split}] all_motion_tensor: {tuple(self.all_motion_tensor.shape)}, '
               f'{self.all_motion_tensor.element_size() * self.all_motion_tensor.numel() / 1024**2:.1f} MB on {self.device}')
@@ -214,7 +224,16 @@ class G1PrimitiveSequenceDataset:
         return mean.to(self.device), std.to(self.device)
 
     def _data_to_tensor(self, data):
-        """Convert a single data dict to feature tensor (T, D)."""
+        """Convert a single data dict to feature tensor (T, D).
+
+        For 69-dim TextOp data the features are already flat in data['features_69'].
+        For 360-dim original data we concatenate the per-key arrays.
+        """
+        if self.feature_version == '69dim_textop':
+            val = data['features_69']
+            if not isinstance(val, torch.Tensor):
+                val = torch.tensor(val, dtype=torch.float32)
+            return val  # (T, 69)
         tensors = []
         for key in self.motion_repr:
             val = data[key]

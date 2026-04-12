@@ -2,11 +2,50 @@
 
 ## TODO
 
-### VAE v2 Verification + Denoiser v5 (Priority)
-- [ ] Step 6: VAE v2 roundtrip visual verification (after training completes)
-- [ ] Train denoiser v5 with num_primitive=4, batch_size=128, new VAE v2
-- [ ] Steps 7-8: Denoiser quality check + rollout rendering verification
-- [ ] Consider motion-specific text encoder (replace CLIP ViT-B/32) for long-term improvement
+### TextOp adaptation plan (priority — based on [logs/2026-04-11.md](logs/2026-04-11.md) §[14:30])
+
+**P0 — quick wins, no retrain or minimal effort**
+- [ ] **P0.1** Change inference `diffusion_steps` from 10 → 5 on v6 checkpoint, re-render 8 prompts, compare quality. (~10 min)
+- [ ] **P0.2** Pull TextOp open-source repo from `text-op.github.io` to get exact 69-dim feature impl + loss values (avoid re-deriving)
+
+**P1 — feature representation rewrite (BIGGEST EXPECTED WIN)**
+- [ ] **P1.1** Implement 69-dim feature in [utils/g1_utils.py](utils/g1_utils.py) `G1PrimitiveUtility`:
+  - Drop `dof_6d` (174) → use `dof_angle` (29) + `dof_velocity` (29)
+  - Drop `link_pos` (87) and `link_pos_delta` (87) entirely
+  - Add `root_roll/pitch_trig` (4), `root_yaw_velocity` (1), `root_z_angular_velocity` (1)
+  - Add `foot_contact` (2) — left/right ankle z < threshold
+  - Keep `transl/transl_delta` only as needed for incremental root state
+  - New `nfeats = 69`
+- [ ] **P1.2** Re-extract `mp_data_g1` with new feature definition (regenerate `train.pkl` / `val.pkl` / `mean_std.pkl`)
+- [ ] **P1.3** Retune loss weights to TextOp scale: `weight_transl_delta=0.05`, `weight_orient=0.01`, `weight_dof=0.03`, `weight_dof_vel=1e-5`, `weight_contact=0.01`, `weight_kl=1e-4`
+- [ ] **P1.4** Retrain VAE v3 with 69-dim + new loss weights (~2 h)
+- [ ] **P1.5** Retrain LDM v7 on VAE v3 with `diffusion_steps=5`, `max_rollout_prob=0.8`, 80k+80k+80k stages (~3 h)
+- [ ] **P1.6** Render 8 prompts with v7, compare against v6 baseline, measure walk speed / FID-like metrics
+
+**P2 — data scale (closing the 15× gap)**
+- [ ] **P2.1** Investigate why our `GMR_filtered/` has only 2660 raw clips vs TextOp's 40,767. Check if our GMR pipeline only ran on a partial AMASS subset.
+- [ ] **P2.2** Re-run GMR retarget on the full AMASS SMPL-X dataset to get ~14k+ raw clips
+- [ ] **P2.3** Re-run sim filter (SONIC or TextOp's privileged-tracker filter) on full set
+- [ ] **P2.4** Re-extract `seq_data_g1` + `mp_data_g1` with full data, retrain VAE v4 + LDM v8
+
+**P3 — secondary cleanups**
+- [ ] **P3.1** Filter `tpose` / `apose` / `transition to stand` from mp_data (13% static contamination)
+- [ ] **P3.2** SEED dataset license approval on HuggingFace, then resume download (22 GB)
+- [ ] **P3.3** Mirror augmentation (flip left/right `dof_angle`, requires G1 link index mirror map) — 2× data
+- [ ] **P3.4** Consider motion-specific text encoder (replace CLIP ViT-B/32) — long-term
+
+**P4 — Phase 5 prep (motion tracker)**
+- [ ] **P4.1** When training tracking policy, follow TextOp `M+G` recipe: mix real data + 5k LDM-generated clips for tracker robustness
+
+### Denoiser v6 — completed
+- ~~Step 6: VAE v2 roundtrip visual verification~~ ✅ 2026-04-09 (rec_mse=2.6e-5)
+- ~~Train denoiser v5 (batch=1024, num_primitive=4, 80k×3, VAE v2)~~ ✅ 2026-04-10 but **broken** — see below
+- ~~Diagnose v5 "walk forward drops to z=-1.12m" drift — root cause: `get_rollout_history` missing re-canonicalization~~ ✅ 2026-04-10 → [logs/2026-04-10_rollout_drift_root_cause.md](logs/2026-04-10_rollout_drift_root_cause.md)
+- ~~Implement `G1PrimitiveUtility.get_blended_feature` in `utils/g1_utils.py`~~ ✅ 2026-04-10
+- ~~Rewrite `get_rollout_history` in `mld/train_g1_mld.py` to call it~~ ✅ 2026-04-10
+- ~~Add per-primitive re-canonicalization to `mld/render_g1_rollout.py` inference loop~~ ✅ 2026-04-10
+- ~~Retrain denoiser v6 with the fix (batch=1024, num_primitive=4, 80k×3, VAE v2)~~ ✅ 2026-04-10
+- ~~Re-render rollout prompts and verify z stability for walk/run/kick~~ ✅ 2026-04-11
 
 ### Next Phase
 - [ ] Phase 5: RL steering policy for locomotion
@@ -14,6 +53,36 @@
 
 ### Cleanup
 - [ ] Delete sonic_npz/, sim_recorded/failed/
+
+---
+
+## 2026-04-11 — Denoiser v6 rollout eval + DART gap analysis + TextOp paper review
+
+> [!IMPORTANT]
+> Read TextOp paper (arXiv:2602.07439) — open-source DART→Unitree G1 work with same goal as ours. Their architecture and most hyperparams are identical to v6 (and Table XIII ablation confirms our config is on the optimal frontier). Key gaps: (1) feature representation 360-dim vs their 69-dim; (2) loss weights 5–6 OOM too large for delta terms; (3) no foot contact in features; (4) data scale 15× smaller. Built P0–P4 action plan in TODO.
+
+### TextOp paper review
+- ~~Read all 20 pages of `papers/TextOp.pdf`, cross-checked Tables VI/XII/XIII against v6~~ ✅ 2026-04-11
+- ~~Identified 5 concrete improvements (69-dim feature, loss reweight, foot contact, more data, fewer diffusion steps)~~ ✅ 2026-04-11
+- See deep-dive: [logs/2026-04-11.md §14:30](logs/2026-04-11.md)
+
+## 2026-04-11 — Denoiser v6 rollout evaluation + DART gap analysis
+
+> [!NOTE]
+> v6 (with re-canonicalization fix) finished training. All 8 prompt rollouts confirm root z is stable (no more `-1.12 m` sink). But quality is still mediocre vs original DART. Identified static-pose contamination (13% of mp_data) and 5–6× smaller dataset as the dominant gaps.
+
+### Rollout verification
+- ~~Render 8-prompt rollout from `mld_denoiser/g1_mld_v6/checkpoint_240000.pt` → [diagnose_v5/v6_rollout/](diagnose_v5/v6_rollout/)~~ ✅ 2026-04-11
+- ~~Confirm root z stable across all 8 prompts (range 0.62–0.91 m)~~ ✅ 2026-04-11
+- Walk forward = 1.53 m / 6.7 s = 0.23 m/s (slow but stable). Jump z swing = 0.29 m. Run still slow (12 examples in train set).
+
+### Gap analysis
+- ~~Compare v6 args.yaml vs original DART README command~~ ✅ 2026-04-11
+- ~~Dump text distribution from mp_data_g1 train.pkl (66,496 primitives, 2596 unique texts)~~ ✅ 2026-04-11
+- Found: top-5 texts are stand / walk / **tpose** / throw / **transition to stand**. Static + quasi-static = 8648 / 66496 = 13%. Model is biased toward standing still.
+- Architecture identical to DART. Real gaps: data scale (5–6×), static-pose contamination, fewer training steps (240k vs 300k), CLIP encoder.
+
+See work log: [logs/2026-04-11.md](logs/2026-04-11.md)
 
 ---
 

@@ -54,7 +54,6 @@ from mld.train_g1_mvae import Args as G1MVAEArgs
 from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
 from model.mld_vae import AutoMldVae
 from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
-from utils.g1_utils import G1PrimitiveUtility
 from pytorch3d import transforms
 from diffusion import gaussian_diffusion as gd
 from diffusion.respace import SpacedDiffusion, space_timesteps
@@ -110,6 +109,8 @@ class TrainArgs:
     weight_link_delta: float = 1e4
     weight_transl_delta: float = 1e4
     weight_orient_delta: float = 1e4
+    # 69-dim TextOp features only: consistency of Δq_t vs q_{t+1} - q_t
+    weight_dof_vel_cons: float = 0.03
 
     resume_checkpoint: str = None
 
@@ -152,7 +153,14 @@ class DenoiserTransformerArgs:
 class DenoiserArgs:
     mvae_path: str = ''
     rescale_latent: int = 1
-    train_rollout_type: Literal["single", "full"] = "single"
+    train_rollout_type: Literal["single", "full", "single_step"] = "single"
+    """How rollout future_motion_pred is generated for stage 2/3:
+        single      = the random-t single forward pass already used for the loss
+                      (cheap, but uses partially denoised prediction)
+        full        = full DDPM p_sample_loop (K forward passes — most accurate)
+        single_step = ONE forward pass from pure noise at t=K-1 (1-step DDIM,
+                      ~K× cheaper than 'full', cleaner than 'single')
+    """
     train_rollout_history: str = "gt"
     model_type: str = "mlp"
     model_args: DenoiserMLPArgs | DenoiserTransformerArgs = DenoiserMLPArgs()
@@ -392,7 +400,23 @@ class G1MLDTrainer:
         # Latent reconstruction loss
         terms['latent_rec'] = self.rec_criterion(latent_pred, latent_gt)
 
-        # Temporal delta consistency losses
+        # ── 69-dim TextOp feature path ──
+        if dataset.feature_version == '69dim_textop':
+            pred_tensor = torch.cat([history_motion[:, -1:, :], future_motion_pred], dim=1)
+            pred_tensor = dataset.denormalize(pred_tensor)
+            pred_fd = dataset.tensor_to_dict(pred_tensor)
+            # Δq_t consistency: dof_velocity[t] should equal dof_angle[t+1] - dof_angle[t]
+            pred_dof_vel = pred_fd['dof_velocity'][:, :-1, :]
+            calc_dof_vel = pred_fd['dof_angle'][:, 1:, :] - pred_fd['dof_angle'][:, :-1, :]
+            terms['dof_vel_cons'] = self.rec_criterion(calc_dof_vel, pred_dof_vel)
+
+            loss = (train_args.weight_latent_rec * terms['latent_rec'] +
+                    train_args.weight_feature_rec * terms['feature_rec'] +
+                    train_args.weight_dof_vel_cons * terms['dof_vel_cons'])
+            terms['loss'] = loss
+            return terms
+
+        # ── 360-dim original DART path ──
         pred_tensor = torch.cat([history_motion[:, -1:, :], future_motion_pred], dim=1)
         pred_tensor = dataset.denormalize(pred_tensor)
         pred_dict = dataset.tensor_to_dict(pred_tensor)
@@ -478,22 +502,44 @@ class G1MLDTrainer:
             history_motion, future_motion_gt, future_motion_pred,
             latent_gt, latent_pred)
 
-        # Full rollout for stage 2+ (no_grad — use unwrapped module to skip DDP overhead)
-        if (self.step > train_args.stage1_steps and
-                denoiser_args.train_rollout_type == "full"):
-            sample_fn = self.diffusion.p_sample_loop
-            with torch.no_grad():
-                with amp.autocast(enabled=bool(train_args.use_amp), dtype=torch.float16):
-                    x_start_pred = sample_fn(
-                        self.denoiser_model_module, x_start.shape,
-                        clip_denoised=False, model_kwargs={'y': y},
-                        skip_timesteps=0, init_image=x_start,
-                        progress=False, dump_steps=None,
-                        noise=None, const_noise=False)
-                    latent_pred = x_start_pred.permute(1, 0, 2)
-                    future_motion_pred = self.vae_model.decode(
-                        latent_pred, history_motion, nfuture=future_length,
-                        scale_latent=denoiser_args.rescale_latent)
+        # Stage 2+ rollout: replace future_motion_pred with a fresh sample so the
+        # NEXT primitive sees the model's own output as history (exposure-bias fix).
+        # Unwrapped module + no_grad — DDP wrapper not needed, no backprop.
+        if self.step > train_args.stage1_steps:
+            if denoiser_args.train_rollout_type == "full":
+                # K forward passes (most accurate, K× slower)
+                sample_fn = self.diffusion.p_sample_loop
+                with torch.no_grad():
+                    with amp.autocast(enabled=bool(train_args.use_amp), dtype=torch.float16):
+                        x_start_pred_ro = sample_fn(
+                            self.denoiser_model_module, x_start.shape,
+                            clip_denoised=False, model_kwargs={'y': y},
+                            skip_timesteps=0, init_image=x_start,
+                            progress=False, dump_steps=None,
+                            noise=None, const_noise=False)
+                        latent_pred_ro = x_start_pred_ro.permute(1, 0, 2)
+                        future_motion_pred = self.vae_model.decode(
+                            latent_pred_ro, history_motion, nfuture=future_length,
+                            scale_latent=denoiser_args.rescale_latent)
+            elif denoiser_args.train_rollout_type == "single_step":
+                # ONE forward pass from pure noise at t=K-1 (1-step DDIM-style).
+                # ~K× cheaper than 'full', cleaner than the random-t 'single' branch.
+                with torch.no_grad():
+                    with amp.autocast(enabled=bool(train_args.use_amp), dtype=torch.float16):
+                        K = self.diffusion.num_timesteps
+                        t_max = torch.full(
+                            (self.batch_size,), K - 1,
+                            device=self.device, dtype=torch.long)
+                        noise_ro = torch.randn_like(x_start)
+                        x_start_pred_ro = self.denoiser_model_module(
+                            x_t=noise_ro,
+                            timesteps=self.diffusion._scale_timesteps(t_max),
+                            y=y)
+                        latent_pred_ro = x_start_pred_ro.permute(1, 0, 2)
+                        future_motion_pred = self.vae_model.decode(
+                            latent_pred_ro, history_motion, nfuture=future_length,
+                            scale_latent=denoiser_args.rescale_latent)
+            # else "single": keep the random-t single forward pass already computed
 
         return loss_dict, future_motion_pred
 
@@ -502,19 +548,27 @@ class G1MLDTrainer:
     def get_rollout_history(self, last_primitive):
         """Get history from predicted future (for autoregressive rollout).
 
-        Unlike SMPL version, no gender loop or pelvis_delta needed.
-        Simply takes the last `history_length` frames of the prediction,
-        re-canonicalizes, and re-computes features.
+        69-dim TextOp features are heading-invariant (only yaw deltas appear),
+        so the last H frames pass through unchanged — no re-canonicalization.
+
+        360-dim features need re-canonicalization (see
+        logs/2026-04-10_rollout_drift_root_cause.md).
         """
         dataset = self.train_dataset
         history_length = dataset.history_length
-        # Take last history_length frames from predicted future
         motion_tensor = last_primitive[:, -history_length:, :]  # (B, H, D)
-        # These are already in canonical feature space and normalized
-        # For simplicity, we use them directly as the new history
-        # (same approach works because features are translation/rotation invariant
-        # within the primitive window)
-        return motion_tensor
+
+        if dataset.feature_version == '69dim_textop':
+            return motion_tensor
+
+        # ── 360-dim original DART path ──
+        primitive_utility = dataset.primitive_utility
+        motion_denorm = dataset.denormalize(motion_tensor)
+        feature_dict = primitive_utility.tensor_to_dict(motion_denorm)
+        new_features, _, _ = primitive_utility.get_blended_feature(feature_dict)
+        new_tensor = primitive_utility.dict_to_tensor(new_features)
+        new_tensor_norm = dataset.normalize(new_tensor)
+        return new_tensor_norm
 
     # ── Training loop ────────────────────────────────────────────────────
 

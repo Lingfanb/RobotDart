@@ -2,12 +2,13 @@
 
 Adapted from train_mvae.py — removes all SMPL-X dependencies (body model,
 gender/betas processing, SMPL consistency losses). Uses G1PrimitiveUtility
-with nfeats=360.
+or G1PrimitiveUtility69, auto-selected from the dataset config.json.
 
 Usage:
     cd ~/Gitcode/DART
     python mld/train_g1_mvae.py \
-        --exp_name g1_vae_test \
+        --exp_name g1_feature \
+        --data_args.data_dir ./data/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/ \
         --train_args.stage1_steps 100000 \
         --train_args.stage2_steps 100000 \
         --train_args.stage3_steps 100000
@@ -92,6 +93,8 @@ class TrainArgs:
     weight_link_delta: float = 0.0
     weight_transl_delta: float = 0.0
     weight_orient_delta: float = 0.0
+    # 69-dim TextOp features only: consistency of Δq_t vs q_{t+1}-q_t
+    weight_dof_vel_cons: float = 0.03
 
     resume_checkpoint: str | None = None
     log_interval: int = 1000
@@ -222,11 +225,32 @@ class G1Trainer:
         kl_loss = torch.distributions.kl_divergence(dist, dist_ref).mean()
         terms['kl_loss'] = kl_loss
 
-        # Reconstruction loss
+        # Reconstruction loss (Huber on normalized features)
         rec_loss = self.rec_criterion(future_motion_pred, future_motion_gt)
         terms['rec_loss'] = rec_loss
 
-        # Temporal delta consistency losses (G1-specific)
+        # Branch based on feature version
+        if dataset.feature_version == '69dim_textop':
+            # 69-dim TextOp features:
+            #   [root_rp_trig(4), yaw_delta(1), foot_contact(2), transl_delta_local(3),
+            #    root_height(1), dof_angle(29), dof_velocity(29)]
+            # Consistency: Δq_t should match q_{t+1} - q_t
+            pred_motion_tensor = torch.cat([history_motion[:, -1:, :], future_motion_pred], dim=1)
+            pred_motion_tensor = dataset.denormalize(pred_motion_tensor)
+            pred_fd = dataset.tensor_to_dict(pred_motion_tensor)
+
+            # DoF velocity consistency: Δq_t ≈ q_{t+1} - q_t
+            pred_dof_vel = pred_fd['dof_velocity'][:, :-1, :]
+            calc_dof_vel = pred_fd['dof_angle'][:, 1:, :] - pred_fd['dof_angle'][:, :-1, :]
+            terms['dof_vel_cons'] = self.rec_criterion(calc_dof_vel, pred_dof_vel)
+
+            loss = (train_args.weight_kl * kl_loss +
+                    train_args.weight_rec * rec_loss +
+                    train_args.weight_dof_vel_cons * terms['dof_vel_cons'])
+            terms['loss'] = loss
+            return terms
+
+        # ── 360-dim original DART feature path ──
         pred_motion_tensor = torch.cat([history_motion[:, -1:, :], future_motion_pred], dim=1)  # [B, F+1, D]
         pred_motion_tensor = dataset.denormalize(pred_motion_tensor)
         pred_feature_dict = dataset.tensor_to_dict(pred_motion_tensor)
@@ -350,29 +374,43 @@ class G1Trainer:
     def get_rollout_history(self, last_primitive,
                             return_transform=False,
                             transf_rotmat=None, transf_transl=None):
-        """Update history motion seed for G1 — simplified (no gender/betas)."""
+        """Produce history seed for the next primitive from the previous one.
+
+        69-dim TextOp features are naturally heading-invariant (only yaw deltas
+        appear), so the last H frames can be fed directly as history — no
+        re-canonicalization is needed.
+
+        360-dim features need re-canonicalization into a fresh local frame
+        (see logs/2026-04-10_rollout_drift_root_cause.md).
+        """
+        if self.train_dataset.feature_version == '69dim_textop':
+            rollout_history = last_primitive[:, -self.train_dataset.history_length:, :]
+            if return_transform:
+                B = rollout_history.shape[0]
+                return (rollout_history,
+                        self.transf_rotmat.repeat(B, 1, 1),
+                        self.transf_transl.repeat(B, 1, 1))
+            return rollout_history
+
+        # ── 360-dim original DART path ──
         motion_tensor = last_primitive[:, -self.train_dataset.history_length:, :]  # [B, H, D]
         new_history_frames = self.train_dataset.denormalize(motion_tensor)
         primitive_utility = self.train_dataset.primitive_utility
         B = new_history_frames.shape[0]
         H = self.train_dataset.history_length
 
-        # Tensor → dict
         history_feature_dict = primitive_utility.tensor_to_dict(new_history_frames)
         history_feature_dict.update({
             'transf_rotmat': self.transf_rotmat.repeat(B, 1, 1) if transf_rotmat is None else transf_rotmat,
             'transf_transl': self.transf_transl.repeat(B, 1, 1) if transf_transl is None else transf_transl,
         })
 
-        # Reshape link_pos for canonicalize: (B, H, J*3) → (B, H, J, 3)
         J = primitive_utility.num_links
         history_feature_dict['link_pos'] = history_feature_dict['link_pos'].reshape(B, H, J, 3)
 
-        # Re-canonicalize
         _, _, canonicalized = primitive_utility.canonicalize(history_feature_dict)
         canonicalized['link_pos'] = canonicalized['link_pos'].reshape(B, H, J * 3)
 
-        # Recompute deltas for the re-canonicalized frames
         if H > 1:
             canonicalized['transl_delta'] = canonicalized['transl'][:, 1:] - canonicalized['transl'][:, :-1]
             canonicalized['link_pos_delta'] = (

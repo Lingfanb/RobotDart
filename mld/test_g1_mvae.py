@@ -54,6 +54,9 @@ class TestArgs:
     """Specific dataset indices to test (overrides num_samples linspace)"""
     name_suffix: str = ""
     """Optional suffix for output file names"""
+    num_primitive: int = 1
+    """Chain N consecutive primitives from the same sequence into one video.
+    Total frames = history_length + future_length * N (e.g. 12 → 98 frames ≈ 3.3s @30fps)."""
 
 
 def dof_6d_to_dof_pos(dof_6d_tensor, primitive_utility):
@@ -258,71 +261,146 @@ if __name__ == "__main__":
     transf_rotmat_id = torch.eye(3, device=device).unsqueeze(0)
     transf_transl_zero = torch.zeros(1, 1, 3, device=device)
 
-    # Sample and reconstruct
-    metrics = {'rec_loss': [], 'link_mse': [], 'transl_mse': []}
+    # Build per-sequence index map for chained rendering
+    # (dataset.seq_groups is only built when num_primitive>1 in dataset init)
+    seq_to_indices = {}
+    for i, d in enumerate(dataset.dataset):
+        sn = d['seq_name']
+        seq_to_indices.setdefault(sn, []).append(i)
 
-    if test_args.indices:
-        indices = list(test_args.indices)
-    else:
-        indices = np.linspace(0, len(dataset) - 1, test_args.num_samples, dtype=int)
-    for sample_idx, data_idx in enumerate(indices):
-        data = dataset.dataset[data_idx]
-        text = data['texts'][0] if len(data['texts']) > 0 else 'no text'
-        print(f"\n[{sample_idx}] idx={data_idx}, text: '{text}'")
+    def chain_indices(start_idx, n):
+        """Return up to `n` consecutive primitive indices from the same sequence
+        starting at `start_idx`. Falls back to fewer if the sequence is too short."""
+        sn = dataset.dataset[start_idx]['seq_name']
+        seq = seq_to_indices[sn]
+        pos = seq.index(start_idx)
+        return seq[pos:pos + n]
 
-        # Prepare GT motion tensor
-        tensor_gt = dataset._data_to_tensor(data).to(device).unsqueeze(0)  # (1, T, D)
+    def encode_decode(data):
+        """Run VAE encode+decode (or random gen) on a single primitive dict.
+        Returns (gt_world_dict, pred_world_dict, metrics_tuple)."""
+        tensor_gt = dataset._data_to_tensor(data).to(device).unsqueeze(0)
         tensor_gt_norm = dataset.normalize(tensor_gt)
-
         history_motion = tensor_gt_norm[:, :history_length, :]
         future_motion_gt = tensor_gt_norm[:, history_length:, :]
 
         with torch.no_grad():
             if test_args.pred_mode == 'rec':
-                latent, dist = model.encode(
+                latent, _ = model.encode(
                     future_motion=future_motion_gt, history_motion=history_motion)
             else:
                 latent_shape = [model_args.latent_dim[0], 1, model_args.latent_dim[1]]
                 latent = torch.randn(*latent_shape, device=device)
-
             future_pred = model.decode(latent, history_motion, nfuture=future_length)
 
-        # Denormalize
         full_gt = dataset.denormalize(tensor_gt_norm)
         full_pred = torch.cat([
             dataset.denormalize(history_motion),
             dataset.denormalize(future_pred),
         ], dim=1)
 
-        # Compute metrics
         rec_err = (full_pred[:, history_length:] - full_gt[:, history_length:]).pow(2).mean().item()
-        metrics['rec_loss'].append(rec_err)
-
         gt_dict = primitive_utility.tensor_to_dict(full_gt)
         pred_dict = primitive_utility.tensor_to_dict(full_pred)
         link_mse = (gt_dict['link_pos'] - pred_dict['link_pos']).pow(2).mean().item()
         transl_mse = (gt_dict['transl'] - pred_dict['transl']).pow(2).mean().item()
+
+        # Use the primitive's actual canonical→world transform so consecutive
+        # primitives connect when chained. For single-primitive output the
+        # camera follows the pelvis so absolute world position is invisible.
+        transf_rotmat = torch.from_numpy(data['transf_rotmat']).to(device).float()
+        transf_transl = torch.from_numpy(data['transf_transl']).to(device).float()
+        if transf_rotmat.dim() == 2:
+            transf_rotmat = transf_rotmat.unsqueeze(0)
+        if transf_transl.dim() == 2:
+            transf_transl = transf_transl.unsqueeze(0)
+        gt_dict['transf_rotmat'] = transf_rotmat
+        gt_dict['transf_transl'] = transf_transl
+        pred_dict['transf_rotmat'] = transf_rotmat
+        pred_dict['transf_transl'] = transf_transl
+
+        gt_world = primitive_utility.transform_feature_to_world(gt_dict)
+        pred_world = primitive_utility.transform_feature_to_world(pred_dict)
+        return gt_world, pred_world, (rec_err, link_mse, transl_mse)
+
+    # Sample and reconstruct
+    metrics = {'rec_loss': [], 'link_mse': [], 'transl_mse': []}
+
+    if test_args.indices:
+        indices = list(test_args.indices)
+    elif test_args.num_primitive > 1:
+        # Pick the FIRST primitive of every sequence that has at least num_primitive
+        # primitives, then linspace over those starts. Avoids landing in the middle
+        # or end of a short sequence (which gives a chain shorter than requested).
+        valid_starts = [seq[0] for seq in seq_to_indices.values()
+                        if len(seq) >= test_args.num_primitive]
+        if not valid_starts:
+            # Fall back to longest available sequences
+            valid_starts = [seq[0] for seq in
+                            sorted(seq_to_indices.values(), key=len, reverse=True)
+                            [:test_args.num_samples]]
+        valid_starts.sort()
+        sampled = np.linspace(0, len(valid_starts) - 1, test_args.num_samples, dtype=int)
+        indices = [valid_starts[i] for i in sampled]
+        print(f"Picked {len(indices)} sequence starts (out of {len(valid_starts)} sequences "
+              f"with ≥{test_args.num_primitive} primitives)")
+    else:
+        indices = np.linspace(0, len(dataset) - 1, test_args.num_samples, dtype=int)
+    for sample_idx, data_idx in enumerate(indices):
+        chain = chain_indices(int(data_idx), test_args.num_primitive)
+        data0 = dataset.dataset[chain[0]]
+        text = data0['texts'][0] if len(data0['texts']) > 0 else 'no text'
+        print(f"\n[{sample_idx}] idx={data_idx}, chain_len={len(chain)}/{test_args.num_primitive}, "
+              f"text: '{text}'")
+
+        # Encode+decode each primitive in the chain (teacher forcing — GT history each step)
+        chunk_gts, chunk_preds = [], []
+        sample_metrics = []
+        for k, di in enumerate(chain):
+            gt_w, pred_w, (rec_err, link_mse, transl_mse) = encode_decode(dataset.dataset[di])
+            sample_metrics.append((rec_err, link_mse, transl_mse))
+            # First primitive: keep all 10 frames; subsequent: skip the 2 history frames
+            # which overlap with the previous primitive's last 2 frames.
+            start = 0 if k == 0 else history_length
+            chunk_gts.append({key: v[:, start:, ...] if v.dim() >= 2 and v.shape[1] == history_length + future_length else v
+                              for key, v in gt_w.items()})
+            chunk_preds.append({key: v[:, start:, ...] if v.dim() >= 2 and v.shape[1] == history_length + future_length else v
+                                for key, v in pred_w.items()})
+
+        # Average chain metrics
+        rec_err = float(np.mean([m[0] for m in sample_metrics]))
+        link_mse = float(np.mean([m[1] for m in sample_metrics]))
+        transl_mse = float(np.mean([m[2] for m in sample_metrics]))
+        metrics['rec_loss'].append(rec_err)
         metrics['link_mse'].append(link_mse)
         metrics['transl_mse'].append(transl_mse)
         print(f"  rec_mse={rec_err:.6f}, link_mse={link_mse:.6f}, transl_mse={transl_mse:.6f}")
 
-        # Transform to world coordinates for rendering
-        gt_dict['transf_rotmat'] = transf_rotmat_id
-        gt_dict['transf_transl'] = transf_transl_zero
-        pred_dict['transf_rotmat'] = transf_rotmat_id
-        pred_dict['transf_transl'] = transf_transl_zero
+        # Concatenate chunks along time axis
+        def concat_chunks(chunks):
+            out = {}
+            for key in chunks[0]:
+                vals = [c[key] for c in chunks]
+                # Time-varying tensors are (B, T, ...) — concat on dim 1.
+                # Static fields (transf_rotmat, transf_transl) — keep first.
+                if vals[0].dim() >= 2 and key not in ('transf_rotmat', 'transf_transl'):
+                    out[key] = torch.cat(vals, dim=1)
+                else:
+                    out[key] = vals[0]
+            return out
 
-        gt_world = primitive_utility.transform_feature_to_world(gt_dict)
-        pred_world = primitive_utility.transform_feature_to_world(pred_dict)
+        gt_full = concat_chunks(chunk_gts)
+        pred_full = concat_chunks(chunk_preds)
 
         # Convert to MuJoCo format
-        gt_mj = feature_dict_to_mujoco(gt_world, primitive_utility)
-        rec_mj = feature_dict_to_mujoco(pred_world, primitive_utility)
+        gt_mj = feature_dict_to_mujoco(gt_full, primitive_utility)
+        rec_mj = feature_dict_to_mujoco(pred_full, primitive_utility)
 
         # Render overlay video (GT=blue, Rec=red, alpha-blended)
         safe_text = text.replace(' ', '_').replace('/', '_')[:30]
         suffix = f'_{test_args.name_suffix}' if test_args.name_suffix else ''
-        video_path = output_dir / f'sample_{sample_idx}_idx{data_idx}_{safe_text}{suffix}_overlay.mp4'
+        np_tag = f'_np{test_args.num_primitive}' if test_args.num_primitive > 1 else ''
+        video_path = output_dir / f'sample_{sample_idx}_idx{data_idx}_{safe_text}{np_tag}{suffix}_overlay.mp4'
         n_frames = render_overlay(
             mj_model, gt_mj, rec_mj, str(video_path),
             fps=test_args.video_fps,

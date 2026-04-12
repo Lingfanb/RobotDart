@@ -357,6 +357,102 @@ class G1PrimitiveUtility:
 
         return motion_features
 
+    def get_blended_feature(self, feature_dict):
+        """Re-canonicalize a (denormalized) feature dict to a fresh canonical frame.
+
+        This is used during rollout (training stage 2+ and inference) to take the
+        last few frames of a previously generated primitive and re-express them
+        as the history of a *new* primitive whose first frame sits at the canonical
+        origin (xy=0, hips aligned to +y), matching the distribution the model was
+        trained on for single-primitive inputs.
+
+        Without this step, rollout history accumulates xy translation across
+        primitives, exposes the model to OOD inputs, and causes locomotion drift
+        (see logs/2026-04-10_rollout_drift_root_cause.md).
+
+        Counterpart of `mld/train_mld.py:get_blended_feature` in the SMPL DART
+        codebase, simplified for G1 (no SMPL FK, no betas, no gender).
+
+        Args:
+            feature_dict: dict with keys 'transl' (B,T,3), 'dof_6d' (B,T,174),
+                'transl_delta' (B,T,3), 'global_orient_delta_6d' (B,T,6),
+                'link_pos' (B,T,87), 'link_pos_delta' (B,T,87). Tensors must be
+                **denormalized** (raw feature space, not the dataset's z-scored space).
+                Optionally 'transf_rotmat' (B,3,3) and 'transf_transl' (B,1,3) —
+                the current canonical→world transform; if absent, treated as identity.
+
+        Returns:
+            new_feature_dict: same keys as input, expressed in the new canonical frame
+            transf_rotmat: (B, 3, 3) updated canonical→world rotation (composed)
+            transf_transl: (B, 1, 3) updated canonical→world translation (composed)
+        """
+        B, T, _ = feature_dict['transl'].shape
+        device = feature_dict['transl'].device
+        dtype = feature_dict['transl'].dtype
+
+        # Compute new canonical transform from the FIRST history frame's link
+        # positions, mirroring what canonicalize() does for a fresh primitive.
+        link_pos = feature_dict['link_pos'].reshape(B, T, self.num_links, 3)
+        first_frame_links = link_pos[:, 0, :, :]  # (B, J, 3)
+        new_rotmat, new_transl = get_new_coordinate_g1(first_frame_links)
+        # new_rotmat: (B, 3, 3), new_transl: (B, 1, 3)
+
+        new_rotmat_T = new_rotmat.permute(0, 2, 1)  # canonical(new) ← canonical(old)
+
+        # Transform absolute quantities (subtract origin, then rotate)
+        new_transl_feat = torch.einsum(
+            'bij,btj->bti', new_rotmat_T,
+            feature_dict['transl'] - new_transl)  # (B, T, 3)
+        new_link_pos = torch.einsum(
+            'bij,btkj->btki', new_rotmat_T,
+            link_pos - new_transl.unsqueeze(1))  # (B, T, J, 3)
+
+        # Transform delta quantities (rotation only — deltas have no translation)
+        new_transl_delta = torch.einsum(
+            'bij,btj->bti', new_rotmat_T, feature_dict['transl_delta'])
+        link_pos_delta = feature_dict['link_pos_delta'].reshape(B, T, self.num_links, 3)
+        new_link_pos_delta = torch.einsum(
+            'bij,btkj->btki', new_rotmat_T, link_pos_delta)
+
+        # Transform global_orient_delta_6d via conjugation:
+        # delta_new = R_new^T @ delta_old @ R_new
+        delta_rotmat = transforms.rotation_6d_to_matrix(
+            feature_dict['global_orient_delta_6d'])  # (B, T, 3, 3)
+        new_delta_rotmat = torch.matmul(
+            torch.matmul(new_rotmat_T.unsqueeze(1), delta_rotmat),
+            new_rotmat.unsqueeze(1))
+        new_delta_6d = transforms.matrix_to_rotation_6d(new_delta_rotmat)
+
+        # dof_6d: joint-local rotations, unchanged under canonical-frame change
+        new_features = {
+            'transl': new_transl_feat,
+            'dof_6d': feature_dict['dof_6d'],
+            'transl_delta': new_transl_delta,
+            'global_orient_delta_6d': new_delta_6d,
+            'link_pos': new_link_pos.reshape(B, T, self.num_links * 3),
+            'link_pos_delta': new_link_pos_delta.reshape(B, T, self.num_links * 3),
+        }
+
+        # Compose the new canonical→world transform with the old one (if any).
+        # Old transf maps the OLD canonical → world. New transf must map the
+        # NEW canonical → world. Since new_rotmat / new_transl map NEW → OLD
+        # (i.e. new_pos_in_old = new_rotmat @ new_pos + new_transl), we have:
+        #     world = old_R @ (new_R @ p_new + new_t) + old_t
+        #           = (old_R @ new_R) @ p_new + (old_R @ new_t + old_t)
+        if 'transf_rotmat' in feature_dict and 'transf_transl' in feature_dict:
+            old_rotmat = feature_dict['transf_rotmat']
+            old_transl = feature_dict['transf_transl']
+        else:
+            old_rotmat = torch.eye(3, device=device, dtype=dtype
+                                    ).unsqueeze(0).expand(B, 3, 3).contiguous()
+            old_transl = torch.zeros(B, 1, 3, device=device, dtype=dtype)
+
+        composed_rotmat = torch.einsum('bij,bjk->bik', old_rotmat, new_rotmat)
+        composed_transl = torch.einsum(
+            'bij,btj->bti', old_rotmat, new_transl) + old_transl
+
+        return new_features, composed_rotmat, composed_transl
+
     def transform_feature_to_world(self, feature_dict):
         """Transform canonical features back to world coordinate."""
         transf_rotmat = feature_dict['transf_rotmat']
@@ -395,3 +491,301 @@ class G1PrimitiveUtility:
                                         ).unsqueeze(0).expand(B, 3, 3).clone(),
             'transf_transl': torch.zeros(B, 1, 3, device=self.device, dtype=self.dtype),
         }
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# 69-dim compact feature (TextOp paper, arXiv:2602.07439)
+# ─────────────────────────────────────────────────────────────────────────
+
+# Indices into G1_SELECTED_LINKS for ankle roll links (foot proxies)
+G1_LEFT_ANKLE_IDX = 5    # left_ankle_roll_link
+G1_RIGHT_ANKLE_IDX = 11  # right_ankle_roll_link
+
+# Foot contact height threshold (world z), meters. Standing ankle z ≈ 0.03m.
+# A threshold of 0.08m captures standing + early contact phase of walking.
+G1_FOOT_CONTACT_Z = 0.08
+
+
+def _quat_xyzw_to_euler_zyx(quat_xyzw):
+    """Convert xyzw quaternion to intrinsic ZYX Euler angles (yaw, pitch, roll).
+
+    Uses scipy convention: rot.as_euler('ZYX') returns (yaw, pitch, roll) for
+    intrinsic rotations, matching the order roll→pitch→yaw when applied.
+
+    Args:
+        quat_xyzw: (..., 4) tensor, xyzw order
+
+    Returns:
+        roll, pitch, yaw: each (...) tensor
+    """
+    # Analytical intrinsic ZYX Euler from xyzw quaternion (grad-safe, no scipy).
+    w = quat_xyzw[..., 3]
+    x = quat_xyzw[..., 0]
+    y = quat_xyzw[..., 1]
+    z = quat_xyzw[..., 2]
+    sinr_cosp = 2 * (w * x + y * z)
+    cosr_cosp = 1 - 2 * (x * x + y * y)
+    roll = torch.atan2(sinr_cosp, cosr_cosp)
+    sinp = 2 * (w * y - z * x)
+    sinp = torch.clamp(sinp, -1.0, 1.0)
+    pitch = torch.asin(sinp)
+    siny_cosp = 2 * (w * z + x * y)
+    cosy_cosp = 1 - 2 * (y * y + z * z)
+    yaw = torch.atan2(siny_cosp, cosy_cosp)
+    return roll, pitch, yaw
+
+
+def _rotmat_to_euler_zyx(rotmat):
+    """Rotation matrix (..., 3, 3) → roll, pitch, yaw (intrinsic ZYX).
+
+    Reads Euler angles directly from the rotation matrix elements,
+    avoiding the quaternion intermediate for efficiency.
+    """
+    # R = Rz(yaw) @ Ry(pitch) @ Rx(roll)
+    # R[2,0] = -sin(pitch)
+    # R[2,1] = cos(pitch)*sin(roll)
+    # R[2,2] = cos(pitch)*cos(roll)
+    # R[1,0] = cos(pitch)*sin(yaw)  (when cos(pitch)!=0)
+    # R[0,0] = cos(pitch)*cos(yaw)
+    pitch = torch.asin(torch.clamp(-rotmat[..., 2, 0], -1.0, 1.0))
+    roll = torch.atan2(rotmat[..., 2, 1], rotmat[..., 2, 2])
+    yaw = torch.atan2(rotmat[..., 1, 0], rotmat[..., 0, 0])
+    return roll, pitch, yaw
+
+
+def _yaw_to_rotmat(yaw):
+    """Scalar yaw → (..., 3, 3) rotation matrix around z axis."""
+    c = torch.cos(yaw)
+    s = torch.sin(yaw)
+    zero = torch.zeros_like(yaw)
+    one = torch.ones_like(yaw)
+    row0 = torch.stack([c, -s, zero], dim=-1)
+    row1 = torch.stack([s, c, zero], dim=-1)
+    row2 = torch.stack([zero, zero, one], dim=-1)
+    return torch.stack([row0, row1, row2], dim=-2)
+
+
+class G1PrimitiveUtility69:
+    """69-dim feature utility for G1 — TextOp-style character-frame representation.
+
+    Per-frame feature format (following TextOp paper eq. on page 4):
+
+        f_t = [φ(r_t), Δψ_t, c_t, Δp_t^local, h_t, q_t, Δq_t]
+
+    where:
+        φ(r_t) ∈ R^4   roll/pitch trig encoding [sin(r),cos(r)-1,sin(p),cos(p)-1]
+        Δψ_t   ∈ R^1   yaw increment (yaw_{t+1} - yaw_t)
+        c_t    ∈ R^2   binary foot contact (left, right)
+        Δp_t^local ∈ R^3  root translation delta in character frame (yaw-aligned)
+        h_t    ∈ R^1   root height (world z)
+        q_t    ∈ R^29  dof angles
+        Δq_t   ∈ R^29  dof angle velocity (q_{t+1} - q_t)
+    Total dim = 4 + 1 + 2 + 3 + 1 + 29 + 29 = 69.
+
+    Unlike the 360-dim representation used by the original DART, this is
+    naturally heading-invariant (only yaw *deltas* appear, absolute yaw is
+    integrated at render time from an initial pose). No per-primitive
+    canonicalization is needed — rollout history passes directly without
+    re-canonicalization.
+    """
+
+    def __init__(self, device='cpu', dtype=torch.float32,
+                 xml_path=G1_XML_PATH, num_body_dofs=G1_NUM_BODY_DOFS,
+                 selected_links=G1_SELECTED_LINKS,
+                 foot_contact_z=G1_FOOT_CONTACT_Z):
+        self.device = device
+        self.dtype = dtype
+        self.num_dof = num_body_dofs
+        self.num_links = len(selected_links)
+        self.selected_links = selected_links
+        self.foot_contact_z = foot_contact_z
+
+        self.kinematics_model = KinematicsModel(xml_path, device=device)
+        self.all_body_names = self.kinematics_model.body_names
+        self.selected_link_indices = get_selected_link_indices(
+            self.all_body_names, selected_links)
+
+        self.motion_repr = {
+            'root_rp_trig': 4,      # φ(r_t) = [sin(roll), cos(roll)-1, sin(pitch), cos(pitch)-1]
+            'yaw_delta': 1,         # Δψ_t
+            'foot_contact': 2,      # c_t (left, right)
+            'transl_delta_local': 3,  # Δp_t in character frame (yaw-aligned)
+            'root_height': 1,       # h_t
+            'dof_angle': num_body_dofs,     # q_t (29)
+            'dof_velocity': num_body_dofs,  # Δq_t (29)
+        }
+        self.feature_dim = sum(self.motion_repr.values())  # 69
+
+    def dict_to_tensor(self, data_dict):
+        return torch.cat([data_dict[k] for k in self.motion_repr], dim=-1)
+
+    def tensor_to_dict(self, tensor):
+        out = {}
+        start = 0
+        for k, dim in self.motion_repr.items():
+            out[k] = tensor[..., start:start + dim]
+            start += dim
+        return out
+
+    def compute_foot_contact_world(self, root_pos, root_rotmat, local_ankle_pos):
+        """Compute binary foot contact from world-frame ankle heights.
+
+        Args:
+            root_pos: (..., T, 3) world root position
+            root_rotmat: (..., T, 3, 3) world root rotation
+            local_ankle_pos: (..., T, 2, 3) left/right ankle positions in
+                pelvis-local frame
+
+        Returns:
+            contact: (..., T, 2) binary {0.0, 1.0}, order [left, right]
+        """
+        # world_ankle = R_root @ local_ankle + root_pos
+        world_ankle = torch.einsum(
+            '...ij,...nj->...ni', root_rotmat, local_ankle_pos) + root_pos.unsqueeze(-2)
+        z = world_ankle[..., 2]  # (..., T, 2)
+        contact = (z < self.foot_contact_z).to(dtype=root_pos.dtype)
+        return contact
+
+    def motion_to_features(self, root_pos, root_rotmat, dof_angle, link_pos_local):
+        """Algorithm 1 from TextOp: raw motion → 69-dim features.
+
+        Produces features for frames 0..T-1 (drops last frame because deltas
+        are forward-differences).
+
+        Args:
+            root_pos: (B, T, 3) world root position
+            root_rotmat: (B, T, 3, 3) world root rotation
+            dof_angle: (B, T, 29) body DoF angles
+            link_pos_local: (B, T, J, 3) pelvis-local positions of selected links
+
+        Returns:
+            features: (B, T-1, 69)
+            init_state: dict with 'p0' (B,3), 'R0' (B,3,3), 'yaw0' (B,) for inverse
+        """
+        B, T, _ = root_pos.shape
+        assert T >= 2, f"Need at least 2 frames, got {T}"
+
+        # Euler (intrinsic ZYX: roll, pitch, yaw)
+        roll, pitch, yaw = _rotmat_to_euler_zyx(root_rotmat)  # each (B, T)
+
+        # φ(r_t) for t=0..T-2 (we need frames 0..T-2 paired with deltas)
+        s_r = torch.sin(roll[:, :-1])
+        c_r = torch.cos(roll[:, :-1]) - 1.0
+        s_p = torch.sin(pitch[:, :-1])
+        c_p = torch.cos(pitch[:, :-1]) - 1.0
+        root_rp_trig = torch.stack([s_r, c_r, s_p, c_p], dim=-1)  # (B, T-1, 4)
+
+        # Δψ_t = yaw_{t+1} - yaw_t, wrapped to [-π, π]
+        yaw_delta = yaw[:, 1:] - yaw[:, :-1]
+        yaw_delta = torch.atan2(torch.sin(yaw_delta), torch.cos(yaw_delta))
+        yaw_delta = yaw_delta.unsqueeze(-1)  # (B, T-1, 1)
+
+        # c_t foot contact at frames 0..T-2
+        ankle_local = link_pos_local[:, :, [G1_LEFT_ANKLE_IDX, G1_RIGHT_ANKLE_IDX], :]
+        # Use full-rotation ankles for contact (more accurate than yaw-only)
+        contact = self.compute_foot_contact_world(
+            root_pos, root_rotmat, ankle_local)  # (B, T, 2)
+        foot_contact = contact[:, :-1, :]  # (B, T-1, 2)
+
+        # Δp_t^local = R_yaw(t)^T (p_{t+1} - p_t) — root delta in character frame
+        p_delta = root_pos[:, 1:, :] - root_pos[:, :-1, :]  # (B, T-1, 3)
+        R_yaw = _yaw_to_rotmat(yaw[:, :-1])  # (B, T-1, 3, 3)
+        R_yaw_T = R_yaw.transpose(-1, -2)
+        transl_delta_local = torch.einsum('btij,btj->bti', R_yaw_T, p_delta)  # (B, T-1, 3)
+
+        # h_t = root z at frame t
+        root_height = root_pos[:, :-1, 2:3]  # (B, T-1, 1)
+
+        # q_t at frame t
+        q_t = dof_angle[:, :-1, :]  # (B, T-1, 29)
+
+        # Δq_t = q_{t+1} - q_t
+        dq_t = dof_angle[:, 1:, :] - dof_angle[:, :-1, :]  # (B, T-1, 29)
+
+        features = torch.cat([
+            root_rp_trig, yaw_delta, foot_contact,
+            transl_delta_local, root_height, q_t, dq_t,
+        ], dim=-1)  # (B, T-1, 69)
+
+        init_state = {
+            'p0': root_pos[:, 0, :],       # (B, 3)
+            'R0': root_rotmat[:, 0, :, :],  # (B, 3, 3)
+            'yaw0': yaw[:, 0],              # (B,)
+        }
+        return features, init_state
+
+    def features_to_motion(self, features, init_state):
+        """Algorithm 2 from TextOp: 69-dim features → raw motion.
+
+        Integrates yaw and local translation from the initial pose.
+
+        Args:
+            features: (B, T, 69)
+            init_state: dict with 'p0', 'R0', 'yaw0' OR 'p0' and 'yaw0' only.
+                (If R0 absent, reconstructed from yaw0 + first-frame roll/pitch.)
+
+        Returns:
+            root_pos: (B, T, 3) reconstructed world position
+            root_rotmat: (B, T, 3, 3) reconstructed world rotation
+            dof_angle: (B, T, 29)
+            foot_contact: (B, T, 2)
+        """
+        B, T, _ = features.shape
+        fd = self.tensor_to_dict(features)
+
+        # Recover roll/pitch from trig encoding
+        s_r = fd['root_rp_trig'][..., 0]
+        c_r_m1 = fd['root_rp_trig'][..., 1]
+        s_p = fd['root_rp_trig'][..., 2]
+        c_p_m1 = fd['root_rp_trig'][..., 3]
+        roll = torch.atan2(s_r, c_r_m1 + 1.0)
+        pitch = torch.atan2(s_p, c_p_m1 + 1.0)
+
+        # Integrate yaw from yaw_delta starting from yaw0
+        yaw_delta = fd['yaw_delta'][..., 0]  # (B, T)
+        yaw0 = init_state['yaw0'].unsqueeze(-1)  # (B, 1)
+        # yaw[t] = yaw[t-1] + Δψ[t-1], so yaw[0] = yaw0, yaw[1] = yaw0 + Δψ[0], ...
+        # NB: the t-th feature f_t stores Δψ_t = yaw_{t+1} - yaw_t, so cumsum
+        # gives yaw_{t+1}. We want yaw for every emitted frame including the
+        # first. Here yaw[0] = yaw0, yaw[t>0] = yaw0 + sum_{i<t} Δψ_i.
+        yaw_cumsum = torch.cumsum(yaw_delta[:, :-1], dim=-1)  # (B, T-1)
+        yaw = torch.cat([yaw0, yaw0 + yaw_cumsum], dim=-1)  # (B, T)
+
+        # Rebuild rotation matrix from (roll, pitch, yaw) intrinsic ZYX
+        # R = Rz(yaw) @ Ry(pitch) @ Rx(roll)
+        cr, sr = torch.cos(roll), torch.sin(roll)
+        cp, sp = torch.cos(pitch), torch.sin(pitch)
+        cy, sy = torch.cos(yaw), torch.sin(yaw)
+        # Standard ZYX rotation composition
+        R00 = cy * cp
+        R01 = cy * sp * sr - sy * cr
+        R02 = cy * sp * cr + sy * sr
+        R10 = sy * cp
+        R11 = sy * sp * sr + cy * cr
+        R12 = sy * sp * cr - cy * sr
+        R20 = -sp
+        R21 = cp * sr
+        R22 = cp * cr
+        root_rotmat = torch.stack([
+            torch.stack([R00, R01, R02], dim=-1),
+            torch.stack([R10, R11, R12], dim=-1),
+            torch.stack([R20, R21, R22], dim=-1),
+        ], dim=-2)  # (B, T, 3, 3)
+
+        # Integrate root position: p[t+1] = p[t] + R_yaw(t) @ Δp_local[t]
+        transl_delta_local = fd['transl_delta_local']  # (B, T, 3)
+        R_yaw = _yaw_to_rotmat(yaw)  # (B, T, 3, 3)
+        p_delta_world = torch.einsum('btij,btj->bti', R_yaw, transl_delta_local)
+
+        # xy: cumulative sum of deltas starting from p0; z: direct from root_height
+        p0 = init_state['p0']  # (B, 3)
+        xy_delta_cumsum = torch.cumsum(p_delta_world[:, :-1, :2], dim=1)  # (B, T-1, 2)
+        xy = torch.cat([p0[:, :2].unsqueeze(1),
+                        p0[:, :2].unsqueeze(1) + xy_delta_cumsum], dim=1)  # (B, T, 2)
+        z = fd['root_height']  # (B, T, 1)
+        root_pos = torch.cat([xy, z], dim=-1)
+
+        dof_angle = fd['dof_angle']  # (B, T, 29)
+        foot_contact = fd['foot_contact']
+
+        return root_pos, root_rotmat, dof_angle, foot_contact
