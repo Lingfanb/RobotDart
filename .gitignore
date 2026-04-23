@@ -206,3 +206,5 @@ papers/
 .vscode/
 .idea/
 *.swp
+# External tools (pending submodule conversion)
+third_party/soma-retargeter/

@@ -249,7 +249,9 @@ class G1PrimitiveUtility:
 
         Args:
             root_pos: (..., 3) root translation
-            root_rot_quat: (..., 4) root rotation quaternion (wxyz for GMR)
+            root_rot_quat: (..., 4) root rotation quaternion in xyzw order.
+                GMR's torch_utils.quat_rotate reads q_w = q[-1] (xyzw),
+                despite earlier docs that misidentified the convention.
             dof_pos: (..., 29) joint angles (will be zero-padded to full DOF)
 
         Returns:
@@ -504,6 +506,30 @@ G1_RIGHT_ANKLE_IDX = 11  # right_ankle_roll_link
 # Foot contact height threshold (world z), meters. Standing ankle z ≈ 0.03m.
 # A threshold of 0.08m captures standing + early contact phase of walking.
 G1_FOOT_CONTACT_Z = 0.08
+
+# G1 joint limits in radians, in the same order as G1_SELECTED_LINKS (29-DoF).
+# Read from the URDF (mj_model.jnt_range), skipping joint 0 (pelvis free joint).
+# Used by the joint_limit_penalty loss in the FM trainer.
+G1_JOINT_LIMITS_LOWER = [
+    # left leg (6)
+    -1.570, -0.524, -1.570, -0.087, -0.873, -0.262,
+    # right leg (6)
+    -1.570, -1.570, -1.570, -0.087, -0.873, -0.262,
+    # torso (3): waist_yaw, waist_roll, waist_pitch
+    -1.570, -0.520, -0.520,
+    # left arm (7): shoulder_pitch, roll, yaw, elbow, wrist_roll, pitch, yaw
+    -3.089, -0.600, -1.400, -1.047, -1.972, -1.614, -1.614,
+    # right arm (7)
+    -3.089, -2.252, -2.000, -1.047, -1.972, -1.614, -1.614,
+]
+G1_JOINT_LIMITS_UPPER = [
+     1.570,  1.570,  1.570,  2.880,  0.524,  0.262,
+     1.570,  0.524,  1.570,  2.880,  0.524,  0.262,
+     1.570,  0.520,  0.520,
+     1.149,  2.252,  2.000,  1.700,  1.972,  1.614,  1.614,
+     1.149,  0.600,  1.400,  1.700,  1.972,  1.614,  1.614,
+]
+assert len(G1_JOINT_LIMITS_LOWER) == G1_NUM_BODY_DOFS == len(G1_JOINT_LIMITS_UPPER)
 
 
 def _quat_xyzw_to_euler_zyx(quat_xyzw):

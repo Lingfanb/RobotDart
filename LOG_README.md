@@ -54,7 +54,164 @@
 ### Cleanup
 - [ ] Delete sonic_npz/, sim_recorded/failed/
 
+### FM experiments (active)
+- ~~Evaluate v5 (jerk+history_noise+sigma_min) — auto_eval 8 prompts~~ ✅ 2026-04-17 (1/8 pass, collapse-free)
+- [ ] FM-latent vs DDPM comparison table (same VAE, paper contribution #1)
+- [ ] Start V-A annotation pipeline (LLM + kinematic calibration)
+- [ ] Add V-A conditioning to latent v1 denoiser
+- [ ] Start P1 Phase: full AMASS retarget + filter
+- ~~Target venue: IEEE RA-L (6/15)~~ → **超越, 新目标: NMI submission 2026-07-19** per `notes/paper_plan_nmi.md`
+
+### NMI paper plan (active — 13 weeks, 2026-04-20 → 2026-07-19 DDL)
+
+**Week 1 CRITICAL blockers (4/26 hard deadline)**
+- [ ] IRB submission
+- [ ] 心理学 co-author 确认
+- ~~BONES-SEED full download 完成 (601 GB, 142,220 G1 CSV)~~ ✅ 2026-04-23
+
+**M1 Motion Generation**
+- ~~M1A FM baseline locked (v7 uniform recipe, 4/8 pass, 7-row ablation)~~ ✅ 2026-04-22
+- [ ] M1B S-Motion VAD embedder + AdaLN + training (on v7 recipe)
+- [ ] M1C Continuous VAD transition during rollout
+
+**M3 VAD Annotation**
+- ~~kinematic VAD extractor (utils/va_kinematic.py) + tested on BABEL~~ ✅ 2026-04-22
+- ~~LLM VAD annotator (data_scripts/annotate_vad_llm.py) + dry-run~~ ✅ 2026-04-22
+- [ ] Segment-level VAD pipeline on BONES temporal_labels (35万 segments)
+- [ ] Human validation set 100 clips (IAA Pearson r > 0.6)
+
+**M7 Social Handover**
+- [ ] Scene setup (6-8 objects + RealSense + MediaPipe)
+- [ ] HandoverSim retarget + in-house 200-300 clips
+- [ ] Object-conditioned FM extension (S-Manip)
+- [ ] VAD modulation 3×3×3 grid ablation
+- [ ] Social coordination (gaze / wait-for-grasp / release trigger)
+
+**M2 Perception Suite**
+- [ ] P-Face (AffectNet-trained VAD regressor)
+- [ ] P-Voice (Wav2Vec2-VAD + Whisper ASR)
+- [ ] P-Body (MediaPipe pose + action classifier)
+- [ ] P-Object (ArUco 6DOF, FoundationPose for final video)
+
+**M9 M-Brain (LLM agent)**
+- ~~Scaffold with 10 mock tools + ReAct loop~~ ✅ 2026-04-22
+- [ ] Connect to real tools (M2/M1B/M7 as built)
+- [ ] Prompt engineering + tool_use validation
+- [ ] MCP server wrapper for portability
+
+**M4 Sim + Real**
+- [ ] Sim closed-loop (M2 → M-Brain → M1+M7 → MuJoCo)
+- [ ] G1 SDK integration (unitree_sdk2 / ROS2)
+- [ ] Safety monitor + e-stop
+- [ ] Real G1 full pipeline demo by 6/14
+
+**M5 User Study**
+- [ ] IRB approval by 6/18
+- [ ] Protocol + questionnaire (Godspeed + IoS + handover quality)
+- [ ] Pilot N=5
+- [ ] Main study N=30 (4 conditions × 3 scenarios)
+- [ ] Analysis (ANOVA + qualitative coding)
+
+**M6 Paper**
+- [ ] Figure 1 teaser (critical for NMI)
+- [ ] All figures + ablation tables
+- [ ] Abstract + main text (4500 words) + methods
+- [ ] Supplementary video 5-8 min + code release
+- [ ] SUBMIT by 2026-07-19
+
+### Infrastructure / cleanup
+- ~~Root cleanup round 1: 10 old training logs + legacy script + command.md moved~~ ✅ 2026-04-22
+- [ ] Root cleanup round 2: 6 feature denoiser shell scripts → scripts/legacy/
+- [ ] Review VERSION_HISTORY.md / WORK_SUMMARY.md (decide keep or archive)
+
 ---
+
+## 2026-04-23 — v12 hypothesis rejected + BONES ingest pipeline end-to-end
+
+> [!IMPORTANT]
+> v12 速度 SNR 假设被 110k 结果推翻 (1/8 < v7 同 stage 4/8), 方向放弃. 转向数据管线: BONES-SEED 全量 601 GB / 142,220 G1 CSV 下载完成, `data_pipeline/format/` 两个 parser 端到端跑通 (BONES CSV → 69-d 特征 + style VAD prior). 途中发现并修复 `utils/g1_utils.py` 长期存在的 xyzw/wxyz docstring 错误 (GMR FK 实际用 xyzw).
+
+- ~~v12 (weight_vel/acc_match_gt=0.0) 110k eval: 1/8 pass, 7/8 fail on sign_flip — hypothesis rejected~~ ✅ 2026-04-23
+- ~~BONES CSV parser `data_pipeline/format/bones_csv_parser.py`: iter_clips + metadata + temporal_labels~~ ✅ 2026-04-23
+- ~~`data_pipeline/format/feature_69d.py`: motion → 69-d via G1PrimitiveUtility69 + FK + fps resample~~ ✅ 2026-04-23
+- ~~Bug fix: `G1PrimitiveUtility.forward_kinematics` docstring said wxyz but GMR actually uses xyzw (foot_contact=0 everywhere)~~ ✅ 2026-04-23
+- ~~Smoke test: neutral walk → foot_contact L=74%/R=75%, forward vel 0.56 m/s (正常), injured_leg_walk → L=88%/R=17% (非对称)~~ ✅ 2026-04-23
+- [ ] T1 primitive_slicer 端口 (process_motion_primitive_g1_69.py → data_pipeline/segment/)
+- [ ] T4 GMR adapter 端口 (extract_dataset_g1.py)
+
+---
+
+## 2026-04-22 — NMI pivot + 9-module VLM agent architecture + FM M1A locked + BONES-SEED
+
+> [!IMPORTANT]
+> 重定位 NMI (DDL 7/19). 新架构: LLM agent 大脑 + 4 层 9 模块 (M-Brain + P-* + S-* + O-*) + social handover + VAD 3D. FM ablation 7 runs 锁定 v7 recipe (4/8 pass). 6 份 design docs + kinematic VAD + LLM annotator + M-Brain scaffold 代码. BONES-SEED (142k G1-ready motions) 下载中, v7-scratch 训练中验证 fine-tune bias.
+
+- ~~Architecture: 4 层 9 模块 + ReAct loop + 10 tool schemas + PNG~~ ✅ 2026-04-22
+- ~~Design docs: paper_plan_nmi / architecture_agent / nmi_inventory / module_build_list / vad_definition / handover_scope / tool_schemas / related_work_nmi~~ ✅ 2026-04-22
+- ~~FM ablation 7 runs (v6/v7/v8b/v8c/v9/v10/v11) → v7 uniform 4/8 WINNER~~ ✅ 2026-04-22
+- ~~kinematic VAD extractor (utils/va_kinematic.py)~~ ✅ 2026-04-22
+- ~~LLM VAD annotator (data_scripts/annotate_vad_llm.py)~~ ✅ 2026-04-22
+- ~~M-Brain scaffold (agent/ 4 files, mock tools, ReAct loop, Claude API ready)~~ ✅ 2026-04-22
+- ~~Literature review (ELLMER NMI precedent + HIAER closest prior + ABEE dataset)~~ ✅ 2026-04-22
+- ~~BONES-SEED metadata downloaded (200MB, 142k motions, 352k segments)~~ ✅ 2026-04-22
+- [ ] BONES-SEED full download (107 GB, 进行中 18/107 GB)
+- [ ] v7-scratch from-scratch training (进行中, 验证 fine-tune bias)
+
+---
+
+## 2026-04-17 — v4 autoregressive success + v5 jerk training + full排查结论
+
+> [!IMPORTANT]
+> v4 (resume + 30k conservative autoregressive) 成功不塌缩，修复 run (1.22→0.52)。AMP-off/v3/ReFlow 全排查确认 motion-space collapse 是算法性。v5 加 jerk loss + history noise + σ_min 训练中。Post-processing Savitzky-Golay 降 sign_flip 37%→17%（7/8 pass）。V-A conditioning 不需要额外 steps。
+
+- ~~v4 conservative autoregressive fine-tune (resume 80k + 30k @0.3 prob): no collapse~~ ✅ 2026-04-16
+- ~~AMP-off control experiment: same result as AMP-on, rules out numerical issue~~ ✅ 2026-04-16
+- ~~v3 300k collapsed at 200k (max_rollout_prob=0.7 not enough)~~ ✅ 2026-04-15
+- ~~ReFlow v1-based: 1/8 pass (per 2412.08175 prediction)~~ ✅ 2026-04-15
+- ~~Build auto_eval.py (scripts/auto_eval.py) for automated checkpoint evaluation~~ ✅ 2026-04-15
+- ~~Post-processing Savitzky-Golay test: sign_flip 37%→17% (7/8 pass)~~ ✅ 2026-04-17
+- ~~Add jerk loss + history_noise + sigma_min to train_g1_fm.py~~ ✅ 2026-04-17
+- ~~Launch v5 (g1_fm_velmatch_x0_v5_jerk) training on GPU 1~~ ✅ 2026-04-17
+- See deep-dive: [logs/2026-04-17.md](logs/2026-04-17.md)
+
+## 2026-04-15 — FM in motion-space failed, FM in VAE latent space WORKS
+
+> [!IMPORTANT]
+> 关键突破：motion-space FM 本质缺少平滑先验，v-prediction 也救不了（jump 肩膀 311°）。换到 VAE latent 空间做 FM，jitter 改善 3-8×，关节限位回到合理范围。论文贡献 #1 路线锁定：**FM-in-latent**（和 MLD/MotionFlow 主流做法对齐）。
+
+- ~~Add parameterization='v' to FMSampler + train_g1_fm~~ ✅ 2026-04-15
+- ~~Train g1_fm_v3 (motion-space v-pred, 280k)~~ ✅ 2026-04-15
+- ~~Diagnose v3: jump 311°, kick 227° — joint limits violated~~ ✅ 2026-04-15
+- ~~Create `mld/train_g1_fm_latent.py` — FM in VAE latent space~~ ✅ 2026-04-15
+- ~~Create `mld/render_g1_rollout_fm_latent.py`~~ ✅ 2026-04-15
+- ~~Train g1_fm_latent_v1 (80k+100k+100k)~~ ✅ 2026-04-15
+- ~~Render 8 prompts — max|vel| 3-8× smoother than motion-space, joint limits sane~~ ✅ 2026-04-15
+- ~~Attempt Consistency-FM (mld/train_g1_fm_cfm.py, 430 lines) to rescue motion-space~~ ✅ 2026-04-15
+- ~~Diagnose CFM 50k: sign-flip rate 60-64%, arms worst, dof_vel_cons revealed as pseudo-constraint~~ ✅ 2026-04-15
+- ~~Add GT-matched vel/acc loss + 7 monitor metrics (incl. mon/sign_flip_rate)~~ ✅ 2026-04-15
+- ~~Launch g1_fm_velmatch_v1 (stage1 only, 80k, GPU 1)~~ ✅ 2026-04-15
+- ~~Diagnose v-pred bad for motion-space joint limits (jump 334°)~~ ✅ 2026-04-15
+- ~~Switch to x0-prediction + vel_match_gt + joint_limit=0.3, stage1 80k~~ ✅ 2026-04-15
+- ~~velmatch_x0_v1 BEATS latent v1 on 4/5 prompts (stand 2.6x better)~~ ✅ 2026-04-15
+- ~~Launch full velmatch_x0_v2 (100k+100k+100k = 300k) on GPU 1~~ ✅ 2026-04-15 16:17
+- ~~Diagnose velmatch_x0_v2 300k mode collapse at 200k (autoregressive rollout 1.0 + strong joint_limit)~~ ✅ 2026-04-15
+- ~~Add max_rollout_prob arg, launch v3 (200k+60k+40k, joint_limit 0.05, rollout cap 0.7) on GPU 1~~ ✅ 2026-04-15 17:50
+- ~~K=5 inference on v1 80k — run 1.22→0.45 (2.7x smoother), 8/8 prompts match/beat K=1~~ ✅ 2026-04-15 18:00
+- ~~Build ReFlow pipeline: gen_reflow_pairs.py + train_g1_fm_reflow.py, smoke tested~~ ✅ 2026-04-15 22:30
+- See deep-dive: [logs/2026-04-15.md](logs/2026-04-15.md)
+
+## 2026-04-13 — FM v1 mode collapse + v2 retrain
+
+> [!IMPORTANT]
+> g1_fm_v1 (x0-pred, uniform t, 280k) 训完但所有 prompt 输出几乎相同（xy_drift ≈ 0.1m, max|joint| 都是 1.21@left_elbow）。诊断脚本定位为 mode collapse — x0-prediction + MSE 的最优解是条件均值，塌缩到"站立"。K=10 ODE 救不回来。启动 v2：logit-normal t + 延后 rollout (stage1 80k→150k) + CFG drop 0.15。
+
+- ~~Render FM v1 rollout K=1 (8 prompts)~~ ✅ 2026-04-13
+- ~~Test fix A: K=10 ODE rerender~~ ✅ 2026-04-13（更糟，排除采样问题）
+- ~~Write `mld/diag_fm_text.py` mode collapse diagnostic~~ ✅ 2026-04-13
+- ~~Modify `flow_matching/fm_sampler.py` to support logit-normal t~~ ✅ 2026-04-13
+- ~~Modify `mld/train_g1_fm.py`: cond_mask_prob 0.1→0.15, stage1 80k→150k~~ ✅ 2026-04-13
+- ~~Launch g1_fm_v2 training on GPU 1 (tmux g1_fm2)~~ ✅ 2026-04-13 23:15
+- See deep-dive: [logs/2026-04-13.md](logs/2026-04-13.md)
 
 ## 2026-04-11 — Denoiser v6 rollout eval + DART gap analysis + TextOp paper review
 
