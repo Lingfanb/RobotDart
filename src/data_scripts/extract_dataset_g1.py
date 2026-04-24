@@ -28,7 +28,7 @@ from tqdm import tqdm
 
 # ─── Setup imports from GMR submodule ────────────────────────────────────
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_DART_ROOT = os.path.dirname(_SCRIPT_DIR)
+_DART_ROOT = os.path.dirname(os.path.dirname(_SCRIPT_DIR))
 _GMR_ROOT = os.path.join(_DART_ROOT, 'third_party', 'gmr')
 if _GMR_ROOT not in sys.path:
     sys.path.insert(0, _GMR_ROOT)

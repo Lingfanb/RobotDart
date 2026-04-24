@@ -12,7 +12,7 @@ from copy import deepcopy
 import importlib.util
 
 # ─── Import GMR's KinematicsModel (bypass __init__.py to avoid mink dep) ─
-_DART_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DART_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 _GMR_ROOT = os.path.join(_DART_ROOT, 'third_party', 'gmr')
 _GMR_PKG_DIR = os.path.join(_GMR_ROOT, 'general_motion_retargeting')
 

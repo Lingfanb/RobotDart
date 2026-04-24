@@ -21,7 +21,7 @@ import numpy as np
 import mujoco as mj
 import imageio
 
-_DART_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DART_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DART_ROOT)
 from utils.g1_utils import G1_XML_PATH
 

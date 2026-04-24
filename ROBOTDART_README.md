@@ -13,6 +13,16 @@ DART (original)                    RobotDART (G1 adaptation)
 └── 22 joint positions             └── 29 joint link positions
 ```
 
+## Setup
+
+Source lives under `src/` and is registered as an editable install via `pyproject.toml`. Run once in the `DART` conda env:
+
+```bash
+pip install -e .
+```
+
+After this, all `python -m <pkg>.<module>` commands below work from the repo root as if `src/` were on `PYTHONPATH`.
+
 ## Data Pipeline
 
 ### Step 0: Sim Filter (in GR00T-WholeBodyControl)
@@ -25,20 +35,20 @@ DART (original)                    RobotDART (G1 adaptation)
 
 ### Step 1: Extract Dataset
 ```bash
-python data_scripts/extract_dataset_g1.py
+python -m data_scripts.extract_dataset_g1
 # Input:  data/G1_DATA/GMR_filtered/ (2187 filtered retarget PKL) + BABEL annotations
 # Output: data/seq_data_g1/{train,val}.pkl (1612 + 522 sequences)
 ```
 
 ### Step 2: Verify (Optional)
 ```bash
-MUJOCO_GL=egl python data_scripts/vis_gmr_filtered.py --num 10
+MUJOCO_GL=egl python -m data_scripts.vis_gmr_filtered --num 10
 # Output: data/verify_g1/filtered_vis/*.mp4 — rendered sample motions
 ```
 
 ### Step 3: Process Motion Primitives
 ```bash
-python data_scripts/process_motion_primitive_g1.py
+python -m data_scripts.process_motion_primitive_g1
 # Output: data/mp_data_g1/Canonicalized_h2_f8_num1_fps30/{train,val}.pkl
 #         66,496 train + 23,610 val primitives
 ```
@@ -96,18 +106,24 @@ python -m mld.train_g1_mld \
 
 ```
 DART/
-├── utils/g1_utils.py                    # G1PrimitiveUtility (replaces smpl_utils)
-├── data_scripts/
-│   ├── extract_dataset_g1.py            # Step 1: filtered pkl + BABEL → seq_data_g1/
-│   ├── process_motion_primitive_g1.py   # Step 3: seq → motion primitives
-│   ├── vis_gmr_filtered.py             # Step 2: offscreen rendering (PKL/NPZ)
-│   └── verify_g1_pipeline.py            # Legacy verification script
-├── data_loaders/humanml/data/
-│   └── dataset_g1.py                    # G1PrimitiveSequenceDataset
-├── mld/
-│   ├── train_g1_mvae.py                 # G1 VAE trainer (standalone)
-│   ├── test_g1_mvae.py                  # G1 VAE verification (overlay rendering)
-│   └── train_g1_mld.py                  # G1 Denoiser trainer (latent diffusion)
+├── src/                                 # Python source (editable-installed via pyproject.toml)
+│   ├── utils/g1_utils.py                # G1PrimitiveUtility (replaces smpl_utils)
+│   ├── data_scripts/
+│   │   ├── extract_dataset_g1.py        # Step 1: filtered pkl + BABEL → seq_data_g1/
+│   │   ├── process_motion_primitive_g1.py  # Step 3: seq → motion primitives
+│   │   ├── vis_gmr_filtered.py          # Step 2: offscreen rendering (PKL/NPZ)
+│   │   └── verify_g1_pipeline.py        # Legacy verification script
+│   ├── data_loaders/humanml/data/
+│   │   └── dataset_g1.py                # G1PrimitiveSequenceDataset
+│   ├── mld/
+│   │   ├── train_g1_mvae.py             # G1 VAE trainer (standalone)
+│   │   ├── test_g1_mvae.py              # G1 VAE verification (overlay rendering)
+│   │   └── train_g1_mld.py              # G1 Denoiser trainer (latent diffusion)
+│   └── (data_pipeline/, diffusion/, flow_matching/, agent/, ...)
+├── configs/                             # YAML configs (was config_files/ + demos/)
+├── docs/                                # knowledge/, notes/, plan/, papers/
+├── outputs/                             # Symlinks to mld_denoiser/, mvae/, runs/, wandb/
+├── legacy/                              # Retired deps (FlowMDM, VolSMPL, control, ...)
 ├── third_party/
 │   ├── __init__.py
 │   └── gmr/                             # GMR submodule (read-only)

@@ -22,7 +22,7 @@ import imageio
 from scipy.spatial.transform import Rotation as R
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_DART_ROOT = os.path.dirname(_SCRIPT_DIR)
+_DART_ROOT = os.path.dirname(os.path.dirname(_SCRIPT_DIR))
 _GMR_ROOT = os.path.join(_DART_ROOT, 'third_party', 'gmr')
 
 # ─── Load GMR params (bypass __init__.py) ────────────────────────────────

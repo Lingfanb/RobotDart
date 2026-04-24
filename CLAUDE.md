@@ -11,17 +11,20 @@ RobotDART adapts the DART framework (diffusion-based autoregressive motion contr
 
 Read `LOG_README.md` first to understand current status and recent work.
 
+## Repo Layout (Plan B, 2026-04-24)
+All Python source lives under `src/` (registered as editable install via `pyproject.toml`). Imports still use bare names: `from utils.g1_utils import ...`, `python -m mld.train_g1_fm`. Docs are under `docs/`, configs under `configs/`, artifacts stay at root with symlinks via `outputs/`.
+
 ## Key Files (G1 adaptation)
-- `utils/g1_utils.py` — `G1PrimitiveUtility` (nfeats=360), `dof_6d_to_qpos()`, `set_mujoco_from_features()`, `G1_CANON_Z_OFFSET`
-- `data_scripts/extract_dataset_g1.py` — G1 pkl + BABEL → `data/seq_data_g1/` (reads from `GMR_filtered/`)
-- `data_scripts/process_motion_primitive_g1.py` — Sequences → motion primitives
-- `data_scripts/vis_gmr_filtered.py` — MuJoCo offscreen renderer for PKL/NPZ motion clips
-- `data_loaders/humanml/data/dataset_g1.py` — G1PrimitiveSequenceDataset (CLIP text encoding, weighted sampling)
-- `mld/train_g1_mvae.py` — G1 VAE trainer (standalone, no SMPL deps)
-- `mld/train_g1_mld.py` — G1 diffusion denoiser trainer (latent space, CLIP conditioned)
-- `mld/test_g1_mvae.py` — G1 VAE verification (overlay rendering + MSE metrics)
-- `mld/run_g1_demo.py` — Interactive MuJoCo demo (live viewer, text prompts)
-- `mld/render_g1_rollout.py` — Offline text-conditioned rollout → MP4
+- `src/utils/g1_utils.py` — `G1PrimitiveUtility` (nfeats=360), `dof_6d_to_qpos()`, `set_mujoco_from_features()`, `G1_CANON_Z_OFFSET`
+- `src/data_scripts/extract_dataset_g1.py` — G1 pkl + BABEL → `data/seq_data_g1/` (reads from `GMR_filtered/`)
+- `src/data_scripts/process_motion_primitive_g1.py` — Sequences → motion primitives
+- `src/data_scripts/vis_gmr_filtered.py` — MuJoCo offscreen renderer for PKL/NPZ motion clips
+- `src/data_loaders/humanml/data/dataset_g1.py` — G1PrimitiveSequenceDataset (CLIP text encoding, weighted sampling)
+- `src/mld/train_g1_mvae.py` — G1 VAE trainer (standalone, no SMPL deps)
+- `src/mld/train_g1_mld.py` — G1 diffusion denoiser trainer (latent space, CLIP conditioned)
+- `src/mld/test_g1_mvae.py` — G1 VAE verification (overlay rendering + MSE metrics)
+- `src/mld/run_g1_demo.py` — Interactive MuJoCo demo (live viewer, text prompts)
+- `src/mld/render_g1_rollout.py` — Offline text-conditioned rollout → MP4
 
 ## Architecture Decisions
 - **GMR as submodule**: `third_party/gmr/` is read-only. Import via `importlib` + fake package to bypass `__init__.py` (avoids `mink` dependency).
@@ -64,8 +67,8 @@ Note: use `python -m` (module mode) so DART root is on Python path. `MUJOCO_GL=e
 - GMR's `ROBOT_XML_DICT` values are `pathlib.Path` — wrap with `str()` when using `os.path.join`
 - Headless rendering requires `MUJOCO_GL=egl` and `PyOpenGL>=3.1.7`
 - GMR retarget 43-DOF layout: `[0:22]` body left side + `[22:29]` LEFT HAND (zeros) + `[29:36]` right arm + `[36:43]` RIGHT HAND (zeros). Strip with `[0:22] + [29:36]` → 29-DOF.
-- Shared rendering utils are in `utils/g1_utils.py` — do NOT duplicate `dof_6d_to_qpos` or `set_mujoco_from_features` in other files.
-- `diffusion/gaussian_diffusion.py` wraps `smpl_utils` import in try/except — G1 pipeline doesn't use it.
+- Shared rendering utils are in `src/utils/g1_utils.py` — do NOT duplicate `dof_6d_to_qpos` or `set_mujoco_from_features` in other files.
+- `src/diffusion/gaussian_diffusion.py` wraps `smpl_utils` import in try/except — G1 pipeline doesn't use it.
 
 ## Data Layout (`data/`)
 ```

@@ -35,7 +35,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-_DART_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DART_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DART_ROOT)
 
 os.environ.setdefault('MUJOCO_GL', 'egl')

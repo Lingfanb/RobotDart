@@ -31,7 +31,7 @@ from pytorch3d import transforms
 from scipy.spatial.transform import Rotation as R
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_DART_ROOT = os.path.dirname(_SCRIPT_DIR)
+_DART_ROOT = os.path.dirname(os.path.dirname(_SCRIPT_DIR))
 if _DART_ROOT not in sys.path:
     sys.path.insert(0, _DART_ROOT)
 

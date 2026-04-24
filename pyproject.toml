@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dart-robotdart"
+version = "0.1.0"
+description = "DART framework adapted for Unitree G1 humanoid robot + VAD-conditioned motion"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["mld*", "data_loaders*", "data_pipeline*", "data_scripts*",
+           "diffusion*", "flow_matching*", "utils*", "agent*",
+           "evaluation*", "visualize*", "model*"]
