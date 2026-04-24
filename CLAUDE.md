@@ -1,7 +1,7 @@
 # CLAUDE.md — RobotDART Agent Context
 
 ## Project Overview
-RobotDART adapts the DART framework (diffusion-based autoregressive motion control) from human SMPL-X data to the Unitree G1 humanoid robot. See `ROBOTDART_README.md` for full details.
+RobotDART adapts the DART framework (diffusion-based autoregressive motion control) from human SMPL-X data to the Unitree G1 humanoid robot, and extends it with VAD-conditioned affective motion. See `README.md` for setup/training entry points and `docs/` for deep dives.
 
 ## Project History & Logs
 - **Local logs**: `logs/YYYY-MM-DD.md` — detailed daily work logs with timestamps
