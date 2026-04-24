@@ -213,8 +213,12 @@ features:
     formula: "1 - clip(abs(left_arm - right_arm).mean() / (pi/2), 0, 1)"
     requires: [dof_angle]
     current_impl: true
-    tier: 1
+    tier: 3
     cost_minutes: 0
+    project_note: >
+      Demoted from V active set. Asymmetry direction w.r.t. V is ambiguous —
+      single-hand wave (positive V) and injured gait (negative V) are both
+      asymmetric. Replaced by spine_uprightness as V3 in our regressor.
 
   - id: vertical
     name: Vertical Movement (net z)
@@ -373,8 +377,12 @@ features:
     formula: "(root_height - 0.70) / 0.15"
     requires: [root_height]
     current_impl: true
-    tier: 1
+    tier: 3
     cost_minutes: 0
+    project_note: >
+      Demoted from D active set. Measures "looking tall" but not
+      "interaction intent". Project redefines D as action-toward-world
+      (reach + approach + directness). Kept as optional secondary D cue.
 
   - id: directness
     name: Directness of Trajectory
@@ -409,8 +417,12 @@ features:
     formula: "prod(link_pos_local.max(0) - link_pos_local.min(0))"
     requires: [link_pos_local]  # needs FK
     current_impl: false
-    tier: 2
+    tier: 3
     cost_minutes: 5
+    project_note: >
+      Demoted from D active set. Same reason as head_height — measures static
+      "looks big" not "interacts with world". Project D redefines around
+      reach / approach / directness.
 
   - id: step_length
     name: Step Length
@@ -535,3 +547,65 @@ features:
     current_impl: false
     tier: 4
     cost_minutes: null
+
+  # ═══════════════════════════════════════════════════════════
+  # PROJECT-ACTIVE ADDITIONS (2026-04-24) — replace deprecated V3/D1/D2
+  # See docs/knowledge/methods/vad_indicators_definition.md for full writeup.
+  # ═══════════════════════════════════════════════════════════
+
+  - id: spine_uprightness
+    name: Spine Uprightness (挺拔度)
+    dim: V
+    delta_vad: [+0.5, 0.0, +0.1]
+    sources: ["Boone & Cunningham 2001 (leaning forward ↔ sadness)",
+              "Karg §4.1 slumped posture ↔ depression"]
+    description: >
+      Asymmetric penalty on forward spine pitch. 1 = upright/backward-leaning,
+      0 = maximally forward-leaning. Replaces lr_symmetry as V3 because
+      symmetry's direction w.r.t. V is ambiguous.
+    formula: "1 - mean(max(0, -sin(pitch_t)))  # pitch from root_rp_trig[2]"
+    requires: [root_rp_trig]
+    current_impl: false
+    tier: 2
+    cost_minutes: 5
+    project_active: true
+    project_role: "V3 (replaces lr_symmetry)"
+
+  - id: reach_extension
+    name: Reach Extension (手部前伸)
+    dim: D
+    delta_vad: [+0.1, +0.2, +0.7]
+    sources: ["Ekman & Friesen 1972 hand/arm movements",
+              "Karg §4.2 reaching as manipulation D-cue",
+              "Project-specific (Social Handover framing)"]
+    description: >
+      Time-averaged max(0, wrist forward position in character frame).
+      Captures "actively reaching into the world" — high when hands extended
+      forward (manipulation intent), 0 when hands at side.
+    formula: >
+      mean(max(0, 0.5 * (x_loc[L_wrist, fwd] + x_loc[R_wrist, fwd])))
+    requires: [link_pos_local]  # needs FK (shared with body_contraction)
+    current_impl: false
+    tier: 2
+    cost_minutes: 10
+    project_active: true
+    project_role: "D1 (replaces bbox_volume)"
+
+  - id: forward_approach
+    name: Forward Approach (前向位移)
+    dim: D
+    delta_vad: [0.0, +0.2, +0.6]
+    sources: ["Hall 1966 proxemics (approach as dominance signal)",
+              "Karg §4.1 gait kinematics",
+              "Project-specific"]
+    description: >
+      Character-frame forward velocity. Positive = actively approaching
+      (dominant), negative = stepping back (submissive). Keeps sign
+      (does not take abs).
+    formula: "mean(transl_delta_local[:, 0])  # forward component"
+    requires: [transl_delta]
+    current_impl: false
+    tier: 2
+    cost_minutes: 2
+    project_active: true
+    project_role: "D2 (replaces head_height)"
