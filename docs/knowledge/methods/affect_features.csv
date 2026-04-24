@@ -1,0 +1,42 @@
+tier,dim,id,name,current_impl,delta_V,delta_A,delta_D,cost_min,sources,requires,description
+1,A,energy,Motion Energy (Quantity of Motion),Y,0.0,0.8,0.0,0,Camurri 2003; Karg §4.1,dof_velocity,Mean squared velocity = kinetic-energy-like.
+1,A,jerk_l2,Jerk (rate of change of acceleration),Y,-0.2,0.7,0.0,0,Karg §4.2; correlated with arousal,dof_angle,Third-order finite diff of joint angles.
+1,A,max_speed,Max Speed,Y,0.0,0.6,0.0,0,Karg 2013 §4.2,dof_velocity,"Peak absolute dof velocity (any joint, any time)."
+1,A,mean_speed,Mean Speed,Y,0.0,1.0,0.0,0,Karg 2013 §4.2; most common across studies,dof_velocity,Mean absolute dof velocity across all joints + time.
+1,D,head_height,Head Height (抬头),Y,0.3,0.1,0.7,0,Ekman & Friesen; Karg §4.1,root_height,Root z height (standing tall).
+1,D,posture_openness,"Posture Openness (simple, arm-only)",Y,0.3,0.2,0.6,0,Nakagawa; Karg §4.1,dof_angle,Mean absolute arm joint angle (larger = more open).
+1,D,space_occupancy,Space Occupancy (path length),Y,0.0,0.3,0.5,0,Nakagawa,transl_delta,Total translation path length.
+1,V,lr_symmetry,Left-Right Symmetry,Y,0.5,0.0,0.0,0,Karg §4.1 large lateral sway = sadness,dof_angle,1 - normalized absolute difference between left/right arm joint angles.
+1,V,rhythmicity,Rhythmicity,Y,0.3,0.1,0.0,0,Camurri,dof_velocity,Autocorrelation peak of mean velocity magnitude.
+1,V,smoothness,Smoothness / Fluidity,Y,0.7,-0.1,0.0,0,Karg §4.4; Laban Flow,dof_angle,Inverse of normalized jerk — higher = smoother = positive valence.
+1,V,vertical,Vertical Movement (net z),Y,0.4,0.0,0.0,0,Karg §4.1 reduced vertical = sadness,transl_delta,Net z displacement over primitive.
+1,mixed,amplitude,Movement Range / Amplitude,Y,0.0,0.5,0.4,0,Karg §4.1 shoulder/elbow ROM,dof_angle,Mean per-joint (max - min) angle over the primitive.
+1,mixed,directness,Directness of Trajectory,Y,0.4,-0.2,0.5,0,Laban Space (Indirect/Direct); Karg §4.4,transl_delta,"Net displacement / path length. 1 = straight line, <1 = meandering."
+2,A,acceleration_mean,Acceleration Magnitude,,0.0,0.7,0.0,5,Camurri 2003; Karg §4.2,dof_angle,Mean absolute second difference of joint angles.
+2,A,gait_tempo,Gait Tempo / Step Frequency,,0.0,0.6,0.2,15,Karg §4.1 gait parameters,foot_contact,Dominant frequency of foot contact oscillation (Hz).
+2,D,bbox_volume,Bounding Box Volume (Expansiveness),,0.3,0.2,0.8,5,Nakagawa et al.; Karg §7.3,link_pos_local,Volume of 3D bounding box of all link positions (pelvis-local).
+2,D,step_height,Step Height,,0.2,0.3,0.6,20,Beck et al.; Karg §6.1.2,foot_contact; link_pos_local,Peak ankle z during swing phase.
+2,D,step_length,Step Length,,0.2,0.3,0.6,15,Beck et al.; Karg §6.1.2,foot_contact; transl_delta,Distance between consecutive foot contacts.
+2,V,body_contraction,Body Contraction/Expansion Index,,0.7,0.0,0.3,10,Camurri 2003 contraction index; Karg §7.3 spatial extent,link_pos_local,"Mean pelvis-to-link distance (higher = more open pose, higher V)."
+2,V,directional_change,Directional Change (head/torso),,-0.3,0.4,0.0,2,Boone & Cunningham 2001 (anger),yaw_delta,Standard deviation of yaw_delta (how much direction wobbles).
+2,V,lean_forward_ratio,Leaning Forward Duration Ratio,,-0.5,0.0,-0.2,5,Boone & Cunningham (sadness),root_rp_trig,Fraction of frames where spine pitch > threshold (leaning forward).
+2,mixed,accel_peak,Acceleration Peak (Force Proxy),,-0.1,0.5,0.6,3,Delsarte (Force); Laban Weight,dof_angle,Max magnitude of per-frame acceleration.
+3,A,motion_activation,Motion Activation (zero-crossing rate),,0.0,0.4,0.0,5,Busso et al. §4.2,dof_velocity,Rate at which joint velocity crosses zero (direction changes).
+3,A,speed_variance,Speed Variance (Tempo Changes),,-0.1,0.4,0.0,3,Boone & Cunningham 2001 (anger = tempo change),dof_velocity,Variance of speed over time.
+3,A,stride_time,Stride Time,,0.0,-0.5,0.0,2,Karg §4.1 gait,foot_contact,Average time between heel strikes (derived from gait_tempo).
+3,D,body_size_volume,Body Size / Pose Volume,,0.2,0.1,0.7,0,Nakagawa et al.,link_pos_local,Duplicate of bbox_volume at finer granularity.
+3,D,force,Force / Weight,,-0.2,0.5,0.6,0,Delsarte; Laban Weight,dof_angle,Shared definition with accel_peak (Tier 2 Arousal).
+3,V,arm_swing_gait,Arm Swing During Gait,,0.4,0.2,0.2,10,Karg §4.1 reduced = sadness,dof_angle; foot_contact,Shoulder ROM restricted to during foot-contact cycles.
+3,V,arm_torso_distance,Arms Away From Torso Duration,,0.5,0.3,0.3,5,Boone & Cunningham (happiness),link_pos_local,Mean distance from hand to torso center.
+3,V,arms_up_ratio,Arms Up Frequency,,0.6,0.3,0.2,3,Boone & Cunningham (happiness),dof_angle,Fraction of frames where shoulder pitch is above some threshold (arms raised).
+3,V,shoulder_range,Shoulder Range of Motion,,0.3,0.4,0.2,3,Karg §4.1 reduced = sadness/depression,dof_angle,Range of shoulder pitch over primitive.
+3,V,slumped_posture,Slumped Posture (spine angle sustained),,-0.6,-0.3,-0.4,3,Karg §4.1 (depression),root_rp_trig,Sustained forward pitch of spine/torso.
+4,A,duration,Movement Duration,,-0.3,-0.5,0.0,,Karg §6.1.1 temporal extension,,Primitive windows fixed at 0.33s in DART — no variation to learn from.
+4,A,muscle_tension,Muscle Tension,,-0.4,0.7,0.2,,Boone & Cunningham (fear),emg_or_co_contraction,Requires EMG or joint stiffness estimation — not feasible with kinematic only.
+4,V,head_orientation_changes,Head Orientation Changes,,-0.2,0.3,0.0,,Busso et al.; Karg §4.2,link_pos_world; full_fk_head,Variability in head yaw/pitch (currently we have no explicit head FK output).
+4,mixed,bap_categories,BAP 141 Behavioural Categories,,,,,,Dael et al. BAP,human_annotation,"Requires human-annotated categorical labels (emblems, illustrators...)."
+4,mixed,delsarte_laws,Delsarte 9 Laws of Movement,,,,,,Delsarte (1811-1871),,"Altitude / Force / Sequence etc. Too abstract, mapped to Tier 1-3 above."
+4,mixed,laban_effort_flow,Laban Effort · Flow (Free/Bound),,,,,,Laban 1947,,Approximated by `smoothness`.
+4,mixed,laban_effort_space,Laban Effort · Space (Indirect/Direct),,,,,,Laban 1947,,Approximated by `directness` feature.
+4,mixed,laban_effort_time,Laban Effort · Time (Sustained/Sudden),,,,,,Laban 1947,,Approximated by `jerk_l2` + `speed_variance`.
+4,mixed,laban_effort_weight,Laban Effort · Weight (Light/Strong),,,,,,Laban 1947,,Approximated by `accel_peak`.

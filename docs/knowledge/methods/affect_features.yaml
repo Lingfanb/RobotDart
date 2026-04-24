@@ -1,0 +1,537 @@
+# Affect-Expressive Motion Feature Registry
+#
+# Source of truth for VAD kinematic features discussed in
+# knowledge/methods/affect_feature_inventory.md
+#
+# Schema per feature:
+#   id           : short unique identifier (used in code)
+#   name         : human-readable name
+#   dim          : VAD dimension(s) this primarily maps to  [A|V|D|mixed]
+#   delta_vad    : [V_coef, A_coef, D_coef]  (sign/magnitude hint, null if unknown)
+#   sources      : literature references (paper, year)
+#   description  : 1-2 sentence what-it-measures
+#   formula      : short Python-ish formula using 69-d feature slices when possible
+#   requires     : what input is needed  [dof_angle, dof_velocity, foot_contact, root_height,
+#                                          transl_delta, link_pos_local, link_pos_world]
+#   current_impl : whether currently in data_pipeline/vad/kinematic_regressor.py
+#   tier         : 1 = already impl, 2 = strongly recommended add, 3 = optional, 4 = skip
+#   cost_minutes : rough implementation effort estimate
+#
+# Total features:  40
+# Tier 1 (existing):   13
+# Tier 2 (add next):    8
+# Tier 3 (optional):    8
+# Tier 4 (skip):       11
+
+version: 1
+last_updated: 2026-04-23
+total_count: 40
+
+features:
+  # ═══════════════════════════════════════════════════════════
+  # AROUSAL (唤醒度)
+  # ═══════════════════════════════════════════════════════════
+
+  - id: mean_speed
+    name: Mean Speed
+    dim: A
+    delta_vad: [0.0, +1.0, 0.0]
+    sources: ["Karg 2013 §4.2", "most common across studies"]
+    description: Mean absolute dof velocity across all joints + time.
+    formula: "abs(dof_velocity).mean()"
+    requires: [dof_velocity]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: max_speed
+    name: Max Speed
+    dim: A
+    delta_vad: [0.0, +0.6, 0.0]
+    sources: ["Karg 2013 §4.2"]
+    description: Peak absolute dof velocity (any joint, any time).
+    formula: "abs(dof_velocity).max()"
+    requires: [dof_velocity]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: energy
+    name: Motion Energy (Quantity of Motion)
+    dim: A
+    delta_vad: [0.0, +0.8, 0.0]
+    sources: ["Camurri 2003", "Karg §4.1"]
+    description: Mean squared velocity = kinetic-energy-like.
+    formula: "(dof_velocity**2).mean()"
+    requires: [dof_velocity]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: jerk_l2
+    name: Jerk (rate of change of acceleration)
+    dim: A
+    delta_vad: [-0.2, +0.7, 0.0]
+    sources: ["Karg §4.2", "correlated with arousal"]
+    description: Third-order finite diff of joint angles.
+    formula: "abs(q[t+3] - 3*q[t+2] + 3*q[t+1] - q[t]).mean()"
+    requires: [dof_angle]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: amplitude
+    name: Movement Range / Amplitude
+    dim: mixed
+    delta_vad: [0.0, +0.5, +0.4]
+    sources: ["Karg §4.1 shoulder/elbow ROM"]
+    description: Mean per-joint (max - min) angle over the primitive.
+    formula: "(dof_angle.max(0) - dof_angle.min(0)).mean()"
+    requires: [dof_angle]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: acceleration_mean
+    name: Acceleration Magnitude
+    dim: A
+    delta_vad: [0.0, +0.7, 0.0]
+    sources: ["Camurri 2003", "Karg §4.2"]
+    description: Mean absolute second difference of joint angles.
+    formula: "abs(q[t+2] - 2*q[t+1] + q[t]).mean()"
+    requires: [dof_angle]
+    current_impl: false
+    tier: 2
+    cost_minutes: 5
+
+  - id: gait_tempo
+    name: Gait Tempo / Step Frequency
+    dim: A
+    delta_vad: [0.0, +0.6, +0.2]
+    sources: ["Karg §4.1 gait parameters"]
+    description: Dominant frequency of foot contact oscillation (Hz).
+    formula: "argmax_freq(FFT(foot_contact_L xor foot_contact_R))"
+    requires: [foot_contact]
+    current_impl: false
+    tier: 2
+    cost_minutes: 15
+
+  - id: accel_peak
+    name: Acceleration Peak (Force Proxy)
+    dim: mixed
+    delta_vad: [-0.1, +0.5, +0.6]
+    sources: ["Delsarte (Force)", "Laban Weight"]
+    description: Max magnitude of per-frame acceleration.
+    formula: "abs(q[t+2] - 2*q[t+1] + q[t]).max()"
+    requires: [dof_angle]
+    current_impl: false
+    tier: 2
+    cost_minutes: 3
+
+  - id: speed_variance
+    name: Speed Variance (Tempo Changes)
+    dim: A
+    delta_vad: [-0.1, +0.4, 0.0]
+    sources: ["Boone & Cunningham 2001 (anger = tempo change)"]
+    description: Variance of speed over time.
+    formula: "abs(dof_velocity).mean(dim=joints).var(dim=time)"
+    requires: [dof_velocity]
+    current_impl: false
+    tier: 3
+    cost_minutes: 3
+
+  - id: motion_activation
+    name: Motion Activation (zero-crossing rate)
+    dim: A
+    delta_vad: [0.0, +0.4, 0.0]
+    sources: ["Busso et al. §4.2"]
+    description: Rate at which joint velocity crosses zero (direction changes).
+    formula: "(sign(dof_velocity[t]) != sign(dof_velocity[t+1])).mean()"
+    requires: [dof_velocity]
+    current_impl: false
+    tier: 3
+    cost_minutes: 5
+
+  - id: stride_time
+    name: Stride Time
+    dim: A
+    delta_vad: [0.0, -0.5, 0.0]
+    sources: ["Karg §4.1 gait"]
+    description: Average time between heel strikes (derived from gait_tempo).
+    formula: "1.0 / gait_tempo"
+    requires: [foot_contact]
+    current_impl: false
+    tier: 3
+    cost_minutes: 2
+
+  - id: muscle_tension
+    name: Muscle Tension
+    dim: A
+    delta_vad: [-0.4, +0.7, +0.2]
+    sources: ["Boone & Cunningham (fear)"]
+    description: Requires EMG or joint stiffness estimation — not feasible with kinematic only.
+    formula: null
+    requires: [emg_or_co_contraction]
+    current_impl: false
+    tier: 4  # skip — needs sensors we don't have
+    cost_minutes: null
+
+  - id: duration
+    name: Movement Duration
+    dim: A
+    delta_vad: [-0.3, -0.5, 0.0]
+    sources: ["Karg §6.1.1 temporal extension"]
+    description: Primitive windows fixed at 0.33s in DART — no variation to learn from.
+    formula: null
+    requires: []
+    current_impl: false
+    tier: 4  # skip — no variation in fixed-window primitives
+    cost_minutes: null
+
+  # ═══════════════════════════════════════════════════════════
+  # VALENCE (效价)
+  # ═══════════════════════════════════════════════════════════
+
+  - id: smoothness
+    name: Smoothness / Fluidity
+    dim: V
+    delta_vad: [+0.7, -0.1, 0.0]
+    sources: ["Karg §4.4", "Laban Flow"]
+    description: Inverse of normalized jerk — higher = smoother = positive valence.
+    formula: "1 - clip(jerk_l2 / scale_jerk, 0, 1)"
+    requires: [dof_angle]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: lr_symmetry
+    name: Left-Right Symmetry
+    dim: V
+    delta_vad: [+0.5, 0.0, 0.0]
+    sources: ["Karg §4.1 large lateral sway = sadness"]
+    description: 1 - normalized absolute difference between left/right arm joint angles.
+    formula: "1 - clip(abs(left_arm - right_arm).mean() / (pi/2), 0, 1)"
+    requires: [dof_angle]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: vertical
+    name: Vertical Movement (net z)
+    dim: V
+    delta_vad: [+0.4, 0.0, 0.0]
+    sources: ["Karg §4.1 reduced vertical = sadness"]
+    description: Net z displacement over primitive.
+    formula: "sum(transl_delta[:, 2])"
+    requires: [transl_delta]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: rhythmicity
+    name: Rhythmicity
+    dim: V
+    delta_vad: [+0.3, +0.1, 0.0]
+    sources: ["Camurri"]
+    description: Autocorrelation peak of mean velocity magnitude.
+    formula: "max_lag(autocorr(mean_vel_mag))"
+    requires: [dof_velocity]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: body_contraction
+    name: Body Contraction/Expansion Index
+    dim: V
+    delta_vad: [+0.7, 0.0, +0.3]
+    sources: ["Camurri 2003 contraction index", "Karg §7.3 spatial extent"]
+    description: Mean pelvis-to-link distance (higher = more open pose, higher V).
+    formula: "norm(link_pos_local, axis=-1).mean()"
+    requires: [link_pos_local]  # need FK
+    current_impl: false  # we have posture_openness (arms-only) as a simpler proxy
+    tier: 2
+    cost_minutes: 10
+
+  - id: lean_forward_ratio
+    name: Leaning Forward Duration Ratio
+    dim: V
+    delta_vad: [-0.5, 0.0, -0.2]
+    sources: ["Boone & Cunningham (sadness)"]
+    description: Fraction of frames where spine pitch > threshold (leaning forward).
+    formula: "(root_rp_trig[:, 2] > sin(theta)).mean()"  # sin of pitch
+    requires: [root_rp_trig]
+    current_impl: false
+    tier: 2
+    cost_minutes: 5
+
+  - id: directional_change
+    name: Directional Change (head/torso)
+    dim: V
+    delta_vad: [-0.3, +0.4, 0.0]
+    sources: ["Boone & Cunningham 2001 (anger)"]
+    description: Standard deviation of yaw_delta (how much direction wobbles).
+    formula: "yaw_delta.std()"
+    requires: [yaw_delta]
+    current_impl: false
+    tier: 2
+    cost_minutes: 2
+
+  - id: arm_torso_distance
+    name: Arms Away From Torso Duration
+    dim: V
+    delta_vad: [+0.5, +0.3, +0.3]
+    sources: ["Boone & Cunningham (happiness)"]
+    description: Mean distance from hand to torso center.
+    formula: "norm(wrist_pos_local).mean()"
+    requires: [link_pos_local]
+    current_impl: false
+    tier: 3
+    cost_minutes: 5
+
+  - id: shoulder_range
+    name: Shoulder Range of Motion
+    dim: V
+    delta_vad: [+0.3, +0.4, +0.2]
+    sources: ["Karg §4.1 reduced = sadness/depression"]
+    description: Range of shoulder pitch over primitive.
+    formula: "(shoulder_pitch.max() - shoulder_pitch.min())"
+    requires: [dof_angle]
+    current_impl: false
+    tier: 3
+    cost_minutes: 3
+
+  - id: arms_up_ratio
+    name: Arms Up Frequency
+    dim: V
+    delta_vad: [+0.6, +0.3, +0.2]
+    sources: ["Boone & Cunningham (happiness)"]
+    description: Fraction of frames where shoulder pitch is above some threshold (arms raised).
+    formula: "(shoulder_pitch > theta).mean()"
+    requires: [dof_angle]
+    current_impl: false
+    tier: 3
+    cost_minutes: 3
+
+  - id: arm_swing_gait
+    name: Arm Swing During Gait
+    dim: V
+    delta_vad: [+0.4, +0.2, +0.2]
+    sources: ["Karg §4.1 reduced = sadness"]
+    description: Shoulder ROM restricted to during foot-contact cycles.
+    formula: "shoulder_range where gait is detected"
+    requires: [dof_angle, foot_contact]
+    current_impl: false
+    tier: 3
+    cost_minutes: 10
+
+  - id: slumped_posture
+    name: Slumped Posture (spine angle sustained)
+    dim: V
+    delta_vad: [-0.6, -0.3, -0.4]
+    sources: ["Karg §4.1 (depression)"]
+    description: Sustained forward pitch of spine/torso.
+    formula: "(pitch < -theta).mean()"
+    requires: [root_rp_trig]
+    current_impl: false
+    tier: 3  # overlaps with lean_forward_ratio, may combine
+    cost_minutes: 3
+
+  - id: head_orientation_changes
+    name: Head Orientation Changes
+    dim: V
+    delta_vad: [-0.2, +0.3, 0.0]
+    sources: ["Busso et al.", "Karg §4.2"]
+    description: Variability in head yaw/pitch (currently we have no explicit head FK output).
+    formula: "head_rot_std"
+    requires: [link_pos_world, full_fk_head]
+    current_impl: false
+    tier: 4  # skip — no head tracking in 69-d features
+    cost_minutes: null
+
+  # ═══════════════════════════════════════════════════════════
+  # DOMINANCE (支配度)
+  # ═══════════════════════════════════════════════════════════
+
+  - id: posture_openness
+    name: Posture Openness (simple, arm-only)
+    dim: D
+    delta_vad: [+0.3, +0.2, +0.6]
+    sources: ["Nakagawa", "Karg §4.1"]
+    description: Mean absolute arm joint angle (larger = more open).
+    formula: "abs(dof_angle[:, arm_indices]).mean()"
+    requires: [dof_angle]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: head_height
+    name: Head Height (抬头)
+    dim: D
+    delta_vad: [+0.3, +0.1, +0.7]
+    sources: ["Ekman & Friesen", "Karg §4.1"]
+    description: Root z height (standing tall).
+    formula: "(root_height - 0.70) / 0.15"
+    requires: [root_height]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: directness
+    name: Directness of Trajectory
+    dim: mixed
+    delta_vad: [+0.4, -0.2, +0.5]
+    sources: ["Laban Space (Indirect/Direct)", "Karg §4.4"]
+    description: Net displacement / path length. 1 = straight line, <1 = meandering.
+    formula: "norm(sum(transl_delta)) / sum(norm(transl_delta))"
+    requires: [transl_delta]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: space_occupancy
+    name: Space Occupancy (path length)
+    dim: D
+    delta_vad: [0.0, +0.3, +0.5]
+    sources: ["Nakagawa"]
+    description: Total translation path length.
+    formula: "sum(norm(transl_delta, axis=-1))"
+    requires: [transl_delta]
+    current_impl: true
+    tier: 1
+    cost_minutes: 0
+
+  - id: bbox_volume
+    name: Bounding Box Volume (Expansiveness)
+    dim: D
+    delta_vad: [+0.3, +0.2, +0.8]
+    sources: ["Nakagawa et al.", "Karg §7.3"]
+    description: Volume of 3D bounding box of all link positions (pelvis-local).
+    formula: "prod(link_pos_local.max(0) - link_pos_local.min(0))"
+    requires: [link_pos_local]  # needs FK
+    current_impl: false
+    tier: 2
+    cost_minutes: 5
+
+  - id: step_length
+    name: Step Length
+    dim: D
+    delta_vad: [+0.2, +0.3, +0.6]
+    sources: ["Beck et al.", "Karg §6.1.2"]
+    description: Distance between consecutive foot contacts.
+    formula: "xy_distance between swing→stance events"
+    requires: [foot_contact, transl_delta]
+    current_impl: false
+    tier: 2
+    cost_minutes: 15
+
+  - id: step_height
+    name: Step Height
+    dim: D
+    delta_vad: [+0.2, +0.3, +0.6]
+    sources: ["Beck et al.", "Karg §6.1.2"]
+    description: Peak ankle z during swing phase.
+    formula: "ankle_z[swing_phase].max()"
+    requires: [foot_contact, link_pos_local]
+    current_impl: false
+    tier: 2
+    cost_minutes: 20
+
+  - id: force
+    name: Force / Weight
+    dim: D
+    delta_vad: [-0.2, +0.5, +0.6]
+    sources: ["Delsarte", "Laban Weight"]
+    description: Shared definition with accel_peak (Tier 2 Arousal).
+    formula: "see accel_peak"
+    requires: [dof_angle]
+    current_impl: false
+    tier: 3  # duplicate of accel_peak
+    cost_minutes: 0
+
+  - id: body_size_volume
+    name: Body Size / Pose Volume
+    dim: D
+    delta_vad: [+0.2, +0.1, +0.7]
+    sources: ["Nakagawa et al."]
+    description: Duplicate of bbox_volume at finer granularity.
+    formula: "see bbox_volume"
+    requires: [link_pos_local]
+    current_impl: false
+    tier: 3  # duplicate
+    cost_minutes: 0
+
+  # ═══════════════════════════════════════════════════════════
+  # SKIP — abstract / qualitative / hard to quantify
+  # ═══════════════════════════════════════════════════════════
+
+  - id: laban_effort_space
+    name: Laban Effort · Space (Indirect/Direct)
+    dim: mixed
+    delta_vad: null
+    sources: ["Laban 1947"]
+    description: Approximated by `directness` feature.
+    formula: "use directness"
+    requires: []
+    current_impl: false
+    tier: 4
+    cost_minutes: null
+
+  - id: laban_effort_weight
+    name: Laban Effort · Weight (Light/Strong)
+    dim: mixed
+    delta_vad: null
+    sources: ["Laban 1947"]
+    description: Approximated by `accel_peak`.
+    formula: "use accel_peak"
+    requires: []
+    current_impl: false
+    tier: 4
+    cost_minutes: null
+
+  - id: laban_effort_time
+    name: Laban Effort · Time (Sustained/Sudden)
+    dim: mixed
+    delta_vad: null
+    sources: ["Laban 1947"]
+    description: Approximated by `jerk_l2` + `speed_variance`.
+    formula: "use jerk + speed_variance"
+    requires: []
+    current_impl: false
+    tier: 4
+    cost_minutes: null
+
+  - id: laban_effort_flow
+    name: Laban Effort · Flow (Free/Bound)
+    dim: mixed
+    delta_vad: null
+    sources: ["Laban 1947"]
+    description: Approximated by `smoothness`.
+    formula: "use smoothness"
+    requires: []
+    current_impl: false
+    tier: 4
+    cost_minutes: null
+
+  - id: bap_categories
+    name: BAP 141 Behavioural Categories
+    dim: mixed
+    delta_vad: null
+    sources: ["Dael et al. BAP"]
+    description: Requires human-annotated categorical labels (emblems, illustrators...).
+    formula: null
+    requires: [human_annotation]
+    current_impl: false
+    tier: 4
+    cost_minutes: null
+
+  - id: delsarte_laws
+    name: Delsarte 9 Laws of Movement
+    dim: mixed
+    delta_vad: null
+    sources: ["Delsarte (1811-1871)"]
+    description: Altitude / Force / Sequence etc. Too abstract, mapped to Tier 1-3 above.
+    formula: null
+    requires: []
+    current_impl: false
+    tier: 4
+    cost_minutes: null
