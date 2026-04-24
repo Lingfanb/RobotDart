@@ -284,7 +284,7 @@ class G1MLDTrainer:
         run_name = f"{args.exp_name}__seed{args.seed}__{int(time.time())}"
         if self.is_main and args.track:
             import wandb
-            wandb.init(
+            wandb.init(dir="./outputs", 
                 project=args.wandb_project_name,
                 entity=args.wandb_entity,
                 sync_tensorboard=True,
@@ -297,7 +297,7 @@ class G1MLDTrainer:
                 return (rel_path.startswith("mld/") and len(Path(rel_path).parents) <= 2) or rel_path.startswith("model/")
             wandb.run.log_code(root=".", include_fn=include_fn)
         if self.is_main:
-            writer = SummaryWriter(f"runs/{run_name}")
+            writer = SummaryWriter(f"outputs/runs/{run_name}")
             writer.add_text("hyperparameters",
                 "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])))
         else:

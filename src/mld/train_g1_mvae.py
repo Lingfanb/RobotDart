@@ -163,7 +163,7 @@ class G1Trainer:
 
         if args.track:
             import wandb
-            wandb.init(
+            wandb.init(dir="./outputs", 
                 project=args.wandb_project_name,
                 entity=args.wandb_entity,
                 sync_tensorboard=True,
@@ -172,7 +172,7 @@ class G1Trainer:
                 save_code=True,
             )
 
-        writer = SummaryWriter(f"runs/{run_name}")
+        writer = SummaryWriter(f"outputs/runs/{run_name}")
         writer.add_text(
             "hyperparameters",
             "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),

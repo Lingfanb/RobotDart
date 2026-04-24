@@ -199,10 +199,10 @@ class G1FMLatentTrainer:
         run_name = f"{args.exp_name}__seed{args.seed}__{int(time.time())}"
         if args.track:
             import wandb
-            wandb.init(project=args.wandb_project_name, entity=args.wandb_entity,
+            wandb.init(dir="./outputs", project=args.wandb_project_name, entity=args.wandb_entity,
                        sync_tensorboard=True, config=vars(args), name=run_name,
                        save_code=True)
-        writer = SummaryWriter(f"runs/{run_name}")
+        writer = SummaryWriter(f"outputs/runs/{run_name}")
         writer.add_text("hyperparameters",
             "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])))
 

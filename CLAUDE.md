@@ -12,7 +12,7 @@ RobotDART adapts the DART framework (diffusion-based autoregressive motion contr
 Read `LOG_README.md` first to understand current status and recent work.
 
 ## Repo Layout (Plan B, 2026-04-24)
-All Python source lives under `src/` (registered as editable install via `pyproject.toml`). Imports still use bare names: `from utils.g1_utils import ...`, `python -m mld.train_g1_fm`. Docs are under `docs/`, configs under `configs/`, artifacts stay at root with symlinks via `outputs/`.
+All Python source lives under `src/` (registered as editable install via `pyproject.toml`). Imports still use bare names: `from utils.g1_utils import ...`, `python -m mld.train_g1_fm`. Docs are under `docs/`, configs under `configs/`, all training artifacts under `outputs/` (ckpts at `outputs/checkpoints/{mld_denoiser,mvae}/`, wandb at `outputs/wandb/`, runs at `outputs/runs/`).
 
 ## Key Files (G1 adaptation)
 - `src/utils/g1_utils.py` — `G1PrimitiveUtility` (nfeats=360), `dof_6d_to_qpos()`, `set_mujoco_from_features()`, `G1_CANON_Z_OFFSET`
