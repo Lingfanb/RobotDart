@@ -83,6 +83,13 @@ Plus: object pose input (external RealSense) → M7 handover module
 
 ## 5. Module Breakdown (24 weeks total)
 
+> ⚠️ **Note (2026-04-24)**: This 24-week breakdown reflects the original planning
+> before timeline compression to 13 weeks. It is kept here for reference. For
+> current active work tracking, see:
+> - [../plan/milestones.md](../plan/milestones.md) — 13-week timeline
+> - [../plan/module_status.md](../plan/module_status.md) — current M status
+> - [module_build_list.md](module_build_list.md) — per-M task details
+
 ### M0. Foundation (Week 1)
 - [ ] 0.1 PAD/VAD psychology literature (Mehrabian 1974, Russell 1980, SAM, PANAS-X)
 - [ ] 0.2 Social handover literature (Strabala 2013, HandoverSim Chao 2022, Pan 2024, Carfi 2019)
