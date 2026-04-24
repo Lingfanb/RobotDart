@@ -4,10 +4,9 @@
 RobotDART adapts the DART framework (diffusion-based autoregressive motion control) from human SMPL-X data to the Unitree G1 humanoid robot, and extends it with VAD-conditioned affective motion. See `README.md` for setup/training entry points and `docs/` for deep dives.
 
 ## Project History & Logs
-- **Local logs**: `logs/YYYY-MM-DD.md` — detailed daily work logs with timestamps
-- **Progress tracker**: `LOG_README.md` — TODO at top, completed items by date (newest first)
-- **Notion Experiments**: database ID `3382d672-a3d2-8194-8bb8-d5810a56257f` (VA_MoGen project)
-- **Skill**: `/log-notion` — writes to all three locations above
+- **Local logs**: `logs/YYYY-MM-DD.md` — detailed daily work logs with timestamps (auto-written by `/log-notion`)
+- **Notion Experiments**: database ID `3382d672-a3d2-8194-8bb8-d5810a56257f` (VA_MoGen project, auto-synced by `/log-notion`)
+- **TODO tracker**: `LOG_README.md` — user-maintained only, do NOT edit from the skill
 
 Read `LOG_README.md` first to understand current status and recent work.
 
