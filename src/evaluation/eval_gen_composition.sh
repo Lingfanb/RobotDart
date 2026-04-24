@@ -16,7 +16,7 @@ use_predicted_joints=0
 fix_floor=0
 flowmdm_dir='./FlowMDM/results/babel/FlowMDM/evaluation_precomputed/Motion_FlowMDM_001300000_gscale1.5_fastbabel_random_seed0_s10'
 model_list=(
-'./mld_denoiser/mld_fps_clip_repeat_euler/checkpoint_300000.pt'
+'./outputs/checkpoints/mld_denoiser/mld_fps_clip_repeat_euler/checkpoint_300000.pt'
 )
 for model in "${model_list[@]}"; do
   python -m mld.sample_flowmdm_mld --denoiser_checkpoint "$model" --guidance_param $guidance --respacing "$respacing" --export_smpl $export_smpl --flowmdm_dir "$flowmdm_dir" --use_predicted_joints $use_predicted_joints --zero_noise $zero_noise  --fix_floor $fix_floor

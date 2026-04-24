@@ -112,7 +112,7 @@ class Args:
     seed: int = 0
     torch_deterministic: bool = True
     device: str = "cuda"
-    save_dir: str = "./mvae"
+    save_dir: str = "./outputs/checkpoints/mvae"
 
     track: int = 1
     wandb_project_name: str = "g1_mld_vae"
@@ -122,7 +122,7 @@ class Args:
 class G1Trainer:
     def __init__(self, args: Args):
         self.args = args
-        args.save_dir = Path('./mvae') / args.exp_name
+        args.save_dir = Path('./outputs/checkpoints/mvae') / args.exp_name
         args.save_dir.mkdir(parents=True, exist_ok=True)
         train_args = args.train_args
         model_args = args.model_args

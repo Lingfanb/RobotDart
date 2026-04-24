@@ -11,7 +11,7 @@ Differences vs render_g1_rollout.py (360-dim):
 
 Usage:
     MUJOCO_GL=egl python -m mld.render_g1_rollout_69 \
-        --denoiser_checkpoint ./mld_denoiser/g1_feature_mld/checkpoint_280000.pt \
+        --denoiser_checkpoint ./outputs/checkpoints/mld_denoiser/g1_feature_mld/checkpoint_280000.pt \
         --prompts "stand" "walk forward" "run" "kick" "wave right hand" "punch" "jump" "turn left" \
         --num_rollout_steps 25 --guidance_param 5
 """
@@ -99,7 +99,7 @@ def plot_root_over_time(world_pos, history_length, save_path, title):
 
 @dataclass
 class RenderArgs:
-    denoiser_checkpoint: str = "./mld_denoiser/g1_feature_mld/checkpoint_280000.pt"
+    denoiser_checkpoint: str = "./outputs/checkpoints/mld_denoiser/g1_feature_mld/checkpoint_280000.pt"
     prompts: tuple[str, ...] = (
         "stand", "walk forward", "run", "kick",
         "wave right hand", "punch", "jump", "turn left",

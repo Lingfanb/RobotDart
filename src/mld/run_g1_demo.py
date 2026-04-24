@@ -9,7 +9,7 @@ Replicates the original DART rollout_demo.py experience for G1:
 Usage:
     cd ~/Gitcode/DART
     python -m mld.run_g1_demo \
-        --denoiser_checkpoint ./mld_denoiser/g1_mld_v1/checkpoint_300000.pt \
+        --denoiser_checkpoint ./outputs/checkpoints/mld_denoiser/g1_mld_v1/checkpoint_300000.pt \
         --guidance_param 5
 """
 from __future__ import annotations
@@ -51,7 +51,7 @@ from mld.train_g1_mld import (
 
 @dataclass
 class DemoArgs:
-    denoiser_checkpoint: str = "./mld_denoiser/g1_mld_v1/checkpoint_300000.pt"
+    denoiser_checkpoint: str = "./outputs/checkpoints/mld_denoiser/g1_mld_v1/checkpoint_300000.pt"
     seed: int = 0
     batch_size: int = 1
     device: str = "cuda"

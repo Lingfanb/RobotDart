@@ -41,7 +41,7 @@ text_prompt_list=(
 
 
 model_list=(
-'./mld_denoiser/smplh_hml3d_2_8_4/checkpoint_300000.pt'
+'./outputs/checkpoints/mld_denoiser/smplh_hml3d_2_8_4/checkpoint_300000.pt'
 )
 
 for model in "${model_list[@]}"; do

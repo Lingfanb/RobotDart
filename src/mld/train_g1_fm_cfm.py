@@ -152,7 +152,7 @@ class G1FMCFMArgs:
     seed: int = 0
     torch_deterministic: bool = True
     device: str = "cuda"
-    save_dir: str = "./mld_denoiser"
+    save_dir: str = "./outputs/checkpoints/mld_denoiser"
 
     track: int = 1
     wandb_project_name: str = "g1_fm_cfm"

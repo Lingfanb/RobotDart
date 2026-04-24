@@ -119,7 +119,7 @@ class G1FMReflowArgs:
     exp_name: str = "g1_fm_reflow_v1"
     seed: int = 0
     device: str = "cuda"
-    save_dir: str = "./mld_denoiser"
+    save_dir: str = "./outputs/checkpoints/mld_denoiser"
 
     track: int = 1
     wandb_project_name: str = "g1_fm_reflow"

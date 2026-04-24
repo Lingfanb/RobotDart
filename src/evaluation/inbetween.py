@@ -176,7 +176,7 @@ if __name__ == "__main__":
     eval_results = {
         # 'dno': eval_mdm('./eval_results/inbetween/smplh_20fps_1f/dno', fps=20),
         # 'omnicontrol': eval_mdm('./eval_results/inbetween/smplh_20fps_1f/omnicontrol', fps=20),
-        'ours': eval_smpl('./mld_denoiser/smplh_hml3d_2_8_4/checkpoint_300000/optim/inbetween/repeatseed/', fps=20),
+        'ours': eval_smpl('./outputs/checkpoints/mld_denoiser/smplh_hml3d_2_8_4/checkpoint_300000/optim/inbetween/repeatseed/', fps=20),
     }
     print(eval_results)
     export_path = Path(f'./eval_results/inbetween/smplh_20fps_1f/smplh_inbetween_results_20fps_1f.json')

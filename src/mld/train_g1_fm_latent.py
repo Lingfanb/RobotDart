@@ -23,7 +23,7 @@ Usage:
     cd ~/Gitcode/DART
     python -m mld.train_g1_fm_latent \
         --exp_name g1_fm_latent_v1 \
-        --denoiser_args.mvae_path ./mvae/g1_feature/checkpoint_300000.pt \
+        --denoiser_args.mvae_path ./outputs/checkpoints/mvae/g1_feature/checkpoint_300000.pt \
         --train_args.batch_size 1024 \
         --train_args.stage1_steps 80000 \
         --train_args.stage2_steps 100000 \
@@ -124,7 +124,7 @@ class DenoiserTransformerArgs:
 
 @dataclass
 class DenoiserArgs:
-    mvae_path: str = './mvae/g1_feature/checkpoint_300000.pt'
+    mvae_path: str = './outputs/checkpoints/mvae/g1_feature/checkpoint_300000.pt'
     rescale_latent: int = 1
     train_rollout_history: str = "rollout"
     model_type: str = "transformer"
@@ -143,7 +143,7 @@ class G1FMLatentArgs:
     seed: int = 0
     torch_deterministic: bool = True
     device: str = "cuda"
-    save_dir: str = "./mld_denoiser"
+    save_dir: str = "./outputs/checkpoints/mld_denoiser"
 
     track: int = 1
     wandb_project_name: str = "g1_fm_latent"

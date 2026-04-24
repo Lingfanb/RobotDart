@@ -2,7 +2,7 @@
 
 Usage:
     MUJOCO_GL=egl python -m data_scripts.gen_reflow_pairs \
-        --teacher_ckpt ./mld_denoiser/g1_fm_velmatch_x0_v1/checkpoint_80000.pt \
+        --teacher_ckpt ./outputs/checkpoints/mld_denoiser/g1_fm_velmatch_x0_v1/checkpoint_80000.pt \
         --out_path ./data/reflow_pairs_v1_80k.pt \
         --num_pairs 50000 \
         --teacher_inference_steps 50 \
@@ -40,7 +40,7 @@ from flow_matching.fm_sampler import FMSampler
 
 @dataclass
 class Args:
-    teacher_ckpt: str = "./mld_denoiser/g1_fm_velmatch_x0_v1/checkpoint_80000.pt"
+    teacher_ckpt: str = "./outputs/checkpoints/mld_denoiser/g1_fm_velmatch_x0_v1/checkpoint_80000.pt"
     out_path: str = "./data/reflow_pairs_v1_80k.pt"
     num_pairs: int = 50000
     teacher_inference_steps: int = 50

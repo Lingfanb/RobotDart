@@ -42,7 +42,7 @@ from mld.train_g1_mvae import Args
 class TestArgs:
     seed: int = 0
     device: str = "cuda"
-    checkpoint_path: str = "mvae/g1_vae_v1/checkpoint_300000.pt"
+    checkpoint_path: str = "outputs/checkpoints/mvae/g1_vae_v1/checkpoint_300000.pt"
     num_samples: int = 5
     batch_size: int = 1
     pred_mode: str = "rec"

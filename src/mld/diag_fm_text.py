@@ -20,7 +20,7 @@ from flow_matching.fm_sampler import FMSampler, _continuous_to_discrete_t
 
 def main():
     import sys
-    ckpt_path = sys.argv[1] if len(sys.argv) > 1 else "./mld_denoiser/g1_fm_v1/checkpoint_280000.pt"
+    ckpt_path = sys.argv[1] if len(sys.argv) > 1 else "./outputs/checkpoints/mld_denoiser/g1_fm_v1/checkpoint_280000.pt"
     device = torch.device("cuda")
 
     d_dir = Path(ckpt_path).parent

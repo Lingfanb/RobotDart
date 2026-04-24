@@ -12,8 +12,8 @@ Decision categories:
 
 Usage:
     python -m scripts.auto_eval \
-        --ckpt ./mld_denoiser/g1_fm_reflow_v1based/checkpoint_100000.pt \
-        --render_dir ./mld_denoiser/g1_fm_reflow_v1based/auto_eval_100k_k1 \
+        --ckpt ./outputs/checkpoints/mld_denoiser/g1_fm_reflow_v1based/checkpoint_100000.pt \
+        --render_dir ./outputs/checkpoints/mld_denoiser/g1_fm_reflow_v1based/auto_eval_100k_k1 \
         --inference_steps 1
 
 Output:

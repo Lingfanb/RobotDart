@@ -8,7 +8,7 @@ Usage (single GPU):
     cd ~/Gitcode/DART
     python -m mld.train_g1_mld \
         --exp_name g1_mld_v1 \
-        --denoiser_args.mvae_path ./mvae/g1_vae_v1/checkpoint_300000.pt \
+        --denoiser_args.mvae_path ./outputs/checkpoints/mvae/g1_vae_v1/checkpoint_300000.pt \
         --train_args.batch_size 1024 \
         --train_args.use_amp 1 \
         --denoiser_args.train_rollout_type full \
@@ -23,7 +23,7 @@ Usage (DDP, 2 GPUs — global batch is split across GPUs):
     cd ~/Gitcode/DART
     torchrun --nproc_per_node=2 -m mld.train_g1_mld \
         --exp_name g1_mld_v1_ddp \
-        --denoiser_args.mvae_path ./mvae/g1_vae_v1/checkpoint_300000.pt \
+        --denoiser_args.mvae_path ./outputs/checkpoints/mvae/g1_vae_v1/checkpoint_300000.pt \
         --train_args.batch_size 1024 \
         ...  # batch_size is the GLOBAL batch — each GPU processes 512
 """
@@ -179,7 +179,7 @@ class G1MLDArgs:
     seed: int = 0
     torch_deterministic: bool = True
     device: str = "cuda"
-    save_dir: str = "./mld_denoiser"
+    save_dir: str = "./outputs/checkpoints/mld_denoiser"
 
     track: int = 1
     wandb_project_name: str = "g1_mld_denoiser"

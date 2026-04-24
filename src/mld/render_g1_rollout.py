@@ -2,7 +2,7 @@
 
 Usage:
     MUJOCO_GL=egl python -m mld.render_g1_rollout \
-        --denoiser_checkpoint ./mld_denoiser/g1_mld_v4/checkpoint_300000.pt \
+        --denoiser_checkpoint ./outputs/checkpoints/mld_denoiser/g1_mld_v4/checkpoint_300000.pt \
         --prompts "walk forward" "wave right hand" "kick" "squat" "stand" \
         --num_rollout_steps 25 --guidance_param 5
 """
@@ -103,7 +103,7 @@ from dataclasses import asdict
 
 @dataclass
 class RenderArgs:
-    denoiser_checkpoint: str = "./mld_denoiser/g1_mld_v4/checkpoint_300000.pt"
+    denoiser_checkpoint: str = "./outputs/checkpoints/mld_denoiser/g1_mld_v4/checkpoint_300000.pt"
     prompts: tuple[str, ...] = ("walk forward", "wave right hand", "stand")
     num_rollout_steps: int = 20
     guidance_param: float = 5.0

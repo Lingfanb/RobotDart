@@ -35,7 +35,7 @@ from mld.train_g1_mvae import Args
 class TestArgs:
     seed: int = 0
     device: str = "cuda"
-    checkpoint_path: str = "mvae/g1_feature/checkpoint_300000.pt"
+    checkpoint_path: str = "outputs/checkpoints/mvae/g1_feature/checkpoint_300000.pt"
     num_samples: int = 8
     pred_mode: str = "rec"
     """rec = encode+decode (reconstruction)"""

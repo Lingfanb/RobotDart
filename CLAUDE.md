@@ -42,8 +42,8 @@ GMR retarget (2660 PKL, 43-DOF)
     → GMR_filtered/ (2187 original retarget PKL, selected by sim filter)
     → extract_dataset_g1.py + BABEL → seq_data_g1/ (1612 train / 522 val)
     → process_motion_primitive_g1.py → mp_data_g1/ (66,496 train / 23,610 val)
-    → train_g1_mvae.py → mvae/ (VAE checkpoint)
-    → train_g1_mld.py → mld_denoiser/ (denoiser checkpoint)
+    → train_g1_mvae.py → outputs/checkpoints/mvae/ (VAE checkpoint)
+    → train_g1_mld.py → outputs/checkpoints/mld_denoiser/ (denoiser checkpoint)
 ```
 
 ## How to Run Training
