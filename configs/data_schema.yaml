@@ -1,0 +1,65 @@
+# Primitive Data Schema v2 · single source of truth
+# Spec: docs/knowledge/methods/primitive_schema_v2.md
+# Loaded by: src/data_pipeline/* + DataLoader v2 + cli.py
+
+schema_version: v2
+last_updated: 2026-04-27
+
+# ──── Time / windowing ────
+fps: 30                    # All processed data normalized to this
+history_frames: 2          # H
+future_frames: 8           # F
+primitive_length: 10       # H + F
+stride: 8                  # =F (non-overlapping primitive boundaries)
+
+# ──── 69-dim TextOp feature layout ────
+# Indices into features_69 (T, 69)
+feature_dim: 69
+feature_layout:
+  root_rp_trig:       [0, 4]    # sin(roll), cos(roll), sin(pitch), cos(pitch)
+  yaw_delta:          [4, 5]    # per-frame Δyaw
+  foot_contact:       [5, 7]    # left/right foot contact (binary)
+  transl_delta_local: [7, 10]   # character-frame translation
+  root_height:        [10, 11]  # pelvis z
+  dof_angle:          [11, 40]  # 29 joint angles
+  dof_velocity:       [40, 69]  # 29 joint angular velocities
+
+# ──── Robot ────
+robot: unitree_g1
+num_dof: 29
+num_links: 29        # pelvis-local link positions in link_pos_local
+
+# ──── Storage paths ────
+data_root: data
+raw_dir: data/raw
+processed_dir: data/processed
+verify_dir: data/verify
+bones_npz_dir: data/processed/bones_npz
+amass_babel_npz_dir: data/processed/amass_babel_npz
+splits_dir: data/processed/splits
+
+# ──── NPZ schema field list (per clip) ────
+# Reference; cli.py producing these fields = compliant.
+npz_fields:
+  raw_motion:
+    dof_pos:        '(T, 29) float32 — joint angles (rad)'
+    root_pos:       '(T, 3) float32 — pelvis position (m)'
+    root_quat:      '(T, 4) float32 — pelvis rotation (wxyz)'
+  fk_geometry:
+    link_pos_local: '(T, 29, 3) float32 — pelvis-local link positions'
+  features:
+    features_69:    '(T, 69) float32 — DART TextOp feature'
+  segments:
+    segment_boundaries: '(k+1,) int64 — frame indices'
+    segment_labels:     '(k,) str — natural language description'
+    segment_act_cat:    '(k,) str — raw dataset category'
+    segment_class_idx:  '(k,) int64 — ACT_CLASSES_V2 index'
+  primitives:
+    primitive_start_frame: '(n,) int64'
+    primitive_end_frame:   '(n,) int64'
+    primitive_vad:         '(n, 3) float32 — [V, A, D]'
+    primitive_class_idx:   '(n,) int64'
+  metadata:
+    fps:            'int = 30'
+    dataset_source: "str = 'bones' | 'amass_babel'"
+    clip_id:        'str — source clip identifier'

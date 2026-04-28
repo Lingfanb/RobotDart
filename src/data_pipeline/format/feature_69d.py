@@ -72,7 +72,10 @@ def motion_to_features_69(root_pos: np.ndarray,
                           dof_pos: np.ndarray,
                           fps: int,
                           target_fps: int = 30,
-                          device: str = 'cpu') -> tuple[np.ndarray, dict]:
+                          device: str = 'cpu',
+                          return_link_pos_local: bool = False,
+                          return_resampled_raw: bool = False
+                          ) -> tuple:
     """Convert raw G1 motion → 69-dim features, resampling to target_fps.
 
     Args:
@@ -81,10 +84,20 @@ def motion_to_features_69(root_pos: np.ndarray,
         dof_pos:        (T, 29) radians
         fps:            input framerate
         target_fps:     output framerate (default 30 = DART convention)
+        return_link_pos_local: if True, return pelvis-local link positions.
+        return_resampled_raw:  if True, return resampled (root_pos, root_quat,
+            dof_pos) at target_fps, time-aligned with features_69 (first frame
+            dropped to match the 1-frame loss from 1st-diff velocity).
 
     Returns:
-        features_69: (T'-1, 69) where T' = round((T-1) * target_fps / fps) + 1
-        init_state:  dict {p0: (3,), R0: (3,3), yaw0: scalar} for future inverse-FK
+        Always returns (features_69, init_state) as the first 2 elements.
+        If return_link_pos_local: appends link_pos_local.
+        If return_resampled_raw: appends (root_pos_r, root_quat_r, dof_pos_r).
+        Order: features_69, init_state[, link_pos_local][, root_pos_r,
+               root_quat_r, dof_pos_r]
+
+        All time-axis arrays have length T = T'-1, where T' = output of
+        target_fps resampling. Raw motion frame 0 is dropped to match.
     """
     assert root_pos.ndim == 2 and root_pos.shape[1] == 3
     assert root_quat_wxyz.ndim == 2 and root_quat_wxyz.shape[1] == 4
@@ -127,6 +140,21 @@ def motion_to_features_69(root_pos: np.ndarray,
         'R0':   init_state['R0'].squeeze(0).cpu().numpy(),
         'yaw0': float(init_state['yaw0'].item()),
     }
+
+    # motion_to_features drops 1 frame at the start (1st-diff for velocity);
+    # align everything to that T-1 length by dropping each array's frame 0.
+    extras = []
+    if return_link_pos_local:
+        link_pos_local_np = link_pos_local.squeeze(0)[1:].cpu().numpy()  # (T-1, J, 3)
+        extras.append(link_pos_local_np)
+    if return_resampled_raw:
+        rp_aligned = rp[1:].astype(np.float32)                          # (T-1, 3)
+        rq_aligned = rq[1:].astype(np.float32)                          # (T-1, 4)
+        dq_aligned = dq[1:].astype(np.float32)                          # (T-1, 29)
+        extras.extend([rp_aligned, rq_aligned, dq_aligned])
+
+    if extras:
+        return (features_np, init_state_np, *extras)
     return features_np, init_state_np
 
 
