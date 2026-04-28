@@ -8,8 +8,11 @@
 |---|---|---|
 | [bones_seed.md](datasets/bones_seed.md) | ✅ stable | 142k G1 clips, 288h, style label, 已 retarget |
 | [babel.md](datasets/babel.md) | ✅ stable | AMASS 帧级人工标注, ~28k seq, 有 act_cat |
+| [amass.md](datasets/amass.md) | ✅ stable | 40h SMPL-X mocap 统一集合, 15+ 源数据集 |
+| [humanml3d.md](datasets/humanml3d.md) | ✅ stable | AMASS + 长文本 + 20fps + 263d feature |
+| [motion_text_lineage.md](datasets/motion_text_lineage.md) | ✅ stable | AMASS / BABEL / HumanML3D 三者关系 |
+| [va_motion_generation.md](datasets/va_motion_generation.md) | ✅ stable | 朋友的 BABEL→G1 pipeline (13 类 + Composable Diffusion) |
 | [dataset_comparison.md](datasets/dataset_comparison.md) | ✅ stable | BONES / BABEL / HandoverSim / ABEE 4 大对比 |
-| [amass.md](datasets/amass.md) | 📝 draft | AMASS 格式 + 子集 |
 | [external_for_handover.md](datasets/external_for_handover.md) | 📝 draft | HandoverSim / ABEE / BEAT2 |
 
 ## 🔢 Representations
@@ -28,6 +31,7 @@
 | [vad_augmentation.md](methods/vad_augmentation.md) | ✅ stable | Anchor + 10 op ΔVAD |
 | [affect_feature_inventory.md](methods/affect_feature_inventory.md) | ✅ stable | 40+ feature 清单（Karg 2013 综述）+ Tier 分级 |
 | [vad_indicators_9.md](methods/vad_indicators_9.md) | ✅ stable | 最终选定的 9 个指标 · LaTeX 公式 + 参数表 |
+| [primitive_schema_v2.md](methods/primitive_schema_v2.md) | ✅ stable | NPZ-per-clip schema · BONES+BABEL 统一训练数据合约 |
 | [flow_matching.md](methods/flow_matching.md) | 📝 draft | FM 基础 + v7 recipe |
 | [kinematic_vad.md](methods/kinematic_vad.md) | 📝 draft | 13 feature → VAD 规则 |
 | [text_conditioning.md](methods/text_conditioning.md) | 📝 draft | CLIP + short/long label |
@@ -64,7 +68,7 @@
 
 搜索命令：`grep -rl "tags:.*<tag>" knowledge/`
 
-- **dataset** — bones_seed, babel, amass, dataset_comparison, external_for_handover
+- **dataset** — bones_seed, babel, amass, humanml3d, motion_text_lineage, va_motion_generation, dataset_comparison, external_for_handover
 - **vad** — vad_augmentation, vad_definition, kinematic_vad, dataset_comparison
 - **gotcha** — quaternion_conventions
 - **feature** — feature_69d, quaternion_conventions, g1_anatomy, text_conditioning
@@ -78,9 +82,9 @@
 
 ## 进度汇总
 
-- **已填充 (stable)**: 7 张
-- **空骨架 (draft)**: 15 张
-- **合计**: 22 张卡片
+- **已填充 (stable)**: 11 张
+- **空骨架 (draft)**: 14 张
+- **合计**: 25 张卡片
 
 ## 下次扩展优先级
 
