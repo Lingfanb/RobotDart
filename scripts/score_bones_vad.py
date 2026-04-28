@@ -16,7 +16,7 @@ from data_pipeline.vad.regressor_3x3 import compute_vad_3x3, compute_vad_3x3_bat
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--data', default='data/bones_mp_data/train.pkl')
+    ap.add_argument('--data', default='data/processed/bones_mp_data/train.pkl')
     ap.add_argument('--n', type=int, default=5000, help='sample size')
     ap.add_argument('--by-style', action='store_true',
                     help='also print per-style mean/std')

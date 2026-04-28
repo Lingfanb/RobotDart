@@ -3,7 +3,7 @@
 Usage:
     MUJOCO_GL=egl python -m mld.train_g1_fm_reflow \
         --exp_name g1_fm_reflow_v1 \
-        --pairs_path ./data/reflow_pairs_v1_80k.pt \
+        --pairs_path ./data/processed/reflow_pairs_v1_80k.pt \
         --train_args.stage1_steps 100000 \
         denoiser-args.model-args:denoiser-transformer-args
 
@@ -112,8 +112,8 @@ class G1FMReflowArgs:
     train_args: TrainArgs = TrainArgs()
     denoiser_args: DenoiserArgs = DenoiserArgs()
 
-    pairs_path: str = "./data/reflow_pairs_v1_80k.pt"
-    data_dir: str = "./data/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/"
+    pairs_path: str = "./data/processed/reflow_pairs_v1_80k.pt"
+    data_dir: str = "./data/processed/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/"
     """Original 69-dim dataset path — used only to load mean/std for denormalization."""
 
     exp_name: str = "g1_fm_reflow_v1"

@@ -172,7 +172,7 @@ class G1MLDArgs:
     train_args: TrainArgs = TrainArgs()
     denoiser_args: DenoiserArgs = DenoiserArgs()
 
-    data_dir: str = "./data/mp_data_g1/Canonicalized_h2_f8_num1_fps30/"
+    data_dir: str = "./data/processed/mp_data_g1/Canonicalized_h2_f8_num1_fps30/"
     num_primitive: int = 4
     """number of consecutive primitives per training sequence (original DART uses 4)"""
     exp_name: str = "g1_mld"

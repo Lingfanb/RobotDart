@@ -12,9 +12,9 @@ Input:
     - BABEL train.json/val.json with frame-level annotations
 
 Output:
-    - data/seq_data_g1/train.pkl
-    - data/seq_data_g1/val.pkl
-    - data/seq_data_g1/dataset_info.json
+    - data/processed/seq_data_g1/train.pkl
+    - data/processed/seq_data_g1/val.pkl
+    - data/processed/seq_data_g1/dataset_info.json
 """
 import json
 import os

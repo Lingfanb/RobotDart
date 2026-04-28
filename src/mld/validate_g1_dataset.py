@@ -212,7 +212,7 @@ def plot_gt_for_prompt(dataset, transl, link_pos, prompt, out_dir, max_k=8):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--data_dir',
-                   default='./data/mp_data_g1/Canonicalized_h2_f8_num1_fps30/')
+                   default='./data/processed/mp_data_g1/Canonicalized_h2_f8_num1_fps30/')
     p.add_argument('--prompts', nargs='+',
                    default=['stand', 'walk forward', 'run', 'kick',
                             'wave right hand', 'punch', 'jump', 'turn left'])

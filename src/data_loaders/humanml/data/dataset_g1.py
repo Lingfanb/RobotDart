@@ -37,7 +37,7 @@ class G1PrimitiveSequenceDataset:
     """
 
     def __init__(self, dataset_name='g1_mp',
-                 dataset_path='./data/mp_data_g1/Canonicalized_h2_f8_num1_fps30/',
+                 dataset_path='./data/processed/mp_data_g1/Canonicalized_h2_f8_num1_fps30/',
                  split='train',
                  device='cuda',
                  weight_scheme='uniform',

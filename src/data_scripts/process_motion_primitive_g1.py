@@ -9,7 +9,7 @@ Usage:
     python data_scripts/process_motion_primitive_g1.py
 
 Output:
-    data/mp_data_g1/Canonicalized_h{H}_f{F}_num{N}_fps{FPS}/{train,val}.pkl
+    data/processed/mp_data_g1/Canonicalized_h{H}_f{F}_num{N}_fps{FPS}/{train,val}.pkl
 """
 import os
 import sys

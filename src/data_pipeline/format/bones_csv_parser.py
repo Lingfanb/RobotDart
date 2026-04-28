@@ -1,6 +1,6 @@
 """BONES-SEED CSV parser.
 
-Reads `data/bones_seed/metadata/seed_metadata_v004.csv` + per-motion G1 CSVs
+Reads `data/raw/bones_seed/metadata/seed_metadata_v004.csv` + per-motion G1 CSVs
 + `seed_metadata_v002_temporal_labels.jsonl` and yields RawClips.
 
 BONES native: 120 Hz, translation in cm, rotations in Euler-XYZ degrees, DOF in degrees.
@@ -78,7 +78,7 @@ class BonesSeedParser(DatasetParser):
     dataset_name = "bones_seed"
 
     def __init__(self,
-                 root: str = "data/bones_seed",
+                 root: str = "data/raw/bones_seed",
                  metadata_csv: str = "metadata/seed_metadata_v004.csv",
                  temporal_jsonl: str = "metadata/seed_metadata_v002_temporal_labels.jsonl",
                  skip_mirrors: bool = True,

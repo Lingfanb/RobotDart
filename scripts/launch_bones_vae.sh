@@ -1,6 +1,6 @@
 #!/bin/bash
 # Train a 69-dim VAE on BONES-SEED motion primitives.
-# Prereq: data/bones_mp_data/{train,val}.pkl exist (produced by
+# Prereq: data/processed/bones_mp_data/{train,val}.pkl exist (produced by
 #         `python -m data_pipeline.cli process --dataset bones_seed`).
 #
 # Output: outputs/checkpoints/mvae/bones_vae_v1/checkpoint_*.pt
@@ -18,7 +18,7 @@ CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0} \
 python -m mld.train_g1_mvae \
     --exp-name bones_vae_v1 \
     --track 1 \
-    --data-args.data-dir ./data/bones_mp_data/ \
+    --data-args.data-dir ./data/processed/bones_mp_data/ \
     --data-args.feature-dim 69 \
     --data-args.weight-scheme text \
     --model-args.nfeats 69 \

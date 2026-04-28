@@ -11,7 +11,7 @@ LOG=logs/bones_fm_v1_cont_train.log
 
 /home/lingfanb/miniforge3/envs/DART/bin/python -m mld.train_g1_fm \
     --exp_name bones_fm_v1_cont \
-    --data_dir ./data/bones_mp_data/ \
+    --data_dir ./data/processed/bones_mp_data/ \
     --denoiser_args.train_rollout_history rollout \
     --train_args.batch_size 1024 \
     --train_args.use_amp 1 \

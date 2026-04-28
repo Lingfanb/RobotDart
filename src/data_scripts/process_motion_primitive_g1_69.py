@@ -15,7 +15,7 @@ Usage:
     python data_scripts/process_motion_primitive_g1_69.py
 
 Output:
-    data/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/{train,val}.pkl + config.json
+    data/processed/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/{train,val}.pkl + config.json
 """
 import os
 import sys

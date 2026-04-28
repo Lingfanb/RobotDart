@@ -10,7 +10,7 @@ Usage:
     MUJOCO_GL=egl python data_scripts/vis_gmr_filtered.py --file NAME.pkl    # specific clip
 
 Output:
-    data/verify_g1/filtered_vis/*.mp4
+    data/verify/filtered_vis/*.mp4
 """
 import argparse
 import glob

@@ -11,7 +11,7 @@ Usage:
     python data_scripts/verify_g1_pipeline.py
 
 Output:
-    data/verify_g1/ — rendered .mp4 videos
+    data/verify/ — rendered .mp4 videos
 """
 import os
 import sys

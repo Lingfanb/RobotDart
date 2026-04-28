@@ -11,11 +11,11 @@ you get a representative slice of BONES without rendering all 142k.
 
 Usage:
     MUJOCO_GL=egl python -m data_scripts.render_bones_samples \\
-        --num_per_group 2 --fps 30 --output_dir data/verify_g1/bones_samples
+        --num_per_group 2 --fps 30 --output_dir data/verify/bones_samples
 
 Outputs:
-    data/verify_g1/bones_samples/{category}__{style}__{filename}.mp4
-    data/verify_g1/bones_samples/_manifest.json  (what was rendered)
+    data/verify/bones_samples/{category}__{style}__{filename}.mp4
+    data/verify/bones_samples/_manifest.json  (what was rendered)
 
 BONES CSV column layout (verified 2026-04-22):
     [0]    Frame
@@ -194,7 +194,7 @@ def render_clip(csv_path: str, mp4_path: str, renderer: HeadlessRenderer,
 
 
 def find_csv(move_g1_path: str, fallback_filename: str) -> str | None:
-    """Find the CSV in data/bones_seed/g1/ — try the metadata path first."""
+    """Find the CSV in data/raw/bones_seed/g1/ — try the metadata path first."""
     cand = os.path.join(BONES_ROOT, move_g1_path) if move_g1_path else None
     if cand and os.path.exists(cand):
         return cand
@@ -215,7 +215,7 @@ def main():
                         help='Output video framerate.')
     parser.add_argument('--max_seconds', type=float, default=10.0,
                         help='Max video duration; longer clips are truncated.')
-    parser.add_argument('--output_dir', default='data/verify_g1/bones_samples')
+    parser.add_argument('--output_dir', default='data/verify/bones_samples')
     parser.add_argument('--width', type=int, default=640)
     parser.add_argument('--height', type=int, default=480)
     parser.add_argument('--seed', type=int, default=0)

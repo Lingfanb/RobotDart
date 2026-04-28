@@ -11,7 +11,7 @@ Usage:
     ANTHROPIC_API_KEY=sk-ant-... python -m data_scripts.annotate_vad_llm \
         --provider claude \
         --split val \
-        --out_path data/vad_labels_llm_val.json
+        --out_path data/processed/vad_labels_llm_val.json
 
     # OpenAI fallback
     OPENAI_API_KEY=sk-... python -m data_scripts.annotate_vad_llm \
@@ -92,9 +92,9 @@ Output: a JSON array of {n} objects, each with {{id, text, V, A, D, reasoning}}.
 class Args:
     split: str = "val"
     """'train' or 'val'."""
-    data_dir: str = "data/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30"
+    data_dir: str = "data/processed/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30"
     out_path: str = ""
-    """Output JSON path. Default: data/vad_labels_llm_{split}.json"""
+    """Output JSON path. Default: data/processed/vad_labels_llm_{split}.json"""
     provider: str = "claude"
     """'claude' or 'openai'."""
     model: str = ""
@@ -236,7 +236,7 @@ def annotate_batch(items: list[dict], args: Args) -> list[dict]:
 def main():
     args = tyro.cli(Args)
     if not args.out_path:
-        args.out_path = f"data/vad_labels_llm_{args.split}.json"
+        args.out_path = f"data/processed/vad_labels_llm_{args.split}.json"
 
     # Load motion data
     pkl_path = Path(args.data_dir) / f"{args.split}.pkl"

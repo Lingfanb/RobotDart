@@ -11,7 +11,7 @@ from utils.va_kinematic import compute_vad
 
 
 def main():
-    val_path = Path("data/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/val.pkl")
+    val_path = Path("data/processed/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/val.pkl")
     with open(val_path, "rb") as f:
         data = pickle.load(f)
 

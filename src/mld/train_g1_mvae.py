@@ -8,7 +8,7 @@ Usage:
     cd ~/Gitcode/DART
     python mld/train_g1_mvae.py \
         --exp_name g1_feature \
-        --data_args.data_dir ./data/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/ \
+        --data_args.data_dir ./data/processed/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/ \
         --train_args.stage1_steps 100000 \
         --train_args.stage2_steps 100000 \
         --train_args.stage3_steps 100000
@@ -56,7 +56,7 @@ class VAEArgs:
 
 @dataclass
 class DataArgs:
-    data_dir: str = "./data/mp_data_g1/Canonicalized_h2_f8_num1_fps30/"
+    data_dir: str = "./data/processed/mp_data_g1/Canonicalized_h2_f8_num1_fps30/"
     """pre-computed G1 motion primitive directory"""
 
     weight_scheme: str = 'text'

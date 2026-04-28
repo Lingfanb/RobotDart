@@ -47,7 +47,7 @@ Plus:
   vad/augment.py (optional)        ──► N× (primitive_aug, text, VAD_target)
        │
        ▼
-  ➤ saved to data/mp_data_g1_<dataset_id>/
+  ➤ saved to data/processed/mp_data_g1_<dataset_id>/
   ➤ ready for S-Motion / S-Manip training
 ```
 
@@ -85,7 +85,7 @@ python -m data_pipeline augment --dataset beat2 --multiplier 3 --target_octants 
 
 # 4. Merge into master training set
 python -m data_pipeline merge --datasets bones_seed,amass_babel,beat2 \
-    --output data/mp_data_g1_unified/
+    --output data/processed/mp_data_g1_unified/
 ```
 
 ---

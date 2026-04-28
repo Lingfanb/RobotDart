@@ -146,7 +146,7 @@ class G1FMCFMArgs:
     train_args: TrainArgs = TrainArgs()
     denoiser_args: DenoiserArgs = DenoiserArgs()
 
-    data_dir: str = "./data/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/"
+    data_dir: str = "./data/processed/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/"
     num_primitive: int = 4
     exp_name: str = "g1_fm_cfm_v1"
     seed: int = 0

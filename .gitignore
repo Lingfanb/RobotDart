@@ -208,3 +208,4 @@ papers/
 *.swp
 # External tools (pending submodule conversion)
 third_party/soma-retargeter/
+third_party/VA_motion_generation/
