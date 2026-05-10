@@ -1,6 +1,6 @@
 import pickle
 
-from model.rotation2xyz import Rotation2xyz
+from _legacy.model.rotation2xyz import Rotation2xyz
 import numpy as np
 from trimesh import Trimesh
 import os

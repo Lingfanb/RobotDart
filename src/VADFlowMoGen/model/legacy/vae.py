@@ -9,9 +9,9 @@ import torch.nn.functional as F
 from torch import Tensor, nn
 from torch.distributions.distribution import Distribution
 
-from mld.models.architectures.tools.embeddings import TimestepEmbedding, Timesteps
-from mld.models.operator import PositionalEncoding
-from mld.models.operator.cross_attention import (
+from _legacy.mld.models.architectures.tools.embeddings import TimestepEmbedding, Timesteps
+from _legacy.mld.models.operator import PositionalEncoding
+from _legacy.mld.models.operator.cross_attention import (
     SkipTransformerEncoder,
     SkipTransformerDecoder,
     TransformerDecoder,
@@ -19,8 +19,8 @@ from mld.models.operator.cross_attention import (
     TransformerEncoder,
     TransformerEncoderLayer,
 )
-from mld.models.operator.position_encoding import build_position_encoding
-from mld.utils.temos_utils import lengths_to_mask
+from _legacy.mld.models.operator.position_encoding import build_position_encoding
+from _legacy.mld.utils.temos_utils import lengths_to_mask
 
 """
 vae

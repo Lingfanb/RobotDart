@@ -33,7 +33,7 @@ from utils.g1_utils import (
 from utils.misc_util import encode_text
 from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from VADFlowMoGen.train.legacy.g1_latent import G1FMLatentArgs, DenoiserMLPArgs
-from mld.train_g1_mvae import Args as G1MVAEArgs
+from _legacy.mld.train_g1_mvae import Args as G1MVAEArgs
 from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
 from VADFlowMoGen.model.legacy.vae import AutoMldVae
 from VADFlowMoGen.flow_matching.sampler import FMSampler

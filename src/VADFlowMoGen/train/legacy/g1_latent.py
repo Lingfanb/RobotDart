@@ -52,7 +52,7 @@ from torch.utils.tensorboard import SummaryWriter
 from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
 from VADFlowMoGen.model.legacy.vae import AutoMldVae
-from mld.train_g1_mvae import Args as G1MVAEArgs
+from _legacy.mld.train_g1_mvae import Args as G1MVAEArgs
 from VADFlowMoGen.flow_matching.sampler import FMSampler
 from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
 

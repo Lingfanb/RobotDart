@@ -282,7 +282,7 @@ class G1PrimitiveDataset35VA:
 
         # Pre-encode text via CLIP
         try:
-            from model.text_encoder import precompute_text_embeddings
+            from _legacy.model.text_encoder import precompute_text_embeddings
         except ImportError:
             try:
                 from VADFlowMoGen.model.denoiser import build_clip_text_encoder

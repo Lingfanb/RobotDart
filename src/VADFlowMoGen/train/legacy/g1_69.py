@@ -174,7 +174,7 @@ class G1FM35Trainer:
 
         # Load 35-dim dataset — either from our pkl or VA's NPZ corpus
         if args.data_source == 'va_npz':
-            from data_loaders.humanml.data.dataset_g1_69_va import G1PrimitiveDataset69VA
+            from _legacy.data_loaders.humanml.data.dataset_g1_69_va import G1PrimitiveDataset69VA
             train_dataset = G1PrimitiveDataset69VA(
                 npz_dir=args.data_dir, split='train', device=device,
                 source_fps=args.source_fps, target_fps=30.0,
