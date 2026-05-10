@@ -88,13 +88,13 @@ def plot_root_over_time(world_pos, history_length, save_path, title):
     plt.savefig(save_path, dpi=100, bbox_inches='tight')
     plt.close()
 from utils.misc_util import load_and_freeze_clip, encode_text
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from mld.train_g1_mld import (
     G1MLDArgs, G1MVAEArgs, DenoiserMLPArgs, DenoiserTransformerArgs,
     create_gaussian_diffusion,
 )
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from model.mld_vae import AutoMldVae
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.model.legacy.vae import AutoMldVae
 
 import yaml
 from pathlib import Path

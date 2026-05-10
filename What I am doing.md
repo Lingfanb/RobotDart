@@ -1,6 +1,6 @@
 <details open>
-<summary><h1 style="display:inline">05/09/2026 — MFM seam-anchor (FM 接缝结构性消除, sf 0.217 → 0.164 超越友人 -12%)</h1></summary>
-
+<summary><h1 style="display:inline">05/09/2026 </h1></summary>
+— MFM seam-anchor (FM 接缝结构性消除, sf 0.217 → 0.164 超越友人 -12%)
 <details open>
 <summary><h2 style="display:inline">核心发现 (5/9)</h2></summary>
 
@@ -46,6 +46,32 @@
 > 6. **下午 17:30**: eval 出表, hard K=2 sf=0.164 (-25%) 大新闻, 但有 metric bias caveat → 重测取消 bias
 > 7. **下午 17:30**: 用户视觉验证 "确实不错" → recipe v2 frozen
 > 8. **下午 17:45**: docs sync (recipe / short_term / What I am doing)
+> 9. **晚 18:30**: commit ef8b8a8 入 main
+> 10. **晚 19:00**: 大重构 — FlowDART → VADFlowMoGen, 33 文件搬到 `src/VADFlowMoGen/`, namespace 准备 VAD conditioning (Exp 34)。Sanity 验证 production render 跑通 sf 一致。
+
+</details>
+
+<details open>
+<summary><h2 style="display:inline">5/9 晚 — 大重构: FlowDART → VADFlowMoGen</h2></summary>
+
+> 趁 MFM 工作刚 commit, 给即将开始的 VAD conditioning (Exp 34) 一个干净 namespace。
+>
+> **改动**:
+> - 新 `src/VADFlowMoGen/` 顶层 module, 33 个 FM 文件全搬进去, 按 5 个子目录 (`flow_matching/`, `model/`, `data/`, `train/`, `render/`, `scripts/`)
+> - 文件名 strip 冗余前缀: `fm_sampler.py` → `flow_matching/sampler.py`, `train_g1_fm_35.py` → `train/g1_35.py`, `render_g1_rollout_fm_35.py` → `render/g1_35.py`
+> - Production path 直接进 namespace 一级 (35-dim + MFM 配方); legacy 变体 (65/69/cfm/latent/reflow) 进 `{train,render,data,model}/legacy/` 子路径
+> - 49 个 .py 文件、20 个 shell/SLURM 脚本的 import / `python -m` 命令全部更新 (155 + 20 replacements 用 Python 批量脚本)
+> - CLAUDE.md / recipe doc 更新 (module layout 段, render 命令, key files)
+>
+> **新命令** (替换以前的 `python -m mld.train_g1_fm_35` 等):
+> ```bash
+> python -m VADFlowMoGen.train.g1_35           # 训练
+> python -m VADFlowMoGen.render.g1_35          # 推理 + render
+> ```
+>
+> **Sanity 验证**: production render 跑通, frame 0 z=0.786m, sf 数量级一致 (0.231 stand)。production recipe 完整 portable 到新 namespace。
+>
+> **下一步**: VAD conditioning 直接在 `VADFlowMoGen/` 下展开 — 加 `data/vad_labels.py` (regressor 出 V/A/D), `model/vad_embedder.py` (Fourier features), 改 `train/g1_35.py` + `flow_matching/sampler.py` 接 VAD token。
 
 </details>
 

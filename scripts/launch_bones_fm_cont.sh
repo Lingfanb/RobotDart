@@ -9,7 +9,7 @@ export MUJOCO_GL=egl
 
 LOG=logs/bones_fm_v1_cont_train.log
 
-/home/lingfanb/miniforge3/envs/DART/bin/python -m mld.train_g1_fm \
+/home/lingfanb/miniforge3/envs/DART/bin/python -m VADFlowMoGen.train.legacy.g1 \
     --exp_name bones_fm_v1_cont \
     --data_dir ./data/processed/bones_mp_data/ \
     --denoiser_args.train_rollout_history rollout \

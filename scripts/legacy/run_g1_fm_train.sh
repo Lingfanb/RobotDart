@@ -10,7 +10,7 @@ cd ~/Gitcode/DART
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 export MUJOCO_GL=egl
 
-/home/lingfanb/miniforge3/envs/DART/bin/python -m mld.train_g1_fm \
+/home/lingfanb/miniforge3/envs/DART/bin/python -m VADFlowMoGen.train.legacy.g1 \
     --exp_name g1_fm_v1 \
     --data_dir ./data/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/ \
     --denoiser_args.train_rollout_history rollout \

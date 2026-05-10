@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from mld.render_g1_rollout import load_mld
 from mld.train_g1_mld import create_gaussian_diffusion
 from utils.g1_utils import (

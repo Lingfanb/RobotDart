@@ -18,7 +18,7 @@ from pathlib import Path
 from tqdm import tqdm
 import copy
 
-from model.mld_vae import AutoMldVae
+from VADFlowMoGen.model.legacy.vae import AutoMldVae
 from data_loaders.humanml.data.dataset import PrimitiveSequenceDataset, WeightedPrimitiveSequenceDataset, WeightedPrimitiveSequenceDatasetV2
 from data_loaders.humanml.data.dataset_hml3d import HML3dDataset
 from utils.smpl_utils import get_smplx_param_from_6d

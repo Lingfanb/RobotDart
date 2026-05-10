@@ -51,9 +51,9 @@ import json
 import copy
 
 from mld.train_g1_mvae import Args as G1MVAEArgs
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from model.mld_vae import AutoMldVae
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.model.legacy.vae import AutoMldVae
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from pytorch3d import transforms
 from diffusion import gaussian_diffusion as gd
 from diffusion.respace import SpacedDiffusion, space_timesteps

@@ -9,7 +9,7 @@ from scipy.spatial.transform import Rotation as Rot
 from pathlib import Path
 import mujoco as mj, imageio
 
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from utils.g1_utils import G1PrimitiveUtility, G1_XML_PATH, G1_NUM_BODY_DOFS
 
 device = 'cuda'

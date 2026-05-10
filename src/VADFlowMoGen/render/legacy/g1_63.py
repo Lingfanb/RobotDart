@@ -5,7 +5,7 @@ primitives. Inverse: accumulate yaw from yaw_vel, accumulate xy from xy_vel
 rotated by yaw, reconstruct root_quat from (yaw, pitch, roll) via ZYX euler.
 
 Usage:
-    MUJOCO_GL=egl python -m mld.render_g1_rollout_fm_35 \\
+    MUJOCO_GL=egl python -m VADFlowMoGen.render.g1_35 \\
         --denoiser_checkpoint ./outputs/checkpoints/mld_denoiser/g1_fm_35_v1/checkpoint_280000.pt \\
         --prompts "stand" "walk forward" "run" "kick" \\
         --num_rollout_steps 25 \\
@@ -33,10 +33,10 @@ from utils.g1_utils import (
     G1_XML_PATH, G1_NUM_BODY_DOFS, G1_SELECTED_LINKS, G1_CANON_Z_OFFSET,
 )
 from utils.misc_util import encode_text
-from data_loaders.humanml.data.dataset_g1_35 import G1PrimitiveDataset35, FEATURE_DIM_35
-from mld.train_g1_fm_35 import G1FM35Args, DenoiserMLPArgs
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from flow_matching.fm_sampler import FMSampler
+from VADFlowMoGen.data.legacy.g1_63 import G1PrimitiveDataset63, FEATURE_DIM_63
+from VADFlowMoGen.train.legacy.g1_63 import G1FM63Args, DenoiserMLPArgs
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.flow_matching.sampler import FMSampler
 
 
 # ── Joint groups for plotting ────────────────────────────────────────────────
@@ -50,10 +50,13 @@ JOINT_GROUPS = {
 }
 
 
-# ── 35-dim inverse: features → world motion ──────────────────────────────────
+# ── 63-dim inverse: features → world motion ──────────────────────────────────
 
-def inverse_features_35(features_np, init_yaw=0.0, init_xy=(0.0, 0.0)):
-    """Convert (T, 35) features to world-space motion.
+def inverse_features_63(features_np, init_yaw=0.0, init_xy=(0.0, 0.0), init_z=None):
+    """Convert (T, 63) features to world-space motion.
+
+    63-dim layout: yaw_delta(1) + transl_delta_local(3) + root_height(1) + dof_angle(29) + dof_velocity(29)
+    Pitch/roll set to 0 (G1 stays upright assumption).
 
     Returns:
         root_pos: (T, 3)
@@ -61,36 +64,38 @@ def inverse_features_35(features_np, init_yaw=0.0, init_xy=(0.0, 0.0)):
         dof_pos: (T, 29)
     """
     T = features_np.shape[0]
-    assert features_np.shape[1] == FEATURE_DIM_35
+    assert features_np.shape[1] == FEATURE_DIM_63
 
-    yaw_vel = features_np[:, 0]
-    xy_vel = features_np[:, 1:3]
-    z = features_np[:, 3]
-    pitch = features_np[:, 4]
-    roll = features_np[:, 5]
-    dof = features_np[:, 6:35].astype(np.float32)
+    yaw_delta = features_np[:, 0]
+    transl_delta = features_np[:, 1:4]   # body-frame Δx, Δy, Δz
+    z = features_np[:, 4]                # absolute root_height
+    dof = features_np[:, 5:34].astype(np.float32)
+    # features_np[:, 34:63] = dof_velocity (unused for rendering)
 
     # Accumulate yaw
     yaw = np.zeros(T, dtype=np.float32)
     yaw[0] = init_yaw
     for t in range(1, T):
-        yaw[t] = yaw[t - 1] + yaw_vel[t]
+        yaw[t] = yaw[t - 1] + yaw_delta[t]
 
-    # Accumulate xy (rotate xy_vel by prev yaw back to world)
+    # Accumulate xy (rotate body-frame Δxy by prev yaw back to world)
     xy = np.zeros((T, 2), dtype=np.float32)
     xy[0, 0] = init_xy[0]
     xy[0, 1] = init_xy[1]
     for t in range(1, T):
         c = np.cos(yaw[t - 1])
         s = np.sin(yaw[t - 1])
-        dx = c * xy_vel[t, 0] - s * xy_vel[t, 1]
-        dy = s * xy_vel[t, 0] + c * xy_vel[t, 1]
+        dx = c * transl_delta[t, 0] - s * transl_delta[t, 1]
+        dy = s * transl_delta[t, 0] + c * transl_delta[t, 1]
         xy[t, 0] = xy[t - 1, 0] + dx
         xy[t, 1] = xy[t - 1, 1] + dy
 
+    # z: use absolute root_height directly (more reliable than integrating Δz)
     root_pos = np.stack([xy[:, 0], xy[:, 1], z], axis=-1).astype(np.float32)
 
-    # Root quaternion from (yaw, pitch, roll) via ZYX euler
+    # Pitch/roll = 0 (no absolute root tilt info in 63-dim).
+    pitch = np.zeros(T, dtype=np.float32)
+    roll = np.zeros(T, dtype=np.float32)
     euler_zyx = np.stack([yaw, pitch, roll], axis=-1)
     q_xyzw = Rot.from_euler("ZYX", euler_zyx, degrees=False).as_quat().astype(np.float32)
     root_quat_wxyz = q_xyzw[:, [3, 0, 1, 2]]
@@ -174,15 +179,11 @@ def plot_full_analysis(features_35, world_pos, yaw_all, dof_pos,
     ax.set_title('Root z (closeup)')
     ax.grid(alpha=0.3)
 
-    # Row 1: Root euler angles
-    pitch = features_35[:, 4]
-    roll = features_35[:, 5]
+    # Row 1: Root yaw (63-dim has no absolute pitch/roll, only delta-yaw)
     ax = fig.add_subplot(gs[1, 0])
-    ax.plot(frames, np.degrees(yaw_all), label='yaw', linewidth=1.2)
-    ax.plot(frames, np.degrees(pitch), label='pitch', linewidth=1.2)
-    ax.plot(frames, np.degrees(roll), label='roll', linewidth=1.2)
+    ax.plot(frames, np.degrees(yaw_all), label='yaw (accumulated)', linewidth=1.2)
     ax.axvline(history_length - 0.5, color='red', linestyle='--', alpha=0.5)
-    ax.set_title('Root euler (deg)')
+    ax.set_title('Root yaw (deg) — pitch/roll fixed at 0 in 63-dim')
     ax.legend(fontsize=8)
     ax.grid(alpha=0.3)
 
@@ -231,13 +232,13 @@ def plot_full_analysis(features_35, world_pos, yaw_all, dof_pos,
     ax.set_ylabel('rad/frame')
     ax.grid(alpha=0.3)
 
-    # Row 7: 35-dim raw features (root channels)
+    # Row 7: 63-dim raw features (root channels [0:5])
     ax = fig.add_subplot(gs[7, :])
-    ch_names = ['yaw_vel', 'xy_vel_x', 'xy_vel_y', 'z', 'pitch', 'roll']
-    for i in range(6):
+    ch_names = ['yaw_delta', 'transl_dx', 'transl_dy', 'transl_dz', 'root_height']
+    for i in range(5):
         ax.plot(frames, features_35[:, i], label=ch_names[i], linewidth=1.2)
     ax.axvline(history_length - 0.5, color='red', linestyle='--', alpha=0.5)
-    ax.set_title('35-dim features: root channels [0:6]')
+    ax.set_title('63-dim features: root channels [0:5]')
     ax.legend(fontsize=8, ncol=3)
     ax.set_xlabel('frame')
     ax.grid(alpha=0.3)
@@ -254,7 +255,7 @@ def load_fm_35(checkpoint, device):
     d_dir = Path(checkpoint).parent
     with open(d_dir / "args.yaml", "r") as f:
         raw = yaml.safe_load(f)
-    fm_args = tyro.extras.from_yaml(G1FM35Args, raw)
+    fm_args = tyro.extras.from_yaml(G1FM63Args, raw)
 
     da = fm_args.denoiser_args
     ma = da.model_args
@@ -297,19 +298,6 @@ class RenderArgs:
     video_height: int = 540
     init_idx: int = 54460  # canonical stand pose (full mp_data_g1_69, found via scripts/find_stand_pose.py)
 
-    # ── MFM seam-anchor (Exp 33: -25% sf, beats friend's V-A DDIM by -12%) ──
-    # Autoregressive rollout creates seam jumps at primitive boundaries because
-    # the standard FM model has no spatial adjacency between history (cross-attn)
-    # and future (the only thing in x). We force future[:K] = history[-1] inside
-    # the sampler so the seam closes by construction — no retraining needed.
-    rewriting_mode: str = 'none'
-    """'none' (default = standard FM), 'hard' (force every step), 'soft' (FM-trajectory blend, ramps with t)"""
-    rewriting_stop_t: float = 0.2
-    """Soft mode: only blend when t < this (after stop_t, model runs free)"""
-    seam_anchor_frames: int = 2
-    """How many leading future frames to anchor toward history[-1]. Anchor strength
-    decays linearly across these frames: frame 0 = 1.0, frame K-1 = 1/K."""
-
 
 def main():
     args = tyro.cli(RenderArgs)
@@ -328,13 +316,13 @@ def main():
         args.denoiser_checkpoint, device)
 
     # Load dataset for normalization stats
-    dataset = G1PrimitiveDataset35(
+    dataset = G1PrimitiveDataset63(
         dataset_path=fm_full_args.data_dir, split='train', device=device)
 
     history_length = dataset.history_length
     future_length = dataset.future_length
     feature_dim = dataset.feature_dim
-    assert feature_dim == FEATURE_DIM_35
+    assert feature_dim == FEATURE_DIM_63
 
     # MuJoCo setup
     mj_model = mj.MjModel.from_xml_path(str(G1_XML_PATH))
@@ -358,15 +346,9 @@ def main():
     # Get initial 35-dim history (first H frames, already converted on device)
     # Bug fix: dataset.all_motion_tensor stores ALREADY-NORMALIZED features.
     # Get normalized history directly, denormalize for inverse_features.
-    # ⚠️ BUG FIX (2026-05-08): 35-dim dataset stores all_motion_tensor as RAW
-    # (unlike 65-dim which stores NORMALIZED). Earlier render code mistakenly
-    # treated it as normalized and double-denormalized → 1.8cm z drift at frame 0.
-    init_features_35 = dataset.all_motion_tensor[args.init_idx]   # (T, D) RAW
-    init_history_unnorm = init_features_35[:history_length, :]    # (H, D) RAW
-    # dataset.normalize broadcasts (H,D) with (1,1,D) mean/std → (1,H,D) already
-    init_history_norm = dataset.normalize(init_history_unnorm)
-    if init_history_norm.dim() == 2:
-        init_history_norm = init_history_norm.unsqueeze(0)
+    init_features_63 = dataset.all_motion_tensor[args.init_idx]  # (T, D) NORMALIZED
+    init_history_norm = init_features_63[:history_length, :].unsqueeze(0)
+    init_history_unnorm = dataset.denormalize(init_features_63[:history_length, :])
 
     for prompt in args.prompts:
         print(f"\n{'=' * 60}")
@@ -386,23 +368,6 @@ def main():
                 'text_embedding': text_embedding,
                 'history_motion_normalized': history_norm,
             }
-
-            # ── MFM seam-anchor (no-op when rewriting_mode='none') ──
-            obs_x0 = None
-            obs_mask = None
-            if args.rewriting_mode != 'none' and args.seam_anchor_frames > 0:
-                K = min(args.seam_anchor_frames, future_length)
-                # Anchor target = last frame of current history (already in
-                # normalized space — same convention as init_history_norm at
-                # line 354, the 5/8 double-denorm bug fix). Do NOT re-normalize.
-                anchor = history_norm[:, -1:, :]                  # (1, 1, 35)
-                obs_x0 = torch.zeros(1, future_length, feature_dim, device=device)
-                obs_mask = torch.zeros(1, future_length, feature_dim, device=device)
-                obs_x0[:, :K, :] = anchor                         # broadcast
-                # Linear decay of anchor strength: frame 0 = 1.0, frame K-1 = 1/K
-                for k in range(K):
-                    obs_mask[:, k, :] = 1.0 - k / K
-
             future_pred_norm = fm.sample(
                 model=denoiser_model,
                 shape=(1, future_length, feature_dim),
@@ -411,10 +376,6 @@ def main():
                 cfg_scale=args.guidance_param,
                 y=y,
                 solver=args.solver,
-                obs_x0=obs_x0,
-                obs_mask=obs_mask,
-                rewriting_mode=args.rewriting_mode,
-                rewriting_stop_t=args.rewriting_stop_t,
             )
 
             future_pred_unnorm = dataset.denormalize(future_pred_norm).squeeze(0)
@@ -433,7 +394,7 @@ def main():
         T_total = all_features_np.shape[0]
 
         # Inverse: 35-dim -> world motion
-        world_pos, root_quat_wxyz, dof_pos = inverse_features_35(
+        world_pos, root_quat_wxyz, dof_pos = inverse_features_63(
             all_features_np, init_yaw=init_yaw, init_xy=init_xy)
 
         # Compute accumulated yaw for analysis plot

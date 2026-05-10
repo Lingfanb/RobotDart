@@ -7,9 +7,9 @@ from dataclasses import asdict
 from pathlib import Path
 import mujoco as mj, imageio, yaml, tyro
 
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from model.mld_vae import AutoMldVae
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.model.legacy.vae import AutoMldVae
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from utils.g1_utils import G1_XML_PATH, G1_NUM_BODY_DOFS
 from utils.misc_util import encode_text
 from mld.train_g1_mvae import Args as G1MVAEArgs

@@ -32,10 +32,10 @@ import tyro
 import yaml
 from tqdm import tqdm
 
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
-from mld.train_g1_fm import G1FMArgs, DenoiserMLPArgs
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from flow_matching.fm_sampler import FMSampler
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.train.legacy.g1 import G1FMArgs, DenoiserMLPArgs
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.flow_matching.sampler import FMSampler
 
 
 @dataclass

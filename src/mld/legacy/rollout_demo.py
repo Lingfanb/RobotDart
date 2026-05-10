@@ -26,8 +26,8 @@ import pyrender
 import trimesh
 import threading
 
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from model.mld_vae import AutoMldVae
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.model.legacy.vae import AutoMldVae
 from data_loaders.humanml.data.dataset import WeightedPrimitiveSequenceDataset, SinglePrimitiveDataset
 from utils.smpl_utils import *
 from utils.misc_util import encode_text, compose_texts_with_and

@@ -12,7 +12,7 @@ Reads the SAME pkl files from mp_data_g1_69/ — conversion happens in __init__.
 No velocity channel, no foot_contact, no dz — just the essentials.
 
 Usage:
-    from data_loaders.humanml.data.dataset_g1_35 import G1PrimitiveDataset35
+    from VADFlowMoGen.data.g1_35 import G1PrimitiveDataset35
     ds = G1PrimitiveDataset35(dataset_path='./data/processed/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/')
 """
 import os

@@ -19,7 +19,7 @@ Differences vs train_g1_mld.py (DDPM in latent space):
 
 Usage:
     cd ~/Gitcode/DART
-    python -m mld.train_g1_fm \
+    python -m VADFlowMoGen.train.legacy.g1 \
         --exp_name g1_fm_v1 \
         --train_args.batch_size 1024 \
         --train_args.use_amp 1 \
@@ -48,9 +48,9 @@ import yaml
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from flow_matching.fm_sampler import FMSampler
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.flow_matching.sampler import FMSampler
 from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
 
 
@@ -61,7 +61,7 @@ class TrainArgs:
     batch_size: int = 1024
     learning_rate: float = 1e-4
     grad_clip: float = 1.0
-    anneal_lr: bool = False
+    anneal_lr: bool = True
     use_amp: int = 1
     ema_decay: float = 0.999
 
@@ -73,19 +73,27 @@ class TrainArgs:
     save_interval: int = 50000
     val_interval: int = 25000
 
-    # Loss weights
+    # Loss weights — smooth_v2 recipe: MSE + boundary + root smoothness.
     weight_x0_rec: float = 1.0
-    weight_dof_vel_cons: float = 0.03
-    weight_joint_limit: float = 0.05   # raised from 0.01 — v3 had 311° violations
-    weight_vel_match_gt: float = 1.0   # NEW: match GT dof velocity distribution
-    weight_acc_match_gt: float = 0.5   # NEW: match GT dof acceleration distribution
-    weight_jerk: float = 0.1           # NEW: 3rd derivative penalty (anti-jitter)
-    weight_freq_high: float = 0.0      # NEW: FFT high-freq power penalty (>freq_cutoff_hz)
-    freq_cutoff_hz: float = 10.0       # NEW: cutoff for high-freq penalty (at 30fps Nyquist=15Hz)
-    data_fps: float = 30.0             # NEW: data framerate for FFT freq computation
+    weight_boundary: float = 0.1       # VA-style velocity continuity at history→future seam
+    weight_root_smooth: float = 1.0    # NEW v2: jerk penalty on root channels (root_rp_trig + yaw_delta + transl_delta_local + root_height) — fixes hidden root_z bobbing
+    weight_dof_vel_cons: float = 0.0
+    weight_joint_limit: float = 0.0
+    weight_vel_match_gt: float = 0.0
+    weight_acc_match_gt: float = 0.0
+    weight_jerk: float = 0.0
+    weight_freq_high: float = 0.0
+    freq_cutoff_hz: float = 10.0
+    data_fps: float = 30.0
 
     max_rollout_prob: float = 1.0      # NEW: cap autoregressive prob (anti-collapse)
     history_noise_std: float = 0.0     # NEW: noise augment on GT history (robustness)
+
+    drop_foot_contact: bool = False    # v3: zero out foot_contact channels (idx 5,6) in
+                                        # both inputs and targets — tests whether predicting
+                                        # the binary foot_contact signal contaminates other
+                                        # channels via attention. Render unaffected (foot_contact
+                                        # is overlay-only, doesn't drive MuJoCo qpos).
 
     resume_checkpoint: str = None
 
@@ -95,11 +103,11 @@ class FMArgs:
     """Flow Matching hyperparameters (training + inference)."""
     num_t_bins: int = 1000   # discretization for TimestepEmbedder
     t_eps: float = 1e-3      # avoid t=0 / t=1 in training
-    inference_steps: int = 1  # default ODE steps at inference (also used for stage 2/3 rollout via sample_single_step)
-    t_sampling: str = 'logit_normal'  # 'uniform' or 'logit_normal' (SD3/Flux-style)
+    inference_steps: int = 10  # default ODE steps at inference (also used for stage 2/3 rollout via sample_single_step)
+    t_sampling: str = 'uniform'  # 'uniform' or 'logit_normal' (SD3/Flux-style)
     logit_normal_mean: float = 0.0
     logit_normal_std: float = 1.0
-    parameterization: str = 'v'  # 'x0' or 'v' (velocity field)
+    parameterization: str = 'x0'  # 'x0' or 'v' (velocity field)
     sigma_min: float = 0.001     # FlowMotion-style background noise
 
 
@@ -261,6 +269,11 @@ class G1FMTrainer:
         # → dof_velocity starts at index 40, length 29
         self.dof_angle_slice = slice(11, 11 + G1_NUM_BODY_DOFS)
         self.dof_velocity_slice = slice(11 + G1_NUM_BODY_DOFS, 11 + 2 * G1_NUM_BODY_DOFS)
+        # Root pose channels (excluding foot_contact which is a binary signal):
+        # root_rp_trig(0:4) + yaw_delta(4) + transl_delta_local(7:10) + root_height(10)
+        # Used for root smoothness loss (jerk penalty), since root channels were
+        # previously unprotected by any smoothness term — caused root_z bobbing.
+        self.root_pose_indices = [0, 1, 2, 3, 4, 7, 8, 9, 10]
 
         self.denoiser_model = denoiser_model
         self.optimizer = optimizer
@@ -276,7 +289,7 @@ class G1FMTrainer:
 
     # ── Loss ─────────────────────────────────────────────────────────────────
 
-    def calc_loss(self, model_out, x0_gt, v_gt, x0_pred):
+    def calc_loss(self, model_out, x0_gt, v_gt, x0_pred, history_motion=None):
         """Compute total loss.
 
         For x0-pred: model_out == x0_pred, primary loss is Huber(x0_pred, x0_gt).
@@ -285,6 +298,7 @@ class G1FMTrainer:
         (already reconstructed by caller in v-pred case).
 
         All inputs are NORMALIZED features. Shapes: (B, T=8, D=69).
+        history_motion: (B, H=2, D=69) normalized — used for boundary loss.
         """
         train_args = self.args.train_args
         dataset = self.train_dataset
@@ -296,6 +310,29 @@ class G1FMTrainer:
         else:
             terms['x0_rec_primary'] = self.rec_criterion(model_out, x0_gt)
             primary_loss = terms['x0_rec_primary']
+
+        # Boundary loss (VA-style): velocity continuity at history → future seam.
+        # Match (pred_future[0] - history[-1]) to (history[-1] - history[-2]),
+        # i.e. extrapolate the history velocity into the first future frame.
+        # Operates on normalized features.
+        if history_motion is not None and history_motion.shape[1] >= 2 and train_args.weight_boundary > 0:
+            hist_delta = history_motion[:, -1] - history_motion[:, -2]
+            pred_delta = x0_pred[:, 0] - history_motion[:, -1]
+            terms['boundary'] = self.rec_criterion(pred_delta, hist_delta)
+        else:
+            terms['boundary'] = torch.tensor(0.0, device=x0_pred.device)
+
+        # Root smoothness (v2): 3rd-derivative penalty on root pose channels in
+        # NORMALIZED feature space. Root_z was bobbing visibly in v1 because
+        # the only constraints (x0 Huber + boundary at seam) leave per-frame
+        # root channels free to oscillate inside each 8-frame primitive.
+        if x0_pred.shape[1] >= 4 and train_args.weight_root_smooth > 0:
+            pred_root = x0_pred[..., self.root_pose_indices]   # (B, T, 9)
+            root_jerk = (pred_root[:, 3:] - 3 * pred_root[:, 2:-1]
+                          + 3 * pred_root[:, 1:-2] - pred_root[:, :-3])
+            terms['root_smooth'] = root_jerk.pow(2).mean()
+        else:
+            terms['root_smooth'] = torch.tensor(0.0, device=x0_pred.device)
 
         # Denormalize for geometric + smoothness losses
         x0_pred_raw = dataset.denormalize(x0_pred)
@@ -344,6 +381,8 @@ class G1FMTrainer:
             terms['freq_high'] = torch.tensor(0.0, device=pred_dof_angle.device)
 
         total = (train_args.weight_x0_rec * primary_loss
+                 + train_args.weight_boundary * terms['boundary']
+                 + train_args.weight_root_smooth * terms['root_smooth']
                  + train_args.weight_dof_vel_cons * terms['dof_vel_cons']
                  + train_args.weight_joint_limit * terms['joint_limit']
                  + train_args.weight_vel_match_gt * terms['vel_match_gt']
@@ -386,12 +425,25 @@ class G1FMTrainer:
 
         # Reshape motion to (B, T, D)
         motion_tensor = motion.squeeze(2).permute(0, 2, 1)
+
+        # v3 (drop_foot_contact): zero foot_contact channels (idx 5,6) in normalized
+        # space. Model never sees a non-zero target for these channels, so it learns
+        # to output 0 there (no signal → no noise leakage to other channels via attention).
+        # Render unaffected since foot_contact is overlay-only in render.
+        train_args_for_mask = self.args.train_args
+        if train_args_for_mask.drop_foot_contact:
+            motion_tensor = motion_tensor.clone()
+            motion_tensor[..., 5:7] = 0.0
+
         future_motion_gt = motion_tensor[:, -future_length:, :]      # (B, 8, 69)
         history_motion_gt = motion_tensor[:, :history_length, :]      # (B, 2, 69)
 
         # History choice: rollout (model output) or GT
         if last_primitive is not None and denoiser_args.train_rollout_history == "rollout":
             history_motion = self.get_rollout_history(last_primitive)
+            if train_args_for_mask.drop_foot_contact:
+                history_motion = history_motion.clone()
+                history_motion[..., 5:7] = 0.0
         else:
             history_motion = history_motion_gt
 
@@ -409,7 +461,7 @@ class G1FMTrainer:
         x_t = self.fm.q_sample(future_motion_gt, t, noise)
 
         # Discretize t for TimestepEmbedder
-        from flow_matching.fm_sampler import _continuous_to_discrete_t
+        from VADFlowMoGen.flow_matching.sampler import _continuous_to_discrete_t
         t_int = _continuous_to_discrete_t(t)
 
         # Denoiser forward: outputs x0_pred or v_pred depending on parameterization
@@ -430,8 +482,10 @@ class G1FMTrainer:
         else:
             x0_pred = model_out
 
-        # Loss
-        loss_dict = self.calc_loss(model_out, future_motion_gt, v_gt, x0_pred)
+        # Loss (pass history for boundary loss; use the actual history fed to model,
+        # which may be GT or rollout depending on stage)
+        loss_dict = self.calc_loss(model_out, future_motion_gt, v_gt, x0_pred,
+                                    history_motion=history_motion)
 
         # Reconstructed x0 used as next-primitive history (free, no extra forward)
         future_motion_pred = x0_pred

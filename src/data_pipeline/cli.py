@@ -237,7 +237,7 @@ def _process_bones(args: argparse.Namespace) -> int:
     print(f"  unique texts (train): {len(unique_texts):,}")
     print(f"  unique styles: {unique_styles}")
     print(f"\n→ Train with:")
-    print(f"    python -m mld.train_g1_fm --exp_name bones_fm_v1 "
+    print(f"    python -m VADFlowMoGen.train.legacy.g1 --exp_name bones_fm_v1 "
           f"--data_dir {out_dir}/")
     return 0
 
@@ -606,7 +606,7 @@ def cmd_label_npz(args: argparse.Namespace) -> int:
     from tqdm import tqdm
     from data_pipeline.vad.regressor_3x3 import compute_vad_3x3
     from data_pipeline.vad.action_taxonomy import (
-        match_class_idx_v2, canonicalize_act_cats, NULL_ACT_CLASS_IDX_V2,
+        classify_segments_v2, canonicalize_act_cats, NULL_ACT_CLASS_IDX_V2,
     )
 
     in_dir = Path(args.input_dir)
@@ -641,21 +641,12 @@ def cmd_label_npz(args: argparse.Namespace) -> int:
             prim_ends = d['primitive_end_frame']
             history_frames = 2   # H
 
-            # ── Segment-level class_idx ──
-            seg_class_idx = []
-            for txt, act_cat in zip(seg_labels, seg_act_cat):
-                txt_str = str(txt)
-                ac_str = str(act_cat)
-                # Use seg text if present; else fall back to act_cat as
-                # content_type_of_movement signal
-                idx = match_class_idx_v2(
-                    segment_label=txt_str,
-                    content_type_of_movement=(
-                        ac_str if not (txt_str and txt_str.strip()) else None
-                    ),
-                    natural_desc_1=None,
-                )
-                seg_class_idx.append(idx)
+            # ── Segment-level class_idx (target-based, transition-aware) ──
+            # See action_taxonomy.classify_segments_v2 for the rules:
+            # transitions inherit their target state's class so that
+            # train/inference are consistent (user inputs target classes only).
+            seg_class_idx = classify_segments_v2(seg_labels, seg_act_cat)
+            for idx in seg_class_idx:
                 if idx == NULL_ACT_CLASS_IDX_V2:
                     null_seg += 1
             total_seg += len(seg_class_idx)

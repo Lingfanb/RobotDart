@@ -24,8 +24,8 @@ import copy
 
 from mld.train_mvae import Args as MVAEArgs
 from mld.train_mvae import DataArgs, TrainArgs
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from model.mld_vae import AutoMldVae
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.model.legacy.vae import AutoMldVae
 from data_loaders.humanml.data.dataset import PrimitiveSequenceDataset, WeightedPrimitiveSequenceDataset, WeightedPrimitiveSequenceDatasetV2
 from data_loaders.humanml.data.dataset_hml3d import HML3dDataset
 from utils.smpl_utils import get_smplx_param_from_6d

@@ -34,13 +34,13 @@ from utils.g1_utils import (
     G1PrimitiveUtility69,
 )
 from utils.misc_util import encode_text
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from mld.train_g1_mld import (
     G1MLDArgs, G1MVAEArgs, DenoiserMLPArgs,
     create_gaussian_diffusion,
 )
-from model.mld_denoiser import DenoiserMLP, DenoiserTransformer
-from model.mld_vae import AutoMldVae
+from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
+from VADFlowMoGen.model.legacy.vae import AutoMldVae
 
 JOINT_GROUPS = {
     'left_leg':  list(range(0, 6)),

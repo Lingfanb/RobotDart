@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from data_loaders.humanml.data.dataset_g1 import G1PrimitiveSequenceDataset
+from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
 from utils.g1_utils import G1_SELECTED_LINKS
 
 
