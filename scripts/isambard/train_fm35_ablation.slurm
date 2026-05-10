@@ -20,7 +20,8 @@ export MUJOCO_GL=egl
 EXP_TAG=${EXP_TAG:?must set EXP_TAG}
 ROOT_SMOOTH=${ROOT_SMOOTH:-1.0}
 BOUNDARY=${BOUNDARY:-0.1}
-DOF_SMOOTH=${DOF_SMOOTH:-0.0}
+# DOF_SMOOTH removed: train_g1_35.py has weight-root-smooth only,
+# weight-dof-smooth is g1_65-only and breaks tyro on g1_35.
 EMA_DECAY=${EMA_DECAY:-0.999}
 S1=${S1:-0}
 S2=${S2:-100}
@@ -31,7 +32,7 @@ cd ~/Gitcode/DART
 
 EXP_NAME="g1_fm_35_${EXP_TAG}"
 echo "===== ${EXP_NAME} started at $(date) on $(hostname) ====="
-echo "  root_smooth=${ROOT_SMOOTH} boundary=${BOUNDARY} dof_smooth=${DOF_SMOOTH} ema_decay=${EMA_DECAY}"
+echo "  root_smooth=${ROOT_SMOOTH} boundary=${BOUNDARY} ema_decay=${EMA_DECAY}"
 echo "  stage = ${S1}/${S2}/${S3}"
 nvidia-smi || true
 
@@ -41,7 +42,6 @@ python -m VADFlowMoGen.train.g1_35 \
   --train-args.batch-size 256 \
   --train-args.weight-root-smooth "${ROOT_SMOOTH}" \
   --train-args.weight-boundary "${BOUNDARY}" \
-  --train-args.weight-dof-smooth "${DOF_SMOOTH}" \
   --train-args.ema-decay "${EMA_DECAY}" \
   --train-args.stage1-steps "${S1}000" \
   --train-args.stage2-steps "${S2}000" \
