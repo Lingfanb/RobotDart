@@ -110,8 +110,13 @@ class FMSampler:
                cfg_scale: float = 1.0,
                y: Optional[dict] = None,
                noise: Optional[torch.Tensor] = None,
-               progress: bool = False) -> torch.Tensor:
-        """Generate samples via Euler ODE.
+               progress: bool = False,
+               solver: str = 'euler',
+               obs_x0: Optional[torch.Tensor] = None,
+               obs_mask: Optional[torch.Tensor] = None,
+               rewriting_mode: str = 'none',
+               rewriting_stop_t: float = 0.2) -> torch.Tensor:
+        """Generate samples via Euler ODE, optionally with MFM-style trajectory rewriting.
 
         For x0-prediction parameterization, the implicit velocity field is
             v(x_t, t) = (x0_pred(x_t, t) - x_t) / (1 - t)
@@ -119,47 +124,121 @@ class FMSampler:
 
         At t=0 we start from pure noise; we integrate to t=1.
 
+        MFM rewriting (when obs_x0 + obs_mask + rewriting_mode != 'none' provided):
+        After each ODE step, the observed positions of x are overwritten so the
+        model sees a "magically clean" history in the next step. The model
+        forward is unchanged — it does NOT receive obs_x0 / obs_mask as input,
+        so this works on any pre-trained denoiser without retraining.
+
+        Modes:
+        - 'hard': x[obs] = obs_x0 every step (every t). Init x = obs*mask + noise*(1-mask).
+        - 'soft': for t < stop_t, x[obs] = (1-t)*noise + t*obs_x0 (FM linear traj
+                  from noise to clean). After stop_t, no overwrite.
+        - 'none' (default): no overwrite, behavior identical to original sampler.
+
         Args:
             model: callable model(x_t, timesteps_int, y) → x0_pred
-                   (timesteps_int is the integer-discretized t for TimestepEmbedder)
             shape: shape of the output, e.g. (B, T, D)
             device: torch device
-            num_steps: ODE step count. 1 = single-step (fastest), larger = more accurate
+            num_steps: ODE step count
             cfg_scale: classifier-free guidance scale (1.0 = no CFG)
-            y: conditioning dict (text_embedding, history_motion_normalized, etc.)
+            y: conditioning dict (text_embedding, etc.)
             noise: optional starting noise, shape = `shape`. If None, sample fresh.
             progress: print step progress
+            solver: 'euler' / 'heun' / 'rk4'
+            obs_x0: (B, T, D) clean values at observed positions (e.g. history)
+            obs_mask: (B, T, D) ∈ [0, 1], 1 = observed, 0 = generate
+            rewriting_mode: 'none' / 'hard' / 'soft'
+            rewriting_stop_t: for 'soft' mode, only blend when t < this
 
         Returns:
             x0: clean sample, shape `shape`
         """
         if noise is None:
             noise = torch.randn(*shape, device=device)
-        x = noise
-        # Euler from t=0 to t=1 in num_steps
-        # We use t values [0, 1/num_steps, 2/num_steps, ..., (num_steps-1)/num_steps]
-        # The dt between consecutive t is 1/num_steps.
+        # Keep initial noise tensor around: 'soft' rewriting blends original
+        # noise toward obs_x0 along the FM linear trajectory.
+        noise_init = noise
+
+        # Init x: 'hard' starts with clean obs in observed slots; otherwise pure noise.
+        if rewriting_mode == 'hard' and obs_x0 is not None and obs_mask is not None:
+            x = obs_x0 * obs_mask + noise_init * (1.0 - obs_mask)
+        else:
+            x = noise_init.clone()
+
+        # Integrate from t=0 to t=1 in num_steps
         dt = 1.0 / num_steps
-        for k in range(num_steps):
-            t_scalar = k * dt
+
+        def _v_at(x_in, t_scalar):
+            """Compute velocity field at (x_in, t_scalar). Model forward unchanged."""
             t = torch.full((shape[0],), t_scalar, device=device, dtype=torch.float32)
             t_int = _continuous_to_discrete_t(t)
-
-            # Forward through model (with optional CFG)
-            model_out = self._forward_with_cfg(model, x, t_int, y, cfg_scale)
-
+            model_out = self._forward_with_cfg(model, x_in, t_int, y, cfg_scale)
             if self.parameterization == 'v':
-                # Model directly predicts the velocity field v = x0 - noise
-                v = model_out
-            else:
-                # x0-prediction: derive implicit velocity v = (x0_pred - x_t) / (1 - t)
-                denom = max(1.0 - t_scalar, self.t_eps)
-                v = (model_out - x) / denom
+                return model_out
+            denom = max(1.0 - t_scalar, self.t_eps)
+            return (model_out - x_in) / denom
 
-            x = x + dt * v
+        def _overwrite(x_curr, t_scalar=0.0):
+            """MFM overwrite at observed positions. No-op if rewriting_mode='none'."""
+            if obs_x0 is None or obs_mask is None or rewriting_mode == 'none':
+                return x_curr
+            if rewriting_mode == 'hard':
+                return obs_x0 * obs_mask + x_curr * (1.0 - obs_mask)
+            elif rewriting_mode == 'soft':
+                if t_scalar < rewriting_stop_t:
+                    target = (1.0 - t_scalar) * noise_init + t_scalar * obs_x0
+                    return obs_mask * target + (1.0 - obs_mask) * x_curr
+                return x_curr
+            else:
+                raise ValueError(f"Unknown rewriting_mode: {rewriting_mode}")
+
+        for k in range(num_steps):
+            t_scalar = k * dt
+
+            if solver == 'euler':
+                # 1-stage: x_{n+1} = x_n + dt * v(x_n, t_n)
+                v = _v_at(x, t_scalar)
+                x = x + dt * v
+
+            elif solver == 'heun':
+                # 2-stage RK2 (improved Euler): predictor + corrector
+                # k1 = v(x_n, t_n);  x_pred = x_n + dt*k1
+                # k2 = v(x_pred, t_n+dt);  x = x_n + dt/2 * (k1+k2)
+                k1 = _v_at(x, t_scalar)
+                x_pred = x + dt * k1
+                # If we'd go past t=1, only use Euler (k2 undefined past horizon)
+                if t_scalar + dt >= 1.0 - self.t_eps:
+                    x = x_pred
+                else:
+                    # MFM: clean predictor's history before computing corrector,
+                    # so k2 sees the same magic-clean history the next step will.
+                    x_pred = _overwrite(x_pred, t_scalar + dt)
+                    k2 = _v_at(x_pred, t_scalar + dt)
+                    x = x + dt * 0.5 * (k1 + k2)
+
+            elif solver == 'rk4':
+                # 4-stage Runge-Kutta — 4 model forwards per step
+                # Uses midpoint and endpoint slopes
+                if t_scalar + dt >= 1.0 - self.t_eps:
+                    # Last step near horizon — fall back to Heun to avoid t>1
+                    k1 = _v_at(x, t_scalar)
+                    x = x + dt * k1
+                else:
+                    k1 = _v_at(x, t_scalar)
+                    k2 = _v_at(_overwrite(x + 0.5 * dt * k1, t_scalar + 0.5 * dt), t_scalar + 0.5 * dt)
+                    k3 = _v_at(_overwrite(x + 0.5 * dt * k2, t_scalar + 0.5 * dt), t_scalar + 0.5 * dt)
+                    k4 = _v_at(_overwrite(x + dt * k3,       t_scalar + dt),       t_scalar + dt)
+                    x = x + dt * (k1 + 2 * k2 + 2 * k3 + k4) / 6.0
+
+            else:
+                raise ValueError(f"Unknown solver: {solver}. Use 'euler', 'heun', or 'rk4'.")
+
+            # End-of-step overwrite (no-op when rewriting_mode='none' → backward compat)
+            x = _overwrite(x, t_scalar + dt)
 
             if progress:
-                print(f"  FM step {k+1}/{num_steps}: t={t_scalar:.3f}")
+                print(f"  FM step {k+1}/{num_steps}: t={t_scalar:.3f} solver={solver}")
 
         return x
 
