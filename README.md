@@ -191,7 +191,7 @@ DART/
 - **Agent context (for Claude/Codex)**: [CLAUDE.md](CLAUDE.md)
 - **Reference cards** (concise, topic-indexed): [docs/knowledge/INDEX.md](docs/knowledge/INDEX.md)
 - **Design docs + analyses**: [docs/notes/](docs/notes/)
-- **Roadmap**: [docs/plan/](docs/plan/)
+- **Roadmap**: ⚠️ being redone 2026-05-21 (old plans archived at `docs/notes/legacy/plan_*`)
 
 ---
 

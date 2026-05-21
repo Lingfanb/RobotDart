@@ -141,7 +141,7 @@ Reason from the action's biomechanics, not from data:
 - YAML row → `configs/aug/action_vad_cards.yaml`
 - Anchor MP4s → `data/verify/action_cards/<action>/` (keep on Lustre on Isambard, symlinked locally)
 - Notes section → add a subsection in this file under `## Per-Action Cards` below
-- Update [docs/plan/short_term.md](../../plan/short_term.md): mark `<action>_card_done` ✅
+- Mark `<action>_card_done` ✅ in the active plan (plan/ dir is being redone 2026-05-21)
 
 ### Step 9. Sanity check augmentation
 

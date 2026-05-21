@@ -6,10 +6,10 @@
 **Last updated**: 2026-04-28
 
 This doc tracks **narrative-level decisions** (title, abstract, claims, framing).
-For task tracking see [`docs/plan/short_term.md`](../../plan/short_term.md). For
-the original 24-week plan see [`paper_plan_nmi.md`](paper_plan_nmi.md) — note
-that plan was written before the **expressive interaction** scope correction
-on 2026-04-28 and is partially superseded by this doc.
+For task tracking, the plan/ dir is being redone 2026-05-21. For the original
+24-week plan see [`paper_plan_nmi.md`](paper_plan_nmi.md) — note that plan was
+written before the **expressive interaction** scope correction on 2026-04-28
+and is partially superseded by this doc.
 
 ---
 

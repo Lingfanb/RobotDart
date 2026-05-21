@@ -14,7 +14,7 @@ VADBridge is a humanoid robot system that delivers **task-coupled nuanced expres
 
 **Abstract:**
 
-Human–human interaction is mediated by nuanced expressive cues — micro-modulations of posture, gesture, voice, and contact dynamics that signal affective intent and shape how an exchange feels. While humanoid robots can now reliably complete instrumental tasks such as locomotion, gesturing, and object handover, they remain affectively flat: the same action is executed identically whether the context calls for warmth, urgency, hesitation, or assertion. We present **VADBridge**, a humanoid robot system that delivers task-coupled nuanced expressive interaction across both **non-physical** (gesture, posture, gaze) and **physical** (handover, contact-mediated exchange) channels of human–robot interaction. At its core is a continuous **valence–arousal–dominance (VAD) latent** — grounded in affective psychology — that conditions a unified flow-matching motion generation model, allowing the same instrumental action to be modulated along three perceptually meaningful dimensions. VADBridge integrates multimodal user-affect perception, VAD-conditioned motion generation on the Unitree G1 humanoid platform, and closed-loop deployment that updates expression to the user's state in real time. In an N=30 user study spanning gesture and handover scenarios, participants distinguished VAD targets at above-chance accuracy and, critically, perceived the same VAD command as conveying coherent affect **across both interaction channels** — the first demonstration of cross-channel affective consistency on a humanoid robot. By unifying expressive control across contact and non-contact interaction, VADBridge moves humanoid robotics from *completing* tasks toward *inhabiting* them with expressive nuance.
+Human–human interaction is mediated by nuanced expressive cues — micro-modulations of posture, gesture, voice, and contact dynamics that signal affective intent and shape how an exchange feels. While humanoid robots can now reliably complete instrumental tasks such as locomotion, gesturing, and object handover, they remain affectively flat: the same action is executed identically whether the context calls for warmth, urgency, hesitation, or assertion. We present **VADBridge**, a humanoid robot system that delivers task-coupled nuanced expressive interaction across both **non-physical** (gesture, posture, gaze) and **physical** (handover, contact-mediated exchange) channels of human–robot interaction. At its core is a continuous **valence–arousal–dominance (VAD) latent** — grounded in affective psychology — that conditions the motion-generation skill (and, by extension, the locomotion and manipulation skills) within a **shared affective latent space**, allowing the same instrumental action to be modulated along three perceptually meaningful dimensions. The conditioning architecture is deliberately **not constrained to a single model**: each VAD dimension may be parameterized as an independent diffusion / flow-matching prior, composed at inference via score addition (Composable Diffusion-style), which lets new affective dimensions be added without retraining a monolithic stack. VADBridge integrates multimodal user-affect perception, VAD-conditioned motion generation on the Unitree G1 humanoid platform, and closed-loop deployment that updates expression to the user's state in real time. In an N=30 user study spanning gesture and handover scenarios, participants distinguished VAD targets at above-chance accuracy and, critically, perceived the same VAD command as conveying coherent affect **across both interaction channels** — the first demonstration of cross-channel affective consistency on a humanoid robot. By unifying expressive control across contact and non-contact interaction, VADBridge moves humanoid robotics from *completing* tasks toward *inhabiting* them with expressive nuance.
 
 **Authorship + RAL relationship:** VADBridge builds on prior in-lab work that established V–A conditioned motion generation on the G1 humanoid [Undergrad et al., RAL 2026, Lingfan = 2nd author]. The NMI paper extends that foundation with (1) the **dominance** dimension, (2) the **physical (handover)** channel, (3) **closed-loop** deployment, (4) the **N=30 cross-channel** user study, and (5) the **3-tier ACP→VAD→skill-bank framework** (see § Architecture). Method comparison lives in §2 / §6 of the paper, **not in abstract / Figure 1**. Senior author: Chengxu Zhou (UCL HRL).
 
@@ -45,34 +45,28 @@ Tier 1 · Fundamental Skill Library
 
 ## Current State (Week 3 of 13)
 
-- **Module dashboard:** [`docs/plan/short_term.md`](docs/plan/short_term.md) — one line per module, status icon
-- **Long-term roadmap:** [`docs/plan/long_term.md`](docs/plan/long_term.md) — 13-week phase plan
+- **Module dashboard / Long-term roadmap:** ⚠️ **being redone 2026-05-21** — old `docs/plan/{short_term,long_term}.md` removed, archived versions at `docs/notes/legacy/plan_*`
 - **Current sprint plan:** `~/.claude/plans/project-lead-agent-zazzy-rose.md` — Story Lock Sprint, 5 phases
 - **Active TODO** (user-maintained, do NOT edit): `LOG_README.md` at repo root
 - **Daily logs:** `logs/YYYY-MM-DD.md` (auto-written by `/log-notion`)
 
 ## Doc Organization
 
-`docs/` follows a 5-dir taxonomy (locked 2026-05-01):
+`docs/` 3-dir taxonomy (re-slimmed 2026-05-21, plan/ + sop/ removed pending rewrite):
 
 | Dir | Role |
 |---|---|
 | [`docs/knowledge/`](docs/knowledge/) | External knowledge — papers, datasets, others' methods, external tools |
 | [`docs/notes/`](docs/notes/) | My output — paper plan / system design / VAD def / experiment analysis / decisions |
-| [`docs/plan/`](docs/plan/) | My plans — long_term + short_term + weekly retros |
-| [`docs/sop/`](docs/sop/) | Execution SOPs — read paper / run experiment / weekly retro / docs organization |
 | `docs/papers/` | Read PDFs |
-
-Full SOP including decision tree "where does X go?" + lifecycle tags + source-of-truth priority: [`docs/sop/docs_organization.md`](docs/sop/docs_organization.md).
 
 ## Cold-start reading order (for any agent picking up this project)
 
 1. This file — strategic framing + architecture
-2. `docs/plan/short_term.md` — what modules are where right now
-3. `docs/notes/paper/paper_plan_nmi.md` — full paper plan, master source-of-truth
-4. `docs/notes/decisions/skill_decoupled_architecture_2026-05-04.md` — architecture details
-5. `LOG_README.md` — current TODO
-6. Most recent `logs/YYYY-MM-DD.md` — what just happened
+2. `docs/notes/paper/paper_plan_nmi.md` — full paper plan, master source-of-truth
+3. `docs/notes/decisions/skill_decoupled_architecture_2026-05-04.md` — architecture details
+4. `LOG_README.md` — current TODO
+5. Most recent `logs/YYYY-MM-DD.md` — what just happened
 
 ## Repo Layout
 
@@ -91,7 +85,7 @@ All Python source under `src/` (editable install via `pyproject.toml`). Imports 
 **Tier 1.2 Motion Gen (VADFlowMoGen, ✅ recipe v2 sf=0.164, the gesture skill):**
 - `src/VADFlowMoGen/train/g1_35.py` — production trainer (35-dim G1 features, flow matching)
 - `src/VADFlowMoGen/render/g1_35.py` — production render (with MFM seam-anchor flags)
-- `src/VADFlowMoGen/flow_matching/sampler.py` — CFG sampler + MFM rewriting (text-only conditioning, **VAD conditioning still TODO** — Exp 34 candidate)
+- `src/VADFlowMoGen/flow_matching/sampler.py` — CFG sampler + MFM rewriting (text-only conditioning, **VAD conditioning still TODO** — Exp 34 candidate, planned as **Composable Diffusion**: 3 independent priors `valence_prior` / `arousal_prior` / `dominance_prior` + existing `action_prior` (text), composed at inference via score addition; mirrors friend's RAL V-A DDIM pattern but on FM)
 - `src/VADFlowMoGen/model/denoiser.py` — transformer denoiser
 - `outputs/checkpoints/mld_denoiser/g1_fm_35_stage_no_s1_s10_s2100_s3140/checkpoint_240000.pt` — current best (sf=0.164 with `--rewriting-mode hard --seam-anchor-frames 2 --rewriting-stop-t 0.0` at render)
 
@@ -222,14 +216,17 @@ Pre-built SLURM scripts in `scripts/isambard/`:
 
 ```bash
 rsync -avz --checksum \
-  --exclude='data' --exclude='outputs' --exclude='third_party' \
+  --exclude='/data' --exclude='/outputs' --exclude='/third_party' \
   --exclude='__pycache__' --exclude='*.pyc' --exclude='*.egg-info' \
   --exclude='.pytest_cache' --exclude='.mypy_cache' --exclude='wandb' \
+  --exclude='.git' --exclude='logs/*.log' \
   ~/Gitcode/DART/ \
   lingfanb.u6ed@u6ed.aip2.isambard:~/Gitcode/DART/
 ```
 
 **Don't sync** `data/`, `outputs/`, `third_party/` — Isambard self-manages those (Lustre symlinks + git submodule).
+
+⚠️ **Use `--exclude='/data'` not `--exclude='data'`** — leading `/` anchors to repo root. Without it, rsync drops ANY dir named `data/` at any depth, including subpackages like `src/VADFlowMoGen/data/` (caught 5/9 evening: that bug silently broke imports on Isambard until re-sync).
 
 ### Engineering gotchas (Isambard-specific, preserve)
 
@@ -276,6 +273,16 @@ data/ → DATASETS/PROCESSED_DATASET/DART_DATA (symlink)
 - **Local logs:** `logs/YYYY-MM-DD.md` — daily work logs (auto-written by `/log-notion`)
 - **Notion Experiments DB:** `3382d672-a3d2-8194-8bb8-d5810a56257f` (VA_MoGen project, auto-synced)
 - **TODO tracker:** `LOG_README.md` at repo root — user-maintained only, do NOT edit from skills
+
+## Output Delivery Rules
+
+**Video / image / render output links (MP4, PNG, JPG, PDF, GIF, WAV):** ALWAYS link to the containing **folder**, NEVER to individual files. User's VSCode native-extension environment cannot open direct file links — folder links open OS file explorer for preview. If multiple files in the folder, list their names in prose, not as separate links.
+
+- ✅ `[data/motion_lib/dataset_qa/BMLmovi/grids/](data/motion_lib/dataset_qa/BMLmovi/grids/)` — folder contains `grid_001.mp4`, `grid_002.mp4`, ...
+- ❌ `[grid_001.mp4](data/motion_lib/dataset_qa/BMLmovi/grids/grid_001.mp4)` — file link, won't open
+- ❌ Multiple per-file links in one response — folder once is enough
+
+Text / code / markdown (`.py`, `.md`, `.yaml`, `.txt`): direct file links are fine — they open in editor.
 
 ## Markdown Style Rules (Lark / 飞书 friendly)
 
