@@ -22,14 +22,14 @@
 | [feature_69d.md](representations/feature_69d.md) | ✅ stable | TextOp 69-d 布局 |
 | [quaternion_conventions.md](representations/quaternion_conventions.md) | ✅ stable | ⚠️ wxyz/xyzw 踩坑记录 |
 | [g1_anatomy.md](representations/g1_anatomy.md) | 📝 draft | G1 29-DOF 拓扑 + mirror map |
-| [vad_definition.md](representations/vad_definition.md) | 📝 draft | PAD 理论 + 8 octant — **空骨架,外部理论卡占位**;OUR full def 见 [`notes/vad/vad_definition.md`](../notes/vad/vad_definition.md) |
+| [vad_definition.md](representations/vad_definition.md) | ✅ stable v1 | **LIVE source of truth** · Mehrabian PAD + 9-indicator formulas + 8 octant · locked for NMI 2026-05-09 |
 
 ## ⚙️ Methods
 
 | 卡片 | 状态 | 核心信息 |
 |---|---|---|
 | [affect_feature_inventory.md](methods/affect_feature_inventory.md) | ✅ stable | 40+ feature 清单（Karg 2013 综述）+ Tier 分级 |
-| [vad_indicators_9.md](methods/vad_indicators_9.md) | ✅ stable | 最终选定的 9 个指标 · LaTeX 公式 + 参数表 |
+| [vad_indicators_definition.md](methods/vad_indicators_definition.md) | ✅ stable | 9-indicator · LaTeX 公式 + 参数表（取代旧 `vad_indicators_9.md`，已归档至 `notes/legacy/`） |
 | [primitive_schema_v2.md](methods/primitive_schema_v2.md) | ✅ stable | NPZ-per-clip schema · BONES+BABEL 统一训练数据合约 |
 | [flow_matching.md](methods/flow_matching.md) | 📝 draft | FM 基础 + v7 recipe |
 | [kinematic_vad.md](methods/kinematic_vad.md) | 📝 draft | 13 feature → VAD 规则 |

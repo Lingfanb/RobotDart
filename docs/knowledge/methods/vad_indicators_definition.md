@@ -1,7 +1,7 @@
 ---
 title: VAD Indicators · Definition (dataset-agnostic)
 tags: [vad, indicator, definition, formula, theory]
-related: [vad_indicators_9.md, affect_feature_inventory.md, ../representations/vad_definition.md]
+related: [affect_feature_inventory.md, ../representations/vad_definition.md]
 last_updated: 2026-04-24
 status: stable
 ---
@@ -366,16 +366,19 @@ $$
 \begin{aligned}
 V &= 0.40\,\tilde\phi + 0.35\,\tilde\kappa + 0.25\,\tilde u \\[3pt]
 A &= 0.40\,\tilde{\bar s} + 0.35\,\tilde J + 0.25\,\tilde a_{\max} \\[3pt]
-D &= 0.40\,\tilde r + 0.35\,\tilde v_{\text{fwd}} + 0.25\,\tilde\delta
+D &= 0.40\,\tilde v_{\text{fwd}} + 0.40\,\tilde r + 0.20\,\tilde\delta
 \end{aligned}
 $$
 
 每行权重之和为 1，确保 $V, A, D \in [-1, +1]$ 无需额外 clip。
 
-**权重依据**（纯先验，未 fit）：
-- V: $\phi$（流畅）> $\kappa$（展开）> $u$（挺拔），因为 flow 在 Laban 里是 V 的主轴，挺拔度是强但二元的信号
-- A: 三者权重接近，speed 略大（Karg 综述建议）
-- D: $r$（前伸）> $v_{\text{fwd}}$（前进）> $\delta$（直达）。Reach 是最直接的"manipulation intent"信号；forward_approach 是"locomotion approach"；directness 是几何细化
+**权重依据**（v1.2，2026-05-09 corrected）：
+- V: $\phi$（流畅）> $\kappa$（展开）> $u$（挺拔）。Flow 在 Laban 里是 V 的主轴；contraction 跟 uprightness 是补充。
+- A: 三者权重接近，speed 略大（Karg 综述建议）。
+- D: $r$（前伸）= $v_{\text{fwd}}$（前进）> $\delta$（直达）。**v1.2 设计**：reach 跟 forward 同权重 0.40 — paper 跨 channel 故事里 gesture 场景 D 信号靠 reach (handover give/take), locomotion 场景靠 forward (approach), 各自有强 anchor。$\delta$ directness 是 Laban Space-Direct 修饰量 (committed direction), 权重小。
+- D 的设计原则 (v1.2): **pure outward-action** — 三个 sub-signal 全部 direction-bearing (point at target)。静态 expansion (openness) 留给 V (Wallbott 1998 PCA finding); kinetic energy 留给 A (Laban Weight ≠ Mehrabian Dominance per 文献映射)。
+
+**实测 V/D 正交性** (BONES 10k sample, 2026-05-09 audit): V-D Pearson r = +0.052 ≈ 0 ✓ — design 上的 V/D disjoint 已经在数据上验证。
 
 ---
 

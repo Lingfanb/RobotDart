@@ -106,7 +106,7 @@ Plus: object pose input (external RealSense) → M7 handover module
 - [ ] 0.3 Affective robotics (EMOTE, BEAT, Kismet lineage)
 - [ ] 0.4 Multimodal emotion recognition (MELD, IEMOCAP, SEMAINE)
 - [ ] 0.5 **Recruit psychology co-author** (critical path — cannot do NMI user study without)
-- [ ] 0.6 Draft `notes/vad/vad_definition.md` with psych co-author review
+- [x] 0.6 Draft VAD definition (now LIVE at `docs/knowledge/representations/vad_definition.md`, v1 locked 2026-05-09; psych co-author review still pending)
 
 ### M1. VAD Motion Generation (Weeks 1-5, parallel)
 - M1A FM baseline lock (in progress, await v6)
@@ -355,8 +355,8 @@ Week 13 (7/13-7/19):  Final polish + proofread
 - [ ] v6 FM training eval finished, recipe locked (M1A done)
 
 **Parallel foundation work**:
-- [ ] `notes/vad/vad_definition.md` drafted (Mehrabian PAD + SAM scale + kinematic mapping)
-- [ ] `notes/architecture/handover_scope.md` drafted (6-8 object list + 3 MVP scenario scripts + VAD target values)
+- [x] VAD definition drafted at `docs/knowledge/representations/vad_definition.md` (Mehrabian PAD + 9-indicator + 8 octant, v1 locked 2026-05-09)
+- [ ] Handover scope drafted (6-8 object list + 3 MVP scenario scripts + VAD target values) — old draft at `docs/notes/legacy/handover_scope_2026-04.md`, new lives in `docs/notes/architecture/manip_goal.md`
 - [ ] M0 literature agent launched (parallel background, 3-5 papers per subtopic)
 - [ ] M2A modality decision confirmed (default: audio + text, drop visual for MVP)
 

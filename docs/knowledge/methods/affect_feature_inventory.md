@@ -1,7 +1,7 @@
 ---
 title: Affect-Expressive Motion Feature Inventory (Karg et al. 2013 + others)
 tags: [vad, kinematic, feature, survey, reference]
-related: [vad_augmentation.md, kinematic_vad.md, ../representations/vad_definition.md]
+related: [../../notes/vad/vad_augmentation_v2_framework_2026-05-20.md, kinematic_vad.md, ../representations/vad_definition.md]
 last_updated: 2026-04-23
 status: stable
 ---

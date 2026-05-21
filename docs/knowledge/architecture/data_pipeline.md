@@ -1,7 +1,7 @@
 ---
 title: Data Pipeline Architecture (T1-T4 + Format Parsers)
 tags: [pipeline, architecture, data]
-related: [../datasets/bones_seed.md, ../methods/vad_augmentation.md]
+related: [../datasets/bones_seed.md, ../../notes/vad/vad_augmentation_v2_framework_2026-05-20.md]
 last_updated: 2026-04-23
 status: stable
 ---
@@ -114,7 +114,7 @@ VAD_final (3,)
 
 ### T3 · VAD 增广
 
-见 [vad_augmentation.md](../methods/vad_augmentation.md)。10 个 atomic op，anchor-based。
+见 [vad_augmentation_v2_framework_2026-05-20.md](../../notes/vad/vad_augmentation_v2_framework_2026-05-20.md)。5-primitive composable axes，anchor-based（取代旧 10-op 草案，已归档至 `docs/notes/legacy/vad_augmentation_2026-04-24.md`）。
 
 ### T4 · Retarget
 

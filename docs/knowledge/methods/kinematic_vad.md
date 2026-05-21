@@ -1,7 +1,7 @@
 ---
 title: Kinematic VAD Regressor (Rules-Based)
 tags: [vad, kinematic, regressor, method]
-related: [../representations/vad_definition.md, ../methods/vad_augmentation.md]
+related: [../representations/vad_definition.md, ../../notes/vad/vad_augmentation_v2_framework_2026-05-20.md]
 last_updated: 2026-04-23
 status: draft
 ---

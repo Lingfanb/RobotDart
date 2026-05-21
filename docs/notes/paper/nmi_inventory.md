@@ -74,7 +74,7 @@
 **HAVE**: Paper plan with PAD references.
 
 **GAP**:
-- ❌ `notes/vad/vad_definition.md` formal doc (Mehrabian PAD + SAM + kinematic mapping rules) (~0.5 day)
+- ✅ VAD formal doc done — `docs/knowledge/representations/vad_definition.md` (Mehrabian PAD + 9-indicator + 8 octant, v1 locked 2026-05-09)
 - ❌ `data_scripts/segment_vad_primitives.py` (BABEL label → primitive segments) (~1 day)
 - ❌ `data_scripts/annotate_vad_llm.py` (GPT-4 API batch over BABEL text → VAD triple) (~1 day + API cost)
 - ❌ `utils/va_kinematic.py` (speed/energy/jerk/amp → Arousal; posture openness → Dominance; symmetry → Valence) (~1.5 days)

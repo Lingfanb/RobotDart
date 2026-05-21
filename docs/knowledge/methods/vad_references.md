@@ -1,7 +1,7 @@
 ---
 title: VAD Indicators — Literature Support Audit
 tags: [vad, reference, citation, audit]
-related: [vad_indicators_definition.md, affect_features.yaml]
+related: [vad_indicators_definition.md, ../../../src/data_pipeline/vad/affect_features.yaml]
 last_updated: 2026-04-24
 status: stable
 ---
