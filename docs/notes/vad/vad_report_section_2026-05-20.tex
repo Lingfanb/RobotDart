@@ -1,0 +1,435 @@
+% =============================================================================
+%  VADBridge — Report Section
+%  Covers: (1) VAD definition + math, (2) kinematic VAD computation,
+%          (3) data augmentation framework.
+%  Author: Lingfan Bao   Date: 2026-05-20
+%  Drop-in: requires amsmath, amssymb, booktabs, siunitx.
+% =============================================================================
+
+\section{Affective Representation: Valence--Arousal--Dominance}
+\label{sec:vad}
+
+\subsection{Definition}
+\label{sec:vad-def}
+
+VADBridge represents the affective style of any motion primitive as a continuous
+three--dimensional latent
+\begin{equation}
+  \mathrm{VAD} \;=\; (V,\,A,\,D) \;\in\; [-1,+1]^3,
+  \label{eq:vad-range}
+\end{equation}
+directly anchored in Mehrabian's PAD framework~\cite{mehrabian1996pad} and
+Russell's circumplex model~\cite{russell1980circumplex}. Each axis encodes a
+perceptually meaningful, psychologically grounded modulation of body movement:
+
+\begin{description}
+  \item[\textbf{Valence} ($V$)] -- the ``good--bad'' polarity of an action.
+    $V>0$: pleasant / approach. $V<0$: unpleasant / withdrawal.
+    
+    Bodily correlates: \emph{flow} vs. jerkiness (Laban Effort\,\textperiodcentered\,Flow),
+    \emph{expansion} vs. contraction (Camurri contraction index~\cite{camurri2003recognizing}),
+    and \emph{spine uprightness}~\cite{boone2001children}.
+  \item[\textbf{Arousal} ($A$)] -- the ``activation--rest'' intensity.
+    $A>0$: tense / energetic. $A<0$: calm / relaxed.
+    Bodily correlates: \emph{speed} (the most reliable affect cue per
+    Karg~\textit{et~al.}~\cite{karg2013body}), \emph{jerk}, and
+    \emph{acceleration peak} (Laban Weight).
+  \item[\textbf{Dominance} ($D$)] -- the ``active--passive'' engagement with
+    a target. $D>0$: assertive / target--directed. $D<0$: hesitant / withdrawn.
+    In VADBridge we deliberately depart from the traditional \emph{static
+    expansion} framing (which collapses with $V$
+    per Wallbott's PCA~\cite{wallbott1998bodily}) and define $D$ as
+    \emph{outward action}: forward approach
+    (Hall's proxemics~\cite{hall1966hidden}), reach extension
+    (Ekman \& Friesen~\cite{ekman1972hand}), and path directness
+    (Laban Space~\cite{laban1947effort}).
+\end{description}
+
+\paragraph{Numerical conventions.}
+A neutral band $|x|<0.15$ is treated as noise floor; $|x|>0.5$ counts as
+strong expression. The bounded range $[-1,+1]$ is enforced \emph{by
+construction} via $\tanh$ squashing followed by convex weighted sums
+(\S\ref{sec:vad-compute}), eliminating the need for ad--hoc clipping.
+
+\paragraph{Octant structure.}
+Binarising each axis yields $2^3=8$ octants. Following
+Mehrabian~\cite{mehrabian1996pad}, each octant has a prototypical affect
+descriptor (e.g.\ $(+,+,+)$ = exuberant; $(-,-,-)$ = bored;
+$(-,+,+)$ = hostile). Existing motion datasets (BABEL, BONES, AMASS)
+cluster in the docile octant $(+,-,-)$; the augmentation framework of
+\S\ref{sec:vad-aug} explicitly targets the remaining seven.
+
+\subsection{Mathematical formulation}
+\label{sec:vad-math}
+
+The VAD vector is computed from a motion primitive
+$\mathbf{m}\in\mathbb{R}^{T\times 36}$ (root pose + 29 DOFs) by a
+\emph{closed--form, rule--based regressor} $\mathcal{R}: \mathbf{m}\!\mapsto\!
+(V,A,D)$, without any learned parameters. The pipeline is hierarchical:
+\begin{equation}
+  \underbrace{\mathbf{m}}_{T\times 36}\;\xrightarrow{\text{FK + canon.}}\;
+  \underbrace{\mathbf{f}}_{T\times 69}\;\xrightarrow{\text{Eqs.\,\ref{eq:phi}--\ref{eq:delta}}}\;
+  \underbrace{\boldsymbol{\iota}\in\mathbb{R}^{9}}_{\text{indicators}}\;\xrightarrow{\tanh\text{-squash}}\;
+  \tilde{\boldsymbol{\iota}}\;\xrightarrow{\text{Eq.\,\ref{eq:vad-fusion}}}\;
+  (V,A,D).
+  \label{eq:pipeline}
+\end{equation}
+The nine indicators (three per axis) are detailed in
+\S\ref{sec:vad-compute}; the fusion step is
+\begin{equation}
+  \boxed{\;
+  \begin{aligned}
+    V &= 0.40\,\tilde{\phi} + 0.35\,\tilde{\kappa} + 0.25\,\tilde{u},\\[2pt]
+    A &= 0.40\,\tilde{\bar s} + 0.35\,\tilde{J} + 0.25\,\tilde{a}_{\max},\\[2pt]
+    D &= 0.40\,\tilde{v}_{\text{fwd}} + 0.40\,\tilde{r} + 0.20\,\tilde{\delta},
+  \end{aligned}\;}
+  \label{eq:vad-fusion}
+\end{equation}
+where row weights sum to $1$, so $V,A,D\in[-1,+1]$ automatically. The
+$\tilde{\,\cdot\,}$ denotes the per--indicator squash
+\begin{equation}
+  \tilde{f}_i \;=\; \tanh\!\left(\frac{f_i - \mu_i}{\sigma_i}\right),
+  \label{eq:tanh-squash}
+\end{equation}
+with $(\mu_i,\sigma_i)$ calibrated per action class on BABEL+BONES
+(median / IQR estimator) -- the only dataset--dependent parameters in the
+regressor.
+
+\medskip
+
+% =============================================================================
+\section{Kinematic VAD Computation}
+\label{sec:vad-compute}
+
+The nine indicators are intentionally simple, deterministic functionals of
+the motion features so the regressor stays gradient--safe (for use as a
+differentiable target in the augmentation pipeline) and reproducible
+across datasets.
+
+\paragraph{Notation.}
+$q_t\in\mathbb{R}^{29}$ are joint angles at frame $t$,
+$\dot q_t = q_{t+1}-q_t$ the per--frame differences (rad/frame),
+$\Delta p_t\in\mathbb{R}^3$ the root translation in character (yaw--aligned)
+frame, $x^{\text{loc}}_{t,j}\in\mathbb{R}^3$ the pelvis--local position of
+link $j$ (via forward kinematics on the G1 URDF). $T=10$ at $30\,$Hz unless
+stated.
+
+\subsection{Valence indicators}
+
+\paragraph{V1 -- Relative smoothness $\phi$.}
+\begin{equation}
+  \phi \;=\; \mathbb{1}\!\left[\bar s > s_0\right]\,\Bigl(1 - \operatorname{clip}\bigl(J/(\bar s+\varepsilon),0,1\bigr)\Bigr),
+  \label{eq:phi}
+\end{equation}
+where the motion gate $s_0\!=\!0.02$ rad/frame prevents a frozen pose from
+appearing maximally smooth. Captures Laban Effort\,\textperiodcentered\,Flow.
+
+\paragraph{V2 -- Body contraction / expansion $\kappa$.}
+\begin{equation}
+  \kappa \;=\; \frac{1}{T\,J}\sum_{t=1}^{T}\sum_{j=1}^{J}\bigl\|x^{\text{loc}}_{t,j}\bigr\|_2.
+  \label{eq:kappa}
+\end{equation}
+Mean pelvis--local link distance; the classical Camurri contraction
+index~\cite{camurri2003recognizing}. Higher $\kappa$ $\Rightarrow$
+positive valence.
+
+\paragraph{V3 -- Spine uprightness $u$.}
+\begin{equation}
+  u \;=\; 1 - \frac{1}{T}\sum_{t=1}^{T}\max\!\bigl(0,-\sin(\text{pitch}_t)\bigr).
+  \label{eq:u}
+\end{equation}
+Asymmetric: only \emph{forward} lean penalises $u$; backward tilt and
+upright both saturate at $u=1$. Anchors Boone~\&~Cunningham's
+forward--lean$\,\leftrightarrow\,$sadness finding~\cite{boone2001children}.
+
+\subsection{Arousal indicators}
+
+\paragraph{A1 -- Mean speed $\bar s$.}
+\begin{equation}
+  \bar s \;=\; \frac{1}{29\,T}\sum_{t=1}^{T}\sum_{j=1}^{29}\bigl|\dot q_{t,j}\bigr|.
+  \label{eq:speed}
+\end{equation}
+
+\paragraph{A2 -- Jerk (L1 third difference) $J$.}
+\begin{equation}
+  J \;=\; \frac{1}{29\,(T-3)}\sum_{t=1}^{T-3}\sum_{j=1}^{29}\bigl|q_{t+3,j}-3q_{t+2,j}+3q_{t+1,j}-q_{t,j}\bigr|.
+  \label{eq:jerk}
+\end{equation}
+$L_1$ over $L_2$ for outlier robustness.
+
+\paragraph{A3 -- Acceleration peak $a_{\max}$.}
+\begin{equation}
+  a_{\max} \;=\; \max_{t,\,j}\bigl|q_{t+2,j}-2q_{t+1,j}+q_{t,j}\bigr|.
+  \label{eq:accmax}
+\end{equation}
+A \emph{peak} (not mean) captures Laban Weight's ``moments of effort''.
+
+\subsection{Dominance indicators}
+
+\paragraph{D1 -- Reach extension $r$.}
+\begin{equation}
+  r \;=\; \frac{1}{T}\sum_{t=1}^{T}\max\!\left(0,\;\tfrac{1}{2}\bigl(x^{\text{loc}}_{t,\text{L-wrist},\text{fwd}}+x^{\text{loc}}_{t,\text{R-wrist},\text{fwd}}\bigr)\right).
+  \label{eq:reach}
+\end{equation}
+Bilateral wrist forward--projection, clipped at zero (pulling hands behind
+the torso does not count as reaching).
+
+\paragraph{D2 -- Forward approach $v_{\text{fwd}}$.}
+\begin{equation}
+  v_{\text{fwd}} \;=\; \frac{1}{T}\sum_{t=1}^{T}\Delta p^{\text{local}}_{t,\text{fwd}}.
+  \label{eq:vfwd}
+\end{equation}
+Signed: backwards motion yields $-D$ contribution (withdrawal).
+
+\paragraph{D3 -- Directness $\delta$.}
+\begin{equation}
+  \delta \;=\; \frac{\bigl\|\sum_{t}\Delta p_t\bigr\|_2}{\sum_{t}\bigl\|\Delta p_t\bigr\|_2+\varepsilon}.
+  \label{eq:delta}
+\end{equation}
+Net displacement / path length; the canonical geometric directness
+measure (Laban Space~\cite{laban1947effort}). $\delta\!=\!1$ for a
+straight trajectory, $\delta\!\to\!0$ for pure milling.
+
+\paragraph{V/D orthogonality.}
+Empirical Pearson correlation on a $10$k--clip BONES sample yields
+$r(V,D) = 0.052$, confirming that the V--D disjointness designed into
+the indicator partition (shape signals for $V$, direction signals for
+$D$) holds in data.
+
+\medskip
+
+\begin{table}[t]
+  \centering\small
+  \begin{tabular}{@{}lllrlc@{}}
+    \toprule
+    Sym. & Axis & Indicator & Range & Unit & FK? \\
+    \midrule
+    $\phi$       & V & Relative smoothness  & $[0,1]$            & --              & \\
+    $\kappa$     & V & Body contraction     & $[0.15, 0.50]$     & m               & \checkmark \\
+    $u$          & V & Spine uprightness    & $[0,1]$            & --              & \\
+    $\bar s$     & A & Mean speed           & $[0, 0.3]$         & rad/fr.         & \\
+    $J$          & A & Jerk ($L_1$)         & $[0, 0.2]$         & rad/fr.$^3$     & \\
+    $a_{\max}$   & A & Acceleration peak    & $[0, 0.5]$         & rad/fr.$^2$     & \\
+    $r$          & D & Reach extension      & $[0, 0.55]$        & m               & \checkmark \\
+    $v_{\text{fwd}}$ & D & Forward approach & $[-0.02,+0.05]$    & m/fr.           & \\
+    $\delta$     & D & Directness           & $[0, 1]$           & --              & \\
+    \bottomrule
+  \end{tabular}
+  \caption{The nine kinematic indicators. Seven derive directly from the
+           $69$--d motion feature slice; only $\kappa$ and $r$ require a
+           single shared FK call.}
+  \label{tab:vad-indicators}
+\end{table}
+
+% =============================================================================
+\section{VAD--Driven Motion Augmentation}
+\label{sec:vad-aug}
+
+Because real motion-capture datasets cluster tightly in the neutral / docile
+octant of VAD space, learning a VAD--conditioned generator from raw data
+alone leaves the extreme octants under--supported. We address this with an
+\emph{optimisation--based augmentation} framework operating directly on the
+G1 $29$--DOF representation: each affective axis is associated with a
+dedicated kinematic \emph{primitive} that perturbs a small, disjoint subset
+of degrees of freedom in a way that moves one specific VAD indicator while
+leaving the others approximately invariant.
+
+\subsection{Framework}
+
+A seed clip $\mathbf{m}_0 = (q_0,\,p_0,\,Q_0)$ (joint angles, root position,
+root quaternion) is augmented by composing $K=5$ primitives, each driven
+by a scalar parameter $k$:
+\begin{equation}
+  \mathbf{m}_{\text{aug}}
+  \;=\; \mathcal{P}_{\text{lean}}\!\bigl(k_{\text{lean}}\bigr)\circ
+        \mathcal{P}_{\text{speed}}\!\bigl(k_{A}\bigr)\circ
+        \mathcal{P}_{\text{open}}\!\bigl(k_{\text{open}}\bigr)\circ
+        \mathcal{P}_{\text{squat}}\!\bigl(k_{\text{sq}}\bigr)\circ
+        \mathcal{P}_{\text{amp}}\!\bigl(k_{V}\bigr)\!\bigl(\mathbf{m}_0\bigr).
+  \label{eq:aug-compose}
+\end{equation}
+Because the primitives act on disjoint DOF subsets
+(Tab.~\ref{tab:aug-primitives}), the composition is approximately
+commutative and a $5$--axis Latin Hypercube sampler can sweep the
+$(k_V,k_{\text{sq}},k_{\text{open}},k_A,k_{\text{lean}})$ hyper--cube to
+fill the entire VAD octant grid.
+
+\begin{table}[t]
+  \centering\small
+  \begin{tabular}{@{}clllc@{}}
+    \toprule
+    Opt & Parameter & Target indicator & Active DOFs / state & Range \\
+    \midrule
+    1 & $k_V$            & $V_1$ amplitude (motion ext.)      & $17$ subclass-active joints      & $[0.25,3.0]$ \\
+    2 & $k_{\text{sq}}$  & $V_2$ root height (contraction)    & knees$\times 2$ + 2-DOF foot IK  & $[0,2.2]$ rad \\
+    3 & $k_{\text{open}}$& $V_3$ body openness                 & shoulder roll $\times 2$         & $[-1.5,+1.5]$ \\
+    4 & $k_A$            & $A$ energy / speed                  & temporal resample (no DOF)        & $[0.30,3.0]$ \\
+    5 & $k_{\text{lean}}$& $D_2$ forward lean (root pitch)     & root quat + ankles + waist       & $[-1.5,+1.5]$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{The five composable augmentation primitives. Disjoint DOF
+           supports ensure orthogonality.}
+  \label{tab:aug-primitives}
+\end{table}
+
+\subsection{Phase segmentation}
+
+Each gesture--type seed is segmented into preparation / stroke / retraction
+intervals $[0,t_{\text{I}})$, $[t_{\text{I}},t_{\text{III}})$,
+$[t_{\text{III}},T)$ using \emph{end--effector positional deviation}
+\begin{equation}
+  t_{\text{I}}    = \min\!\left\{t:\;\|x^{\text{ee}}_t-x^{\text{ee}}_0\|_2 \geq \tau\,\max_{\tau'}\|x^{\text{ee}}_{\tau'}-x^{\text{ee}}_0\|_2\right\},
+  \quad \tau=0.5,
+  \label{eq:phase-seg}
+\end{equation}
+with $t_{\text{III}}$ defined symmetrically from the end. An earlier
+velocity--based segmentation was rejected because rapid pre--stroke
+``cocking'' is dynamically indistinguishable from the stroke itself.
+The schedule $k_{\text{eff}}(t)$ applied to each primitive is a cosine
+smoothstep \emph{inside} the stroke,
+\begin{equation}
+  k_{\text{eff}}(t)
+  = 1 + (k-1)\cdot
+  \begin{cases}
+    0 & t<t_{\text{I}},\\[2pt]
+    \tfrac{1}{2}\!\left[1-\cos\!\bigl(\pi\,\frac{t-t_{\text{I}}}{\Delta}\bigr)\right] & t_{\text{I}}\!\le\!t<t_{\text{I}}\!+\!\Delta,\\[2pt]
+    1 & t_{\text{I}}\!+\!\Delta\!\le\!t\le t_{\text{III}}\!-\!\Delta,\\[2pt]
+    \tfrac{1}{2}\!\left[1+\cos\!\bigl(\pi\,\frac{t-(t_{\text{III}}\!-\!\Delta)}{\Delta}\bigr)\right] & t_{\text{III}}\!-\!\Delta\!\le\!t<t_{\text{III}},\\[2pt]
+    0 & t\ge t_{\text{III}},
+  \end{cases}
+  \label{eq:ramp}
+\end{equation}
+with $\Delta\!=\!15$ frames ($0.5\,$s at $30\,$Hz). Cosine smoothstep
+yields $C^1$ continuity at the phase boundaries (zero slope at the joins),
+eliminating the visible kinks that a linear ramp produced.
+
+\subsection{Primitive 1 -- Amplitude scaling ($V_0$)}
+
+Joint trajectories are stretched about a reference $\boldsymbol\mu(t)$:
+\begin{equation}
+  q_{\text{aug}}(t) \;=\; \boldsymbol\mu(t) + k_{\text{eff}}(t)\bigl(q(t)-\boldsymbol\mu(t)\bigr).
+  \label{eq:p1}
+\end{equation}
+$\boldsymbol\mu$ is subclass--dependent: \texttt{first\_frame} for
+single--stroke / held gestures, and an anchor--interpolated trajectory for
+periodic gestures (so that contact anchors -- e.g.\ the apex of a wave --
+are not flattened). DOFs are clipped via a head--room--aware projection
+$q_{\text{aug}}\!\leftarrow\!q + \alpha\Delta q$ with
+$\alpha\in[0,0.95]$ keeping anatomical limits.
+
+\subsection{Primitive 2 -- Squat ($V_1$)}
+
+Knees flex by $k_{\text{sq}}$ (with per--seed sign probe so a seed already
+squatting deepens rather than reverses); a forward--kinematics pass then
+solves a per--frame $2$--DOF inverse--kinematics problem on
+$(\text{hip\_pitch},\,\text{hip\_roll})$ to anchor each foot at its seed
+$xy$ position and the ground--plane $z$, eliminating foot--slide. An
+auto--cap per seed
+$k^{\star}_{\text{sq}}=\max\{k:\text{slide}<2\,\text{cm}\}$ is applied
+before the LHS sweep.
+
+\subsection{Primitive 3 -- Openness ($V_2$)}
+
+Two paths conditioned on gesture subclass:
+\begin{itemize}
+  \item[\textbullet] \textbf{Locked--wrist (periodic / contact, $A_1/A_2/D$).}
+    The elbow is constrained to the analytic
+    \emph{swivel circle}
+    $\mathcal{C}(S,W;a,b)=\{C+r(\cos\theta\,\hat{u}+\sin\theta\,\hat{v})\}$
+    with
+    \[
+      C = S + \tfrac{a^2-b^2+d^2}{2d}\,(W-S)/d,\quad
+      r = \sqrt{a^2 - \left(\tfrac{a^2-b^2+d^2}{2d}\right)^2},
+    \]
+    and a $6$--equation damped pseudo--inverse IK
+    (elbow xyz $+$ wrist xyz, wrist weight $5\times$) drives the elbow's
+    lateral coordinate to $E_y \;=\; E_y^{\text{seed}} + k_{\text{open}}\,\Delta$.
+    Frames with $d/(a+b)>0.95$ (degenerate swivel circle) are skipped.
+  \item[\textbullet] \textbf{Free--wrist (single--stroke / held, $B/C$).}
+    A probe step measures
+    $s_L\!=\!\partial E_y/\partial\theta_{\text{roll}}^{L}$;
+    the shoulder roll is then perturbed by
+    $\Delta\theta_{\text{roll}}^{L,R}=\operatorname{sgn}(s)\,k_{\text{eff}}\,\rho$
+    with fixed scale $\rho=0.25$ rad. Contract / open asymmetry
+    ($1.5\times$ stronger contract) corrects a perceptual bias observed
+    in user inspection.
+\end{itemize}
+
+\subsection{Primitive 4 -- Speed ($A$)}
+
+Pure temporal resample:
+\begin{equation}
+  \mathbf{m}_{\text{aug}}[i]
+  \;=\; \operatorname{lerp}\!\bigl(\mathbf{m}[\lfloor i/k_A\rfloor],\,\mathbf{m}[\lfloor i/k_A\rfloor + 1],\,\alpha_i\bigr),
+  \qquad T_{\text{out}}=\lceil T\,k_A\rceil.
+  \label{eq:p4}
+\end{equation}
+$k_A<1$ shortens the clip (higher per--frame $\dot q$, higher $A$);
+$k_A>1$ lengthens (lower $A$). Decoupled from $k_V$ by construction.
+
+\subsection{Primitive 5 -- Forward lean ($D_1$)}
+
+Distributed across three layers for anatomical realism:
+\begin{align}
+  Q_{\text{aug}}(t) &= Q(t) \otimes q_y\!\bigl(\Delta\theta(t)\bigr), \quad
+    q_y(\alpha)=(\cos\tfrac\alpha 2,\,0,\,\sin\tfrac\alpha 2,\,0), \label{eq:p5-quat}\\
+  q_{\text{aug}}^{\text{ankle-pitch},L/R}(t) &= q^{\text{ankle-pitch},L/R}(t) - \rho_{a}\,\Delta\theta(t), \label{eq:p5-ankle}\\
+  q_{\text{aug}}^{\text{waist-pitch}}(t)    &= q^{\text{waist-pitch}}(t) + \rho_{w}\,\Delta\theta(t), \label{eq:p5-waist}\\
+  p_{\text{aug}}(t) &= p(t) + \tfrac{1}{2}\!\bigl[(x^{\text{foot-L}}_{\text{seed}}+x^{\text{foot-R}}_{\text{seed}}) - (x^{\text{foot-L}}_{\text{aug}}+x^{\text{foot-R}}_{\text{aug}})\bigr](t), \label{eq:p5-anchor}
+\end{align}
+with $\Delta\theta(t) = k_{\text{lean}}\cdot(k_{\text{eff}}(t)-1)\cdot
+\rho_{\theta}$, default $\rho_\theta = 0.20$ rad,
+$(\rho_a,\rho_w)=(1.0, 0.5)$.
+
+Three subtle design points are load--bearing:
+\begin{enumerate}\itemsep1pt
+  \item \textbf{Body--frame composition.} The post--multiplication
+        $Q\otimes q_y$ rotates about the \emph{body}-Y axis; pre--multiplying
+        $q_y\otimes Q$ would rotate about \emph{world}-Y and silently mix
+        into roll for any seed with non--zero yaw.
+  \item \textbf{Ankle subtraction.} Under the G1 URDF convention,
+        $+\,\text{ankle-pitch} = $ plantar flexion; therefore
+        $-\rho_a\Delta\theta$ is the correct sign to keep the sole flat
+        as the pelvis tilts forward.
+  \item \textbf{Root re--anchoring.} Pelvic rotation otherwise translates
+        the hip joints in world space and drags the feet forward by
+        $\Delta\theta\cdot\ell_{\text{hip}}$, producing a visible step
+        of $\sim\!5\,$cm at $k_{\text{lean}}\!=\!1$. The translation
+        compensation~\eqref{eq:p5-anchor} eliminates this.
+\end{enumerate}
+
+We deliberately modulate $D$ via the root quaternion rather than the
+\texttt{waist\_pitch} DOF, because the regressor channel for
+$D_1$ uses $\sin(\text{root pitch})$, while \texttt{waist\_pitch}
+predominantly feeds $V_3$ (uprightness); modulating the DOF would shift
+$V$ without shifting $D$.
+
+\subsection{Safety and label closure}
+
+Two safety stages are applied after composition:
+(i) a soft seed--aware collision resolver that lerps DOFs back toward the
+seed by the minimum margin required to satisfy a curated set of
+inter--link distance constraints, and
+(ii) a root--$z$ re--anchor that pins the lowest foot link to the
+URDF--canonical floor height $z\!=\!0.0361\,$m.
+
+The final VAD label of the augmented clip is \emph{re--measured} by the
+regressor $\mathcal{R}$ from \S\ref{sec:vad-compute} rather than copied
+from the target $(k_V,k_{\text{sq}},k_{\text{open}},k_A,k_{\text{lean}})$,
+so that training labels remain consistent with the actual kinematics
+after collision projection.
+
+\subsection{Implementation}
+
+The framework is implemented in \texttt{src/data\_augment/} as eleven
+focused modules ($<300$ lines each):
+\texttt{constants}, \texttt{utils}, \texttt{phases},
+\texttt{mu\_trajectory}, \texttt{taxonomy}, \texttt{collision},
+\texttt{regressor\_torch}, and the five primitives under
+\texttt{opts/\{amplitude,squat,openness,time\_warp,forward\_lean\}.py}.
+The differentiable regressor (\texttt{regressor\_torch}) implements
+Eqs.~\eqref{eq:phi}--\eqref{eq:delta} as PyTorch ops, enabling future
+extension to inference--time VAD classifier guidance.
+
+% =============================================================================
+\endinput

@@ -22,13 +22,12 @@
 | [feature_69d.md](representations/feature_69d.md) | ✅ stable | TextOp 69-d 布局 |
 | [quaternion_conventions.md](representations/quaternion_conventions.md) | ✅ stable | ⚠️ wxyz/xyzw 踩坑记录 |
 | [g1_anatomy.md](representations/g1_anatomy.md) | 📝 draft | G1 29-DOF 拓扑 + mirror map |
-| [vad_definition.md](representations/vad_definition.md) | 📝 draft | PAD 理论 + 8 octant |
+| [vad_definition.md](representations/vad_definition.md) | 📝 draft | PAD 理论 + 8 octant — **空骨架,外部理论卡占位**;OUR full def 见 [`notes/vad/vad_definition.md`](../notes/vad/vad_definition.md) |
 
 ## ⚙️ Methods
 
 | 卡片 | 状态 | 核心信息 |
 |---|---|---|
-| [vad_augmentation.md](methods/vad_augmentation.md) | ✅ stable | Anchor + 10 op ΔVAD |
 | [affect_feature_inventory.md](methods/affect_feature_inventory.md) | ✅ stable | 40+ feature 清单（Karg 2013 综述）+ Tier 分级 |
 | [vad_indicators_9.md](methods/vad_indicators_9.md) | ✅ stable | 最终选定的 9 个指标 · LaTeX 公式 + 参数表 |
 | [primitive_schema_v2.md](methods/primitive_schema_v2.md) | ✅ stable | NPZ-per-clip schema · BONES+BABEL 统一训练数据合约 |
@@ -93,6 +92,6 @@
 1. `representations/g1_anatomy.md` — 纯工程事实，~30 分钟
 2. `methods/flow_matching.md` — 你最熟的，写 v7 recipe
 3. `experiments/ablation_cheatsheet.md` — 填 v1-v12 对照表
-4. `architecture/nmi_contributions.md` — 从 `notes/paper_plan_nmi.md` 提炼
-5. `architecture/nine_modules.md` — 从 `notes/module_build_list.md` 提炼
+4. `architecture/nmi_contributions.md` — 从 `notes/paper/paper_plan_nmi.md` 提炼
+5. `architecture/nine_modules.md` — 从 `notes/architecture/module_build_list.md` 提炼
 6. 剩下 external_tools / datasets 的 draft 按需补

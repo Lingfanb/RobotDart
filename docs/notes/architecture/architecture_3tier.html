@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VADBridge · 3-tier Architecture</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.5;
+  }
+  .container { max-width: 920px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .subtitle { color: #8b949e; font-size: 0.9rem; margin-bottom: 24px; }
+
+  .tier {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 8px 0;
+    border: 1px solid #30363d;
+    position: relative;
+  }
+  .tier-3 { background: linear-gradient(135deg, #1f2a3e, #2a1f3e); border-color: #4a6cf7; }
+  .tier-2 { background: linear-gradient(135deg, #1a3735, #1f3a2a); border-color: #14b8a6; }
+  .tier-1 { background: linear-gradient(135deg, #2a2a1f, #3a2a1f); border-color: #f59e0b; }
+
+  .tier-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .tier-title { font-size: 1.1rem; font-weight: 600; }
+  .tier-tag { font-size: 0.75rem; color: #8b949e; }
+
+  .skills {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  @media (max-width: 640px) {
+    .skills { grid-template-columns: 1fr; }
+  }
+  .skill {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .skill-name { font-weight: 600; margin-bottom: 4px; }
+  .skill-desc { font-size: 0.82rem; color: #9ba8b3; margin-bottom: 8px; line-height: 1.35; }
+  .status {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  .status-green { background: #1f6f3f; color: #e6f5ec; }
+  .status-yellow { background: #8a6a13; color: #fff5d4; }
+  .status-red { background: #962d33; color: #ffd9dc; }
+
+  .arrow {
+    text-align: center;
+    color: #8b949e;
+    font-size: 1.2rem;
+    margin: 0;
+    font-family: monospace;
+    padding: 4px 0;
+  }
+  .arrow-label {
+    color: #79c0ff;
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-left: 6px;
+  }
+
+  .wbc {
+    text-align: center;
+    background: #161b22;
+    border-radius: 12px;
+    padding: 14px;
+    margin: 8px 0;
+    border: 1px solid #30363d;
+  }
+  .wbc-sub { color: #8b949e; font-size: 0.85rem; margin-top: 2px; }
+
+  .robot {
+    text-align: center;
+    font-size: 1.6rem;
+    margin: 12px 0 24px;
+  }
+
+  .annotation {
+    font-size: 0.85rem;
+    color: #c9d1d9;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .annotation strong { color: #fff; }
+  .annotation .quote { color: #8b949e; font-style: italic; }
+
+  .legend {
+    background: #161b22;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    border: 1px solid #30363d;
+  }
+  .legend h3 {
+    margin: 14px 0 6px;
+    color: #fff;
+    font-size: 0.95rem;
+  }
+  .legend h3:first-child { margin-top: 0; }
+  .legend p { margin: 4px 0; font-size: 0.88rem; color: #c9d1d9; line-height: 1.5; }
+  .legend code {
+    background: rgba(255,255,255,0.06);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.85em;
+  }
+  .badge-row { margin-top: 8px; }
+  .badge-row .status { margin-right: 6px; }
+
+  .footer {
+    margin-top: 24px;
+    text-align: center;
+    color: #6e7681;
+    font-size: 0.78rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>VADBridge · 3-tier Social Control Architecture</h1>
+  <div class="subtitle">Locked 2026-05-04 · Target: Nature Machine Intelligence (DDL 2026-07-19)</div>
+
+  <!-- TIER 3 -->
+  <div class="tier tier-3">
+    <div class="tier-header">
+      <div class="tier-title">Tier 3 · ACP Decision Layer</div>
+      <div class="tier-tag">deliberative · System 2</div>
+    </div>
+    <div class="annotation">
+      <strong>Agency / Communion / Proxemics</strong> ∈ ℝ³<br>
+      Grounded in Wiggins (1991) interpersonal model + Hall (1966) proxemics.<br>
+      <span class="quote">"What social relationship should I establish with this user, given context?"</span>
+    </div>
+  </div>
+
+  <div class="arrow">↓<span class="arrow-label">ACP target (a, c, p)</span></div>
+
+  <!-- TIER 2 -->
+  <div class="tier tier-2">
+    <div class="tier-header">
+      <div class="tier-title">Tier 2 · Skill Dispatcher</div>
+      <div class="tier-tag">mapping + selection</div>
+    </div>
+    <div class="annotation">
+      ACP → VAD style mapping · Skill selector · Proxemics constraint<br>
+      <span class="quote">"Which skill, with what affective style code, with what spatial constraint?"</span>
+    </div>
+  </div>
+
+  <div class="arrow">↓<span class="arrow-label">(skill_id, VAD code, target params)</span></div>
+
+  <!-- TIER 1 -->
+  <div class="tier tier-1">
+    <div class="tier-header">
+      <div class="tier-title">Tier 1 · Fundamental Skill Library</div>
+      <div class="tier-tag">reactive · System 1 · VAD-modulated</div>
+    </div>
+    <div class="skills">
+      <div class="skill">
+        <div class="skill-name">1.1 Manipulation</div>
+        <div class="skill-desc">handover give / take / present · scripted grasp + VAD-modulated approach</div>
+        <span class="status status-yellow">🟡 starting</span>
+      </div>
+      <div class="skill">
+        <div class="skill-name">1.2 Motion Gen</div>
+        <div class="skill-desc">gesture: wave / bow / salute / clap / shrug / punch / handshake-greet · FlowDART 80k</div>
+        <span class="status status-green">🟢 ready</span>
+      </div>
+      <div class="skill">
+        <div class="skill-name">1.3 Locomotion</div>
+        <div class="skill-desc">walk / jog / run / jump / turn / stand / 11 classes · RL controller</div>
+        <span class="status status-red">🔴 blocked</span>
+      </div>
+    </div>
+    <div class="annotation" style="margin-top: 12px;">
+      <strong>VAD = (Valence, Arousal, Dominance)</strong> ∈ ℝ³ — Mehrabian PAD (1974)<br>
+      <span class="quote">style code, not robot's "feeling" — the affective texture each skill is rendered with</span>
+    </div>
+  </div>
+
+  <div class="arrow">↓<span class="arrow-label">joint trajectory (29-DOF body + 14-DOF hand)</span></div>
+
+  <div class="wbc">
+    <strong>WBC · Whole-Body Controller</strong>
+    <div class="wbc-sub">Isaac Lab → G1 sim → real G1 hardware</div>
+  </div>
+
+  <div class="robot">🤖 Unitree G1</div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <h3>Build order: bottom-up</h3>
+    <p>Tier 1 first → Tier 2 dispatcher → Tier 3 ACP. Each tier independently validated before composing upward.</p>
+
+    <h3>Theoretical grounding · dual-process social cognition</h3>
+    <p>ACP = <strong>System 2</strong> deliberative (slow, goal-directed social planning, Kahneman 2011 / Strack &amp; Deutsch 2004). VAD = <strong>System 1</strong> reactive (fast, automatic affective realization). Mirrors human cognitive control.</p>
+
+    <h3>Authorship + RAL relationship</h3>
+    <p>Builds on prior in-lab work: V-A conditioned motion generation on G1 [Undergrad et al., RAL 2026, Lingfan = 2nd author]. The NMI paper extends that foundation with: <strong>(1)</strong> Dominance dim · <strong>(2)</strong> physical (handover) channel · <strong>(3)</strong> closed-loop deployment · <strong>(4)</strong> N=30 cross-skill user study · <strong>(5)</strong> 3-tier ACP→VAD→skill-bank framework.</p>
+
+    <h3>Hero claim</h3>
+    <p>First humanoid delivering nuanced expressive interaction across <strong>non-physical</strong> (gesture) and <strong>physical</strong> (handover) channels via unified social-variable control. <strong>Cross-channel consistency</strong> — same ACP target produces perceptually consistent affect across both channels — is the NMI empirical hero finding.</p>
+
+    <h3>Status legend</h3>
+    <div class="badge-row">
+      <span class="status status-green">🟢 ready</span>
+      <span class="status status-yellow">🟡 starting</span>
+      <span class="status status-red">🔴 blocked</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    Source of truth: <code>docs/notes/decisions/skill_decoupled_architecture_2026-05-04.md</code> ·
+    Paper: <code>docs/notes/paper/paper_plan_nmi.md</code> ·
+    Module status: <code>docs/plan/short_term.md</code>
+  </div>
+</div>
+</body>
+</html>

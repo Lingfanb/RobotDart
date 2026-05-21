@@ -1,0 +1,187 @@
+%% =============================================================================
+%% Agency, Communion, and Proxemics as Universal Control Variables for
+%% Socially Expressive Robots
+%%
+%% Author : Chengxu Zhou (Humanoid Robotics Lab, UCL)
+%% Source : reverse-engineered from docs/proposal/social_HRI.pdf (3-page proposal)
+%% Format : IEEEtran (journal mode)
+%%
+%% This LaTeX is a faithful transcription — content unchanged from the PDF.
+%% =============================================================================
+
+\documentclass[journal]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Agency, Communion, and Proxemics as Universal Control Variables for Socially Expressive Robots}
+
+\author{Chengxu~Zhou \thanks{All authors are with the Humanoid Robotics Lab, Department of Computer Science, University College London, UK.}}
+
+\markboth{Manuscript}{Zhou: Agency, Communion, and Proxemics for Socially Expressive Robots}
+
+\maketitle
+
+\begin{abstract}
+Robots today excel at task execution yet remain poor at being \emph{understood} in social contexts. We propose a principled framework that parametrises robot actions within a three-dimensional social space defined by Agency, Communion, and Proxemics (ACP). We theoretically ground these variables in social psychology, map them onto robot motion control, and introduce a reinforcement learning and generative modelling pipeline to realise socially expressive behaviours. Through controlled human--robot interaction studies, we demonstrate that ACP variables systematically alter human perception of robots' trustworthiness, politeness, and cooperation. Our findings establish ACP as a minimal universal set of control variables for socially expressive embodied AI.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Humanoid robots, embodied AI, reinforcement learning, motion generation, social interaction, agency, communion, proxemics.
+\end{IEEEkeywords}
+
+%% ===========================================================================
+\section{Introduction}\label{sec:intro}
+\IEEEPARstart{R}{obots} are increasingly deployed in human-centered environments, yet their acceptance and trust hinge not only on functional competence but on their ability to communicate social intent~\cite{belkaid2021gaze}. Humans interpret actions along latent socio-affective dimensions; however, robot control traditionally optimises only task-level goals (\emph{e.g.}, stability, precision). This disconnect leads to socially awkward or unsafe interactions.
+
+\textbf{Our proposition:} grounding robot motion generation in three fundamental social variables---\emph{Agency} (assertiveness), \emph{Communion} (affiliativeness), and \emph{Proxemics} (interpersonal distance)~\cite{wiggins1991agency, hall1966hidden}. We hypothesise that ACP coordinates determine how humans perceive and cooperate with robots, and that parametrising robot control in this space can yield predictable, interpretable, and safe social behaviours.
+
+\textbf{Core novelty.} Unlike affect labels or single-cue heuristics (\emph{e.g.}, gaze), we elevate \emph{social variables to first-class control parameters} that are optimised jointly with physical feasibility. We further show that these variables constitute a compact control basis that generalises across platforms (humanoid / manipulator-on-quadruped) and tasks (passing, handover, side-by-side walking).
+
+%% ===========================================================================
+\section{Related Work}\label{sec:related}
+
+\subsection{Embodied AI and Social Interaction}
+Large language/vision-language models have recently been extended to robots, but their social grounding remains weak. \emph{Science Robotics} has highlighted that safe social interaction requires principles of interpretability and uncertainty awareness~\cite{belkaid2021gaze}.
+
+\subsection{Social Dimensions in Psychology}
+\begin{itemize}
+\item \textbf{Agency--Communion}: canonical axes of interpersonal behaviour~\cite{wiggins1991agency}.
+\item \textbf{Proxemics}: interpersonal distance zones (intimate, personal, social, public)~\cite{hall1966hidden}.
+\item \textbf{Valence--Arousal--Dominance}: widely used in affective computing~\cite{russell1980circumplex}, but less actionable in control.
+\end{itemize}
+
+\subsection{Robotics and Social Variables}
+Prior work has studied gaze~\cite{belkaid2021gaze}, interpersonal distance, or affect recognition, but no generalisable control framework has been proposed that formalises multiple social variables as \emph{first-class control parameters}.
+
+blabla\dots
+
+%% ===========================================================================
+\section{Theoretical Framework}\label{sec:framework}
+We formalise ACP as follows. Let $a \in [0,1]$, $c \in [0,1]$, and $p \in [0.5, 2.5]\,\mathrm{m}$ be continuous control variables.
+
+\begin{itemize}
+\item \textbf{Agency} ($a$): mapped to motion onset latency $\Delta t_{\text{start}}$, peak velocity $v_{\max}$, and torque allocation/actuation aggressiveness. High $a=$proactive, forceful; low $a=$hesitant, reactive.
+\item \textbf{Communion} ($c$): mapped to trajectory smoothness (low jerk), lateral yielding displacement $\Delta y$, and openness of posture (arm abduction and torso yaw). High $c=$affiliative, cooperative.
+\item \textbf{Proxemics} ($p$): mapped to the target interpersonal distance band (personal/social/public). Enforced as a soft constraint on robot--human separation $d(t)$ around a target band $[d^{-}, d^{+}]$ centred at $p$.
+\end{itemize}
+
+\subsection{Operationalisation via Kinematic Proxies}
+Given a motion segment $X_{1:T}$ (skeleton or task-space markers), we compute weak labels:
+\begin{align}
+a &= \alpha_1 \left(1 - \tfrac{\Delta t_{\text{start}}}{T_0}\right)
+      + \alpha_2 \,\mathrm{norm}(v_{\max})
+      + \alpha_3 \,\mathrm{norm}(\bar{a}), \label{eq:a-proxy} \\
+c &= \beta_1 \,\mathrm{norm}(\text{arm-open})
+      + \beta_2 \left(1 - \mathrm{norm}(\text{jerk})\right) \nonumber \\
+  &\quad + \beta_3 \,\mathrm{norm}(\Delta y / \Delta x), \label{eq:c-proxy} \\
+p &= \gamma_1 \,\mathrm{norm}(d_{\min})
+      + \gamma_2 \,\mathrm{norm}(\bar{d})
+      + \gamma_3 \,\mathrm{norm}(d_{\text{stop}}), \label{eq:p-proxy}
+\end{align}
+where $\mathrm{norm}(\cdot)$ is per-dataset z-score then min--max scaling.
+
+\subsubsection*{Remark}
+When datasets lack explicit counterparts, $p$ can be supplied at control time while $a, c$ are supervised using proxies only.
+
+%% ===========================================================================
+\section{Technical Realisation}\label{sec:tech}
+
+\subsection{Conditional Motion Generator}
+We seek $G(\text{scene}, a, c, p) \to \text{traj}$, with two implementation lines.
+
+\subsubsection{Line A: Conditional Regression (MVP)}
+A temporal Transformer maps $(\text{scene}, a, c, p)$ to a low-dimensional reference trajectory. Loss combines trajectory reconstruction, conditional alignment, and physical feasibility.
+
+\subsubsection{Line B: Conditional Motion Diffusion}
+We adopt a DiT-style denoiser with classifier-free guidance on $(a, c, p)$, plus conditional alignment regularisation and projected guidance for physical plausibility.
+
+\subsection{Socially-Constrained RL Control}
+Low-level controllers are trained in Isaac Lab (PPO/SAC) to track generator outputs while optimising social rewards:
+\begin{align}
+r &= w_{\text{task}} r_{\text{task}}
+   + w_{ag} r_{\text{Agency}} \nonumber \\
+  &\quad + w_{com} r_{\text{Communion}}
+   + w_{prox} r_{\text{Proxemics}}, \label{eq:reward} \\
+r_{\text{Agency}} &= f_{ag}(\Delta t_{\text{start}}, v_{\max}),
+   \label{eq:r-agency} \\
+r_{\text{Communion}} &= f_{com}(\Delta y / \Delta x, \text{jerk}^{-1}),
+   \label{eq:r-com} \\
+r_{\text{Proxemics}} &= -\|d(t) - p\|^{2}. \label{eq:r-prox}
+\end{align}
+
+\subsection{Uncertainty-Aware Gating}
+We estimate perception uncertainty via MC-dropout on the human pose estimator. If entropy exceeds threshold, fallback policy is triggered: $(a, c, p) = (a_{\min}, c_{\text{mid}}, p_{\text{public}})$.
+
+\subsection{Cross-Platform Deployment}
+We validate on humanoid and quadruped-with-arm platforms using the same $(a, c, p)$ interface, only tuning WBC parameters.
+
+%% ===========================================================================
+\section{Experiments}\label{sec:exp}
+
+\subsection{Tasks}
+\begin{enumerate}
+\item Passing in a corridor (Proxemics, Communion).
+\item Object handover (Agency, Proxemics).
+\item Side-by-side walking (Agency, Communion).
+\end{enumerate}
+
+\subsection{Datasets and Implementation}
+AMASS for base kinematics; BEHAVE and in-house MoCap for proxemics calibration. Temporal Transformer baseline; DiT diffusion upgrade. RL trained in Isaac Lab with 4096 envs.
+
+\subsection{Metrics}
+\begin{itemize}
+\item \textbf{Objective:} separation, yielding displacement, completion time, stability, energy.
+\item \textbf{Behavioural:} user acceptance, avoidance, pace synchrony.
+\item \textbf{Subjective:} 7-point Likert on politeness, trust, cooperativeness.
+\end{itemize}
+
+\subsection{User Study Protocol}
+\subsubsection{Participants}
+30 participants (balanced gender, age 20--40) recruited under institutional ethics approval.
+\subsubsection{Procedure}
+Each participant experiences robots performing tasks under different $(a, c, p)$ conditions and baseline controllers. Trials are randomised.
+\subsubsection{Measures}
+Participants complete post-trial questionnaires (Likert scales). Behavioural data (acceptance, avoidance) are logged via motion capture.
+\subsubsection{Analysis}
+Mixed-effects ANOVA across conditions; Holm correction for multiple comparisons. Effect sizes reported.
+
+\subsection{Baselines}
+Task-only, Valence--Arousal generation, end-to-end LLM planner.
+
+\subsection{Ablations}
+Remove social rewards, disable generator, disable gating, swap ACP with alternative style conditions.
+
+%% ===========================================================================
+\section{Results}\label{sec:results}
+ACP settings produce consistent shifts in perception and behaviour; high $a$, high $c$, social-zone $p$ maximise cooperation. Mismatched ACP yields avoidance. Uncertainty gating reduces missteps under occlusion. Portability confirmed across platforms.
+
+%% ===========================================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Scientific Contribution}
+ACP is validated as a universal social control basis: continuous, optimisable, and platform-agnostic.
+
+\subsection{Limitations and Future Work}
+Tasks are short scripted; cultural differences not studied. Proxemics supervision partly synthetic.
+
+\subsection{Reproducibility and Ethics}
+Code and data dictionaries will be released. User study under ethics approval, informed consent obtained.
+
+%% ===========================================================================
+\section{Conclusion}\label{sec:conclusion}
+We establish Agency, Communion, and Proxemics as first-class variables in robot motion generation. By uniting generative modelling, socially-constrained RL, and uncertainty-aware gating, we demonstrate ACP governs human interpretation of robot behaviour.
+
+%% ===========================================================================
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
