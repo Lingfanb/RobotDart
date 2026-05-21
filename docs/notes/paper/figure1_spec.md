@@ -11,7 +11,7 @@
 1. Open Claude design (claude.ai)
 2. Paste the entire **"Prompt to Claude"** section below
 3. Iterate via "make panel B bigger" / "color tier 3 purple" etc.
-4. Export final SVG → save to `paper/figures/figure1.svg`
+4. Export final SVG → upload to Overleaf project's `figures/figure1.svg`
 5. Embed in LaTeX with `\includegraphics{figures/figure1.svg}` (or convert to PDF first)
 
 ---
@@ -119,8 +119,8 @@ Go back to Claude with specifics:
 
 ## Once SVG is finalized
 
-- Save to `paper/figures/figure1.svg` (in the LaTeX repo, not docs/)
+- Upload to Overleaf project's `figures/figure1.svg` (the paper repo is on Overleaf, not in this git tree)
 - Convert to PDF for LaTeX submission: `inkscape figure1.svg --export-type=pdf`
-- Embed via `\includegraphics[width=\textwidth]{figures/figure1.pdf}` in `paper/main.tex`
+- Embed via `\includegraphics[width=\textwidth]{figures/figure1.pdf}` in Overleaf `main.tex`
 - Mirror PNG export to `outputs/eval/figure1.png` (Tailscale viewable)
 - Update `notes/paper/paper_draft.md` § Figure list to point to the file

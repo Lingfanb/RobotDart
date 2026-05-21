@@ -2,7 +2,7 @@
 
 **Target venue**: Nature Machine Intelligence
 **Hard DDL**: 2026-07-19 · **Soft DDL**: 2026-10-15
-**LaTeX source**: [`paper/main.tex`](../../../paper/main.tex)
+**LaTeX source**: Overleaf project (local `paper/` removed 2026-05-21 — single source of truth lives on Overleaf)
 **Last updated**: 2026-04-28
 
 This doc tracks **narrative-level decisions** (title, abstract, claims, framing).
@@ -74,10 +74,10 @@ Short title (running head, in `\title[...]`):
 
 > ⚠️ **2026-05-03 note**: The 7-sentence locked v1 below is the *final-form*
 > abstract intended to ship after sprint Day 4 pilot data lands.
-> [`paper/main.tex`](../../../paper/main.tex) currently carries a **condensed
-> ~110-word variant** adapted from the original ACP draft to keep the LaTeX
-> file presentable during drafting (§3.1 below). Promote the 7-sentence
-> version into LaTeX once pilot numbers (r, p, channel-coherence) are real.
+> The Overleaf `main.tex` currently carries a **condensed ~110-word variant**
+> adapted from the original ACP draft to keep the LaTeX file presentable
+> during drafting (§3.1 below). Promote the 7-sentence version into LaTeX
+> once pilot numbers (r, p, channel-coherence) are real.
 
 Word target: **200–250** (NMI tolerates up to 250, current ~235). Was 4/28 dual-channel v0 (~205) with `r > 0.6` written speculatively — superseded.
 
@@ -96,7 +96,7 @@ Word target: **200–250** (NMI tolerates up to 250, current ~235). Was 4/28 dua
 - "first demonstration ... on a humanoid" needs lit-search confirmation (sprint Day 5 Wed 5/6).
 - Sentences 1+2 are intentionally not merged — the gap line is load-bearing for NMI editor's "what's the problem" filter.
 
-### 3.1 Condensed variant currently shipped in `paper/main.tex` (~110 words)
+### 3.1 Condensed variant currently shipped in Overleaf `main.tex` (~110 words)
 
 Adapted 1:1 from the user's original ACP-framework draft (replaced
 ACP→VAD, added dual-channel scope as our differentiator). Used as a
@@ -117,7 +117,7 @@ without committing to specific pilot numbers.
 > Our findings establish VAD as a minimal universal control space for
 > socially expressive humanoid–human interaction.
 
-Promotion plan: replace this in `paper/main.tex` with the 7-sentence
+Promotion plan: replace this in Overleaf `main.tex` with the 7-sentence
 locked v1 above once (a) sprint Day 4 pilot returns concrete r/p numbers
 and (b) the "first on humanoid" lit-search is closed.
 
@@ -251,7 +251,7 @@ d ≈ 0.67 — comfortably above the d=0.53 floor at N=30. Pre-register before u
 | 2026-04-28 | Added §3.5 cross-channel consistency as headline finding; §5.5 Tier-1 reading list; refreshed handover citation (Ortenzi 2021 supersedes Strabala 2013); flagged HIAER for user verification | Lit-research pass 2 surfaced App 2011 + Aviezer 2012 cross-channel evidence — supplies the NMI-grade capability emergence claim the abstract was missing |
 | 2026-05-03 | Title v1: *Cross-channel affective coherence in humanoid–human interaction through valence–arousal–dominance modulation* | Lead with the §3.5 empirical finding (cross-channel coherence), Liu-rat-robot 2024 pattern. Old title moved to alternates list. main.tex updated with new long+short title; running head set. Overleaf zip rebuilt. |
 | 2026-05-03 | LaTeX class: `sn-jnl` (Springer Nature) → `IEEEtran` (journal mode) | User clarification: `sn-jnl` is Springer Nature *generic*, NOT NMI-specific (NMI publishes no dedicated .cls). For drafting / internal review / T-RO+RA-L fallback, IEEEtran is more standard. NMI accepts any format at initial submission, so reformat to Springer Nature is deferred to revision/acceptance time. main.tex restructured with explicit IEEE sectioning (Intro / Related / Method / Experiments / Discussion / Conclusion). Overleaf zip rebuilt with IEEEtran.cls + .bst bundled. |
-| 2026-05-03 | Abstract in `paper/main.tex` swapped to ~110-word ACP-derived condensed variant (§3.1) | User had a clean original ACP-framework abstract; we adapted ACP→VAD and added dual-channel scope, kept the original 5-sentence structure. Used as drafting placeholder — final 7-sentence locked v1 (§3) promotes in after pilot data lands. Compiled OK; Overleaf zip rebuilt. |
+| 2026-05-03 | Abstract in Overleaf `main.tex` swapped to ~110-word ACP-derived condensed variant (§3.1) | User had a clean original ACP-framework abstract; we adapted ACP→VAD and added dual-channel scope, kept the original 5-sentence structure. Used as drafting placeholder — final 7-sentence locked v1 (§3) promotes in after pilot data lands. Compiled OK; Overleaf zip rebuilt. |
 
 ---
 
