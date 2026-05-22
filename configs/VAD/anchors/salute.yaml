@@ -1,0 +1,47 @@
+primitive: salute
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: gesture
+anchors:
+  V_zero: &id001
+    seq: CMU__29__29_09_stageii
+    seg: 16
+    start: 576
+    end: 631
+    sec: 1.83
+    label: salute
+    auto_picked: true
+    V_pred: -0.2790136560165125
+    A_pred: -0.3290352702230702
+    D_pred: 0.18712127172787738
+    origin_distance: 0.4702416396147067
+    dataset_penalty: 1.0
+    effective_distance: 0.4702416396147067
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

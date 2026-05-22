@@ -19,7 +19,7 @@ status: stable (class list TBD)
 | 文件 | 内容 |
 |---|---|
 | [`data_schema.yaml`](data_schema.yaml) | fps / H / F / feature 布局 / 路径 / NPZ 字段清单 (moved here from configs/ 2026-05-22 — spec doc, not loaded by code) |
-| [`configs/act_classes.yaml`](../../../configs/act_classes.yaml) | 22 类 ACT_CLASSES + 4 families + 段→class 匹配规则 |
+| [`configs/VAD/act_classes.yaml`](../../../configs/VAD/act_classes.yaml) | 22 类 ACT_CLASSES + 4 families + 段→class 匹配规则 |
 
 **编辑 YAML 即生效**，不需要改代码。`action_taxonomy.py` 在 import 时从 YAML load，`reload_v2_config()` 可热重载。
 

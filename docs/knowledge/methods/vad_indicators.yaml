@@ -83,5 +83,5 @@ decoupling:
 # ──── Normalization ────
 normalization:
   formula: f_norm = tanh((raw - mu) / sigma)
-  defaults_path: configs/vad/norm_params_by_action.yaml
-  per_action_calibration: configs/vad/anchors/<primitive>.yaml  # 9 anchors → (μ, σ)
+  defaults_path: configs/VAD/norm_params_by_action.yaml
+  per_action_calibration: configs/VAD/anchors/<primitive>.yaml  # 9 anchors → (μ, σ)

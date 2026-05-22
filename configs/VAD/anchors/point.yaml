@@ -1,0 +1,47 @@
+primitive: point
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: gesture
+anchors:
+  V_zero: &id001
+    seq: BMLmovi__Subject_85_F_MoSh__Subject_85_F_7_stageii
+    seg: 2
+    start: 25
+    end: 82
+    sec: 1.9
+    label: point to the right
+    auto_picked: true
+    V_pred: -0.1276583910743481
+    A_pred: -0.4476089272822147
+    D_pred: 0.9404913213070152
+    origin_distance: 1.0493685444343381
+    dataset_penalty: 1.0
+    effective_distance: 1.0493685444343381
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

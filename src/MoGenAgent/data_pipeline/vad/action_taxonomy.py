@@ -280,7 +280,7 @@ def get_leaf_action(content_type_of_movement: str | None,
 # ════════════════════════════════════════════════════════════════
 #
 # Spec: docs/knowledge/methods/primitive_schema_v2.md §4
-# Source of truth: configs/act_classes.yaml — edit there to add/rename classes.
+# Source of truth: configs/VAD/act_classes.yaml — edit there to add/rename classes.
 # Used by: cli.py NPZ output (segment_class_idx, primitive_class_idx)
 #          DataLoader v2 (class_idx → embedding lookup)
 #          Inference scripts (--act_class wave_one_arm → class_idx=11)
@@ -293,7 +293,7 @@ import os as _os_v2
 
 _V2_YAML_PATH = _os_v2.path.join(
     _os_v2.path.dirname(__file__), '..', '..', '..', '..',
-    'configs', 'act_classes.yaml',
+    'configs', 'VAD', 'act_classes.yaml',
 )
 
 # Lazy-loaded module-level state (filled by `_load_v2()`).
@@ -307,7 +307,7 @@ _V2_LOADED: bool = False
 
 
 def _load_v2() -> None:
-    """Load classes + match rules from configs/act_classes.yaml.
+    """Load classes + match rules from configs/VAD/act_classes.yaml.
 
     Populates module-level globals. Called once on first API use.
     """
@@ -321,13 +321,13 @@ def _load_v2() -> None:
         import yaml
     except ImportError as e:
         raise ImportError(
-            "PyYAML required to load configs/act_classes.yaml — install with "
+            "PyYAML required to load configs/VAD/act_classes.yaml — install with "
             "`pip install pyyaml`") from e
 
     yaml_path = _os_v2.path.normpath(_V2_YAML_PATH)
     if not _os_v2.path.exists(yaml_path):
         raise FileNotFoundError(
-            f'configs/act_classes.yaml not found at {yaml_path}. '
+            f'configs/VAD/act_classes.yaml not found at {yaml_path}. '
             f'This file is the source of truth for ACT_CLASSES_V2.')
 
     with open(yaml_path) as f:

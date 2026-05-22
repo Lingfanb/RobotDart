@@ -4,9 +4,9 @@
 #
 # Workflow:
 #   1. For each primitive in motion_lib.yaml, pick 9 anchor clips (3 dim × 3 level)
-#   2. Save to configs/vad/anchors/<primitive>.yaml
+#   2. Save to configs/VAD/anchors/<primitive>.yaml
 #   3. Run scripts/calibrate_from_anchors.py
-#   4. Output appended to configs/vad/norm_params_by_action.yaml
+#   4. Output appended to configs/VAD/norm_params_by_action.yaml
 
 schema_version: v1.5
 
@@ -69,8 +69,8 @@ selection_workflow:
   step3_user_select:
     description: |
       User browses MP4s, picks 9 anchors (V±1/zero, A±1/zero, D±1/zero).
-      Fill configs/vad/anchors/<primitive>.yaml.
-    template: configs/vad/anchors/wave_hand.yaml
+      Fill configs/VAD/anchors/<primitive>.yaml.
+    template: configs/VAD/anchors/wave_hand.yaml
 
   step4_calibrate:
     description: read anchors yaml, compute (μ, σ), write to norm_params_by_action.yaml

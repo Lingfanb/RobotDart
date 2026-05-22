@@ -25,7 +25,7 @@ from MoGenAgent.data_pipeline.vad.action_taxonomy import canonicalize_act_cats, 
 
 DATA_PKL = (_DART_ROOT / 'data' / 'processed' / 'mp_data_g1_69_bones_clean_v2'
             / 'Canonicalized_h2_f16_num1_fps30' / 'train.pkl')
-OUT_YAML = _DART_ROOT / 'configs' / 'vad' / 'norm_params_by_action.yaml'
+OUT_YAML = _DART_ROOT / 'configs' / 'VAD' / 'norm_params_by_action.yaml'
 
 # v1.5 (13 features: v1.5 fusion + legacy)
 # Fusion indicators (v1.5): energy_per_frame, motion_amplitude_ee, root_height,

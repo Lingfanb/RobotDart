@@ -1,0 +1,145 @@
+# Action class taxonomy v2 · ACT_CLASSES_V2
+# Spec: docs/knowledge/methods/primitive_schema_v2.md §4
+# Loaded by: src/data_pipeline/vad/action_taxonomy.py
+#
+# Edit this file to change the action vocabulary. Code automatically reloads
+# (no .py edit needed for class additions/renames/regex changes).
+
+schema_version: v2
+last_updated: 2026-04-27
+
+# ──── Family vocabulary (4) ────
+families:
+  - locomotion       # 移动 / 静止 / 腿主导
+  - gesture          # 表达性手臂动作
+  - interaction      # 跟人/物接触
+  - expressive       # 表演性 (dance)
+
+# ──── Class vocabulary (22) ────
+# class_idx = position in this list (0-indexed).
+# NULL = len(classes) = 22 (used for CFG dropout / unmatched).
+classes:
+  # ── locomotion (11) ──
+  - {name: walk,          family: locomotion}    # 0
+  - {name: jog,           family: locomotion}    # 1
+  - {name: run,           family: locomotion}    # 2
+  - {name: jump,          family: locomotion}    # 3
+  - {name: turn,          family: locomotion}    # 4
+  - {name: stand,         family: locomotion}    # 5
+  - {name: crouch,        family: locomotion}    # 6
+  - {name: sit,           family: locomotion}    # 7
+  - {name: climb,         family: locomotion}    # 8
+  - {name: crawl,         family: locomotion}    # 9
+  - {name: kick,          family: locomotion}    # 10  (legs-driven)
+
+  # ── gesture (7) ──
+  - {name: wave_one_arm,  family: gesture}       # 11
+  - {name: wave_two_arms, family: gesture}       # 12
+  - {name: bow,           family: gesture}       # 13
+  - {name: salute,        family: gesture}       # 14
+  - {name: clap,          family: gesture}       # 15
+  - {name: shrug,         family: gesture}       # 16
+  - {name: punch,         family: gesture}       # 17  (arms-driven)
+
+  # ── interaction (3) · ⭐ Handover paper core ──
+  - {name: handshake,     family: interaction}   # 18
+  - {name: give,          family: interaction}   # 19
+  - {name: take_pick,     family: interaction}   # 20
+
+  # ── expressive (1) ──
+  - {name: dance,         family: expressive}    # 21
+
+# ──── Match rules · 段文本 → class_idx ────
+# Order matters: first-match-wins. More specific patterns FIRST so e.g.
+# `handshake` matches before generic `wave`, `wave_two_arms` before `wave_one_arm`.
+# Each entry: target class name + list of regex patterns (any match → fire).
+# All patterns are case-insensitive.
+match_rules:
+  # ── interaction first (would otherwise be eaten by generic gesture) ──
+  - target: handshake
+    patterns:
+      - '\bhandshake\b'
+      - 'shake[s]?\s+hand'
+  - target: give
+    patterns:
+      # Explicit give verb
+      - '\bgiv(es|en|ing)?\s+(\w+\s+){0,4}to\b'
+      - '\bgiv(es|en|ing)?\s+(it|the|them|away|back)\b'
+      # Hand-over / hand-off (NOT "hand to" — too many FPs like "lowers hand to side")
+      - '\bhand(s|ed|ing)?\s+(over|off)\b'
+      # "Hands the X over/to <recipient>" — explicit object before terminator
+      - '\bhand(s|ed|ing)?\s+(it|the|them)(\s+\w+){0,4}\s+(over|off|to)\b'
+      # Pass with concrete object/pronoun (exclude "passing the obstacle/by/through")
+      - '\bpass(es|ing|ed)?\s+(it|them)\b'
+      - '\bpass(es|ing|ed)?\s+the\s+(?!obstacle|barrier|test|exam|through|by)\w+'
+      - '\bpass(es|ing|ed)?\s+\w+\s+(over|to)\b'
+      # Offer (rare in mocap, almost always real)
+      - '\boffer(s|ed|ing)?\s+(\w+|to)\b'
+  - target: take_pick
+    patterns:
+      - 'pick(s|ing|ed)?\s+up'
+      - '\bpickup\b'
+      - 'take[s]?\s+(from|object)'
+
+  # ── gesture (specific before generic 'wave') ──
+  - target: wave_two_arms
+    patterns:
+      - '\bwav(e|es|ed|ing)\b.*\b(two|both)\b.*hand'
+      - '\bwav(e|es|ed|ing)\b.*\barms?\b'
+      - '\bwav(e|es|ed|ing)\b.*both'
+  - target: wave_one_arm
+    patterns:
+      - '\bwav(e|es|ed|ing)\b'
+  - target: bow
+    patterns: ['\bbow(s|ing)?\b']
+  - target: salute
+    patterns: ['\bsalut']
+  - target: clap
+    patterns:
+      - '\bclap(s|ping)?\b'
+      - '\bapplaus'
+  - target: shrug
+    patterns:
+      - '\bshrug(s|ging|ged)?\b'
+      - "don'?t\\s+know"   # BONES "don't know" 类 = shrug semantics
+  - target: punch
+    patterns: ['\bpunch(es|ing|ed)?\b']
+
+  # ── expressive ──
+  - target: dance
+    patterns: ['\bdanc(e|es|ing)\b']
+
+  # ── locomotion (specific before generic walk/stand) ──
+  - target: kick
+    patterns: ['\bkick(s|ing|ed)?\b']
+  - target: climb
+    patterns:
+      - '\bclimb(s|ing|ed)?\b'
+      - 'come\s+(up|down).*\bbox\b'
+      - 'get\s+(up|down).*\bbox\b'
+  - target: crawl
+    patterns:
+      - '\bcrawl(s|ing|ed)?\b'
+      - 'on\s+(hands\s+and\s+knees|all\s+fours)'
+  - target: jump
+    patterns:
+      - '\bjump(s|ing|ed)?\b'
+      - '\bflip'
+  - target: jog
+    patterns: ['\bjog(s|ging|ged)?\b']
+  - target: run
+    patterns: ['\brun(s|ning)?\b']
+  - target: turn
+    patterns: ['\bturn(s|ing|ed)?\b']
+  - target: crouch
+    patterns:
+      - '\bcrouch(es|ing|ed)?\b'
+      - 'kneel'
+  - target: sit
+    patterns: ['\bsit(s|ting)?\b']
+  - target: walk
+    patterns: ['\bwalk(s|ing|ed)?\b']
+  - target: stand
+    patterns:
+      - '\bstand(s|ing)?\b'
+      - '\bidle\b'

@@ -1,0 +1,47 @@
+primitive: stand
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: standing_idle
+anchors:
+  V_zero: &id001
+    seq: BMLrub__rub071__0013_knocking1_stageii
+    seg: 2
+    start: 85
+    end: 138
+    sec: 1.77
+    label: stand
+    auto_picked: true
+    V_pred: -0.11292778128369518
+    A_pred: -0.04560274674998935
+    D_pred: 0.0464546056812431
+    origin_distance: 0.13034693968713476
+    dataset_penalty: 1.0
+    effective_distance: 0.13034693968713476
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

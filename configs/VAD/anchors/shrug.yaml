@@ -1,0 +1,47 @@
+primitive: shrug
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: gesture
+anchors:
+  V_zero: &id001
+    seq: CMU__111__111_25_stageii
+    seg: 0
+    start: 0
+    end: 71
+    sec: 2.37
+    label: shrug
+    auto_picked: true
+    V_pred: -0.1396814093069429
+    A_pred: 0.7528571527237793
+    D_pred: -0.7240396824195572
+    origin_distance: 1.0538207865816382
+    dataset_penalty: 1.0
+    effective_distance: 1.0538207865816382
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

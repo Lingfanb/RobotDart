@@ -1,0 +1,47 @@
+primitive: clap
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: gesture
+anchors:
+  V_zero: &id001
+    seq: BMLmovi__Subject_19_F_MoSh__Subject_19_F_1_stageii
+    seg: 2
+    start: 18
+    end: 76
+    sec: 1.93
+    label: clap hands
+    auto_picked: true
+    V_pred: -0.2807590031181251
+    A_pred: 0.1217950815066065
+    D_pred: -0.021427418020363853
+    origin_distance: 0.30678786474387104
+    dataset_penalty: 1.0
+    effective_distance: 0.30678786474387104
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

@@ -1,0 +1,47 @@
+primitive: run
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: jogging
+anchors:
+  V_zero: &id001
+    seq: BMLrub__rub092__0026_scamper_stageii
+    seg: 0
+    start: 0
+    end: 49
+    sec: 1.63
+    label: run
+    auto_picked: true
+    V_pred: 0.4118367989237155
+    A_pred: 0.9999999167372153
+    D_pred: -0.22134535624494717
+    origin_distance: 1.1039035959509205
+    dataset_penalty: 1.0
+    effective_distance: 1.1039035959509205
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

@@ -1,0 +1,47 @@
+primitive: jump
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: jumping
+anchors:
+  V_zero: &id001
+    seq: CMU__132__132_29_stageii
+    seg: 2
+    start: 83
+    end: 180
+    sec: 3.23
+    label: hop
+    auto_picked: true
+    V_pred: 0.4790742321673428
+    A_pred: 0.839656830199356
+    D_pred: 0.24591787156444642
+    origin_distance: 0.9975025373310821
+    dataset_penalty: 1.0
+    effective_distance: 0.9975025373310821
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

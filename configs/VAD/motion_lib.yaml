@@ -1,0 +1,181 @@
+# Motion Primitive Library — UCV Tier 1.2 + 1.3
+# Owner: Lingfan · Created: 2026-05-12 · Updated 2026-05-13 v0.3:
+#   - removed: climb, shake_head, sit (user prune 2026-05-13)
+#   - count now: 13 gesture + 7 locomotion = 20 primitives
+# Version: v0.3
+#
+# Scope:
+#   - gesture     : Tier 1.2 expressive (含 kick — 腿驱动但表达性,非位移)
+#   - locomotion  : Tier 1.3 移动类 (locomotive-only)
+#   - Tier 1.1 manipulation 不在本 lib (走 skill API + 抓取控制器)
+#
+# Schema (v0.2):
+#   - name      : snake_case 唯一 ID
+#   - desc      : 一句话语义
+#   - exemplar  : list of {seq, seg, sec, label} — BABEL segment canonical 锚 (top 1-3)
+#                 seq = BABEL clip stem (in data/G1_Filtered_DATA/babel_npz/<seq>.npz)
+#                 seg = segment_boundaries index (segment i is [boundary[i], boundary[i+1]])
+#                 sec = segment duration in seconds
+#                 label = original BABEL frame_label text
+#
+# 后续 incremental 可加:
+#   - vad_range { V, A, D }              (augment target octants)
+#   - taxonomy_class                     (映射到 act_classes.yaml 22-class)
+#   - render_mp4                         (canonical 视觉锚 mp4 路径)
+#
+# Cross-ref:
+#   - configs/VAD/act_classes.yaml — 22-class VAD calibration buckets
+#   - ⚠ kick 在 act_classes 归 locomotion (legs-driven),本 lib 归 gesture
+#     (语义:表达性意图 vs 位移意图)
+#   - scripts/find_motion_lib_exemplars.py — exemplar scanner (rerun to regenerate)
+
+schema_version: v0.2
+last_updated: 2026-05-12
+exemplar_source: BABEL (data/G1_Filtered_DATA/babel_npz)
+
+# ──── Gesture (14) — Tier 1.2 expressive ────
+gesture:
+  - name: wave_hand
+    desc: 单手挥手 (问候 / 告别)
+    exemplar:
+      - {seq: BMLmovi__Subject_62_F_MoSh__Subject_62_F_13_stageii, seg: 0, sec: 3.0,  label: wave}
+      - {seq: BMLmovi__Subject_65_F_MoSh__Subject_65_F_7_stageii,  seg: 0, sec: 3.0,  label: wave}
+      - {seq: CMU__106__106_16_stageii,                            seg: 2, sec: 3.0,  label: wave right hand}
+
+  - name: wave_hands
+    desc: 双手挥舞 (欢迎 / 求助 / 庆贺)
+    exemplar:
+      - {seq: Eyes_Japan_Dataset__aita__greeting-02-bye-aita_stageii, seg: 14, sec: 3.6, label: wave both arms}
+      - {seq: CMU__13__13_26_stageii,                                 seg: 10, sec: 3.7, label: wave both hands in the air}
+      - {seq: CMU__143__143_25_stageii,                               seg: 4,  sec: 2.3, label: wave with both arms}
+
+  - name: salute
+    desc: 敬礼 (右手抬至额角)
+    exemplar:
+      - {seq: KIT__442__Salutieren01_stageii, seg: 2,  sec: 2.5, label: salute with right hand}
+      - {seq: CMU__29__29_09_stageii,         seg: 16, sec: 1.8, label: salute}
+      - {seq: CMU__29__29_05_stageii,         seg: 14, sec: 1.8, label: salute}
+
+  - name: bow
+    desc: 鞠躬 (上身前倾,致敬 / 道谢 / 道歉)
+    exemplar:
+      - {seq: Eyes_Japan_Dataset__kaiwa__greeting-07-bow-kaiwa_stageii, seg: 18, sec: 2.9, label: bow}
+      - {seq: CMU__111__111_02_stageii,                                 seg: 0,  sec: 3.5, label: bow}
+      - {seq: Eyes_Japan_Dataset__kaiwa__greeting-07-bow-kaiwa_stageii, seg: 10, sec: 2.3, label: bow}
+
+  - name: clap
+    desc: 拍手 (鼓掌 / 节奏)
+    exemplar:
+      - {seq: BMLmovi__Subject_18_F_MoSh__Subject_18_F_2_stageii,                  seg: 0,  sec: 3.0, label: clap}
+      - {seq: BMLmovi__Subject_36_F_MoSh__Subject_36_F_13_stageii,                 seg: 0,  sec: 3.0, label: clap}
+      - {seq: Eyes_Japan_Dataset__kudo__gesture_etc-21-clapping-kudo_stageii,      seg: 10, sec: 3.1, label: clap hands}
+
+  - name: shrug
+    desc: 耸肩 (不知 / 无所谓)
+    exemplar:
+      - {seq: CMU__111__111_25_stageii, seg: 0, sec: 2.4, label: shrug}
+      - {seq: CMU__32__32_06_stageii,   seg: 6, sec: 1.7, label: shoulder shrug}
+      - {seq: CMU__141__141_21_stageii, seg: 1, sec: 1.0, label: shrug shoulders}
+
+  - name: punch
+    desc: 出拳 (前 / 上 / 侧)
+    exemplar:
+      - {seq: HumanEva__S2__Box_3_stageii,                              seg: 0,  sec: 3.1, label: jab}
+      - {seq: CMU__144__144_21_stageii,                                 seg: 5,  sec: 2.8, label: punch}
+      - {seq: Eyes_Japan_Dataset__yokoyama__karate-08-jab-yokoyama_stageii, seg: 17, sec: 2.6, label: punches with left hand}
+
+  - name: handshake
+    desc: 握手 (右手伸出与对方相握;contact 通道亦用)
+    exemplar:
+      - {seq: CMU__17__17_01_stageii, seg: 17, sec: 3.2, label: shake hands in front of waist}
+      - {seq: CMU__17__17_01_stageii, seg: 30, sec: 2.6, label: shake hands in front of waist}
+      - {seq: CMU__17__17_01_stageii, seg: 13, sec: 2.1, label: shake hands in front of waist}
+
+  - name: thumbs_up
+    desc: 竖大拇指 (赞 / 鼓励)
+    exemplar: []   # ⚠ BABEL + BONES 均无匹配 — TODO: augment synthesize 或人工采集
+
+  - name: point
+    desc: 食指指向 (方向 / 物体)
+    exemplar:
+      - {seq: BMLmovi__Subject_85_F_MoSh__Subject_85_F_7_stageii, seg: 2, sec: 1.9, label: point to the right}
+      - {seq: CMU__27__27_03_stageii,                             seg: 2, sec: 1.4, label: point to self}
+
+  - name: beckon
+    desc: 招手呼唤 (示意来这里)
+    exemplar:
+      - {seq: HumanEva__S3__Gestures_3_stageii, seg: 2,  sec: 2.2, label: beckon}
+      - {seq: HumanEva__S2__Gestures_3_stageii, seg: 21, sec: 2.1, label: beckon right}
+      - {seq: HumanEva__S2__Gestures_3_stageii, seg: 1,  sec: 2.0, label: beckon right}
+
+  - name: nod
+    desc: 点头 (同意 / 致意)
+    exemplar:
+      - {seq: BMLrub__rub092__0027_rom_stageii,                       seg: 4,  sec: 2.7, label: nods head front to back}
+      - {seq: BMLrub__rub009__0021_catching_and_throwing_stageii,     seg: 15, sec: 1.6, label: nod the head}
+      - {seq: BMLrub__rub021__0021_catching_and_throwing_stageii,     seg: 15, sec: 1.2, label: nod the head}
+
+  - name: kick
+    desc: 踢腿 (前踢 / 侧踢,表达性非位移)
+    exemplar:
+      - {seq: CMU__84__84_13_stageii,   seg: 10, sec: 3.2, label: kick backs}
+      - {seq: CMU__106__106_14_stageii, seg: 5,  sec: 3.5, label: kick}
+      - {seq: CMU__113__113_13_stageii, seg: 5,  sec: 2.1, label: kick}
+
+# ──── Locomotion (10) — Tier 1.3 移动类 ────
+locomotion:
+  - name: walk
+    desc: 走路 (匀速前进)
+    exemplar:
+      - {seq: CMU__137__137_18_stageii, seg: 2,  sec: 3.0, label: walk nonchalantly}
+      - {seq: CMU__17__17_01_stageii,   seg: 20, sec: 3.0, label: walk forward}
+      - {seq: CMU__36__36_03_stageii,   seg: 7,  sec: 3.0, label: walk}
+
+  - name: jog
+    desc: 慢跑
+    exemplar:
+      - {seq: HDM05__mm__HDM_mm_01-04_01_120_stageii, seg: 5,  sec: 3.0, label: jog with object}
+      - {seq: HDM05__mm__HDM_mm_01-04_01_120_stageii, seg: 8,  sec: 3.1, label: jog with object}
+      - {seq: HDM05__mm__HDM_mm_01-04_01_120_stageii, seg: 15, sec: 2.8, label: jog with object}
+
+  - name: run
+    desc: 跑步
+    exemplar:
+      - {seq: CMU__133__133_10_stageii,                                  seg: 5,  sec: 2.9, label: run forward}
+      - {seq: Eyes_Japan_Dataset__kaiwa__jump-11-warmup-kaiwa_stageii,   seg: 6,  sec: 2.8, label: run in place series}
+      - {seq: HDM05__tr__HDM_tr_01-03_04_120_stageii,                    seg: 13, sec: 3.2, label: run}
+
+  - name: jump
+    desc: 跳跃 (原地 / 跨越)
+    exemplar:
+      - {seq: BMLrub__rub092__0026_scamper_stageii, seg: 4, sec: 3.0, label: jump}
+      - {seq: CMU__56__56_07_stageii,               seg: 20, sec: 2.9, label: jump}
+      - {seq: BMLrub__rub092__0026_scamper_stageii, seg: 2,  sec: 2.8, label: jump}
+
+  - name: turn
+    desc: 转身 (左 / 右)
+    exemplar:
+      - {seq: KIT__576__MarcusS_AdrianM12_stageii,                                   seg: 8,  sec: 3.0, label: turn back}
+      - {seq: BMLrub__rub070__0021_catching_and_throwing_stageii,                    seg: 19, sec: 2.9, label: turn around}
+      - {seq: Eyes_Japan_Dataset__hamada__greeting-08-shakehands-hamada_stageii,     seg: 11, sec: 3.1, label: turn right}
+
+  - name: stand
+    desc: 站立 (静止 / 待命)
+    exemplar:
+      - {seq: BMLrub__rub114__0013_knocking1_stageii,            seg: 4, sec: 3.0, label: stand}
+      - {seq: Eyes_Japan_Dataset__aita__pose-19-funny-aita_stageii, seg: 3, sec: 3.0, label: stand}
+      - {seq: CMU__142__142_17_stageii,                          seg: 0, sec: 2.9, label: stand}
+
+  - name: crouch
+    desc: 蹲 / 跪 (低位等待)
+    exemplar:
+      - {seq: CMU__31__31_08_stageii, seg: 12, sec: 3.1, label: crouch forward}
+      - {seq: CMU__74__74_07_stageii, seg: 0,  sec: 2.9, label: crouch}
+      - {seq: CMU__77__77_34_stageii, seg: 3,  sec: 3.4, label: crouch forward}
+
+  - name: crawl
+    desc: 爬行 (四肢着地移动)
+    exemplar:
+      - {seq: BMLmovi__Subject_46_F_MoSh__Subject_46_F_12_stageii, seg: 2, sec: 2.4, label: crawl}
+      - {seq: BMLmovi__Subject_40_F_MoSh__Subject_40_F_18_stageii, seg: 3, sec: 2.3, label: crawl forward}
+      - {seq: BMLmovi__Subject_48_F_MoSh__Subject_48_F_16_stageii, seg: 2, sec: 2.1, label: crawl}

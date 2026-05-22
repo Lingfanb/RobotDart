@@ -620,7 +620,7 @@ def cmd_label_npz(args: argparse.Namespace) -> int:
         npz_files = npz_files[:args.limit]
     print(f"[label_npz] {len(npz_files)} NPZ files in {in_dir}")
     print(f"[label_npz] regressor: src/data_pipeline/vad/regressor_3x3.py")
-    print(f"[label_npz] taxonomy:  configs/act_classes.yaml")
+    print(f"[label_npz] taxonomy:  configs/VAD/act_classes.yaml")
 
     stats = {'ok': 0, 'err': 0, 'skip': 0}
     null_seg = 0

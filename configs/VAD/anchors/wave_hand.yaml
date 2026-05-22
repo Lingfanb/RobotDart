@@ -1,0 +1,47 @@
+primitive: wave_hand
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: gesture
+anchors:
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: joyful · 大幅 · 开放 · upright wave
+  V_zero: &id001
+    seq: CMU__29__29_11_stageii
+    seg: 16
+    start: 653
+    end: 712
+    sec: 1.97
+    label: waves hands towards self
+    auto_picked: true
+    V_pred: -0.11828156938644055
+    A_pred: 0.43971128007271787
+    D_pred: -0.17957966147890275
+    origin_distance: 0.48947461047186586
+    dataset_penalty: 1.0
+    effective_distance: 0.48947461047186586
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: sad · 小幅 · 收缩 wave
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: fast · 能量高 · 急促 wave
+  A_zero: *id001
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: slow · 沉稳 · calm wave
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: outward · 前倾 · 接近 target wave
+  D_zero: *id001
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: inward · 后倾 · submissive wave

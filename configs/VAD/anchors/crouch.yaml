@@ -1,0 +1,47 @@
+primitive: crouch
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: kneeling
+anchors:
+  V_zero: &id001
+    seq: CMU__31__31_08_stageii
+    seg: 12
+    start: 335
+    end: 427
+    sec: 3.07
+    label: crouch forward
+    auto_picked: true
+    V_pred: -0.1436400975148641
+    A_pred: -0.05300809849055914
+    D_pred: 0.40726360096995956
+    origin_distance: 0.43509306681982757
+    dataset_penalty: 1.0
+    effective_distance: 0.43509306681982757
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

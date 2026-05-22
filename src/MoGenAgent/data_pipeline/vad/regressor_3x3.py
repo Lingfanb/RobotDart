@@ -564,7 +564,7 @@ NORM_PARAMS: dict[str, tuple[float, float]] = {
 # fallback for callers who don't pass action_class.
 
 NORM_PARAMS_BY_ACTION_PATH = (
-    Path(__file__).parents[4] / 'configs' / 'vad' / 'norm_params_by_action.yaml'
+    Path(__file__).parents[4] / 'configs' / 'VAD' / 'norm_params_by_action.yaml'
 )
 
 _PER_ACTION_CACHE: Optional[dict] = None

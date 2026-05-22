@@ -12,13 +12,13 @@ Without these cards, raw A numbers are uninterpretable (e.g., BONES wave A = 0.0
 
 ## Card Schema — one row per action
 
-Each action class gets a YAML entry at [configs/aug/action_vad_cards.yaml](../../../configs/aug/action_vad_cards.yaml) (to be created) with the following fields.
+Each action class gets a YAML entry at [configs/MoGen/aug/action_vad_cards.yaml](../../../configs/MoGen/aug/action_vad_cards.yaml) (to be created) with the following fields.
 
 ### 1. Identity
 
 | Field | Type | Notes |
 |---|---|---|
-| `name` | string | snake_case, must match [configs/act_classes.yaml](../../../configs/act_classes.yaml) |
+| `name` | string | snake_case, must match [configs/VAD/act_classes.yaml](../../../configs/VAD/act_classes.yaml) |
 | `aliases` | list[string] | alternative labels mapping here (e.g., `["wave", "wave_right_hand", "greet_wave"]`) |
 | `tier` | int | 1.1 (manip) / 1.2 (motion_gen) / 1.3 (loco) — which skill tier owns it |
 
@@ -87,7 +87,7 @@ Run this once per action when adding it to the skill library, or when re-calibra
 
 ### Step 1. Pick the action
 
-Choose from [configs/act_classes.yaml](../../../configs/act_classes.yaml) (22-class taxonomy). Note its tier (1.1/1.2/1.3).
+Choose from [configs/VAD/act_classes.yaml](../../../configs/VAD/act_classes.yaml) (22-class taxonomy). Note its tier (1.1/1.2/1.3).
 
 ### Step 2. Gather clip pool
 
@@ -138,7 +138,7 @@ Reason from the action's biomechanics, not from data:
 
 ### Step 8. Commit
 
-- YAML row → `configs/aug/action_vad_cards.yaml`
+- YAML row → `configs/MoGen/aug/action_vad_cards.yaml`
 - Anchor MP4s → `data/verify/action_cards/<action>/` (keep on Lustre on Isambard, symlinked locally)
 - Notes section → add a subsection in this file under `## Per-Action Cards` below
 - Mark `<action>_card_done` ✅ in the active plan (plan/ dir is being redone 2026-05-21)

@@ -1,0 +1,47 @@
+primitive: turn
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: other
+anchors:
+  V_zero: &id001
+    seq: CMU__120__120_21_stageii
+    seg: 13
+    start: 727
+    end: 777
+    sec: 1.67
+    label: turn right
+    auto_picked: true
+    V_pred: 0.022773286641347812
+    A_pred: -0.2892891453939315
+    D_pred: -0.11551605022114617
+    origin_distance: 0.3123312185579511
+    dataset_penalty: 1.0
+    effective_distance: 0.3123312185579511
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

@@ -1,0 +1,47 @@
+primitive: punch
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: gesture
+anchors:
+  V_zero: &id001
+    seq: Eyes_Japan_Dataset__yokoyama__karate-08-jab-yokoyama_stageii
+    seg: 8
+    start: 273
+    end: 322
+    sec: 1.63
+    label: punches with left hand
+    auto_picked: true
+    V_pred: -0.039624855689778665
+    A_pred: 0.8952291675122173
+    D_pred: -0.16681272028107158
+    origin_distance: 0.9114997944051465
+    dataset_penalty: 1.5
+    effective_distance: 1.3672496916077197
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

@@ -1,0 +1,47 @@
+primitive: handshake
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: gesture
+anchors:
+  V_zero: &id001
+    seq: Eyes_Japan_Dataset__kaiwa__greeting-08-shakehands-kaiwa_stageii
+    seg: 28
+    start: 694
+    end: 745
+    sec: 1.7
+    label: shake hands
+    auto_picked: true
+    V_pred: -0.2574399905955107
+    A_pred: -0.2413835090958887
+    D_pred: -0.13197872943645567
+    origin_distance: 0.37677544007660957
+    dataset_penalty: 1.5
+    effective_distance: 0.5651631601149143
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

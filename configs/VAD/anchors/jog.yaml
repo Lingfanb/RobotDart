@@ -1,0 +1,47 @@
+primitive: jog
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: jogging
+anchors:
+  V_zero: &id001
+    seq: CMU__13__13_31_stageii
+    seg: 2
+    start: 409
+    end: 491
+    sec: 2.73
+    label: jog
+    auto_picked: true
+    V_pred: 0.4652023147937482
+    A_pred: 0.9790745975207946
+    D_pred: 0.08984289151289437
+    origin_distance: 1.0876911355506054
+    dataset_penalty: 1.0
+    effective_distance: 1.0876911355506054
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

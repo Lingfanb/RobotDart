@@ -1,0 +1,47 @@
+primitive: wave_hands
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: gesture
+anchors:
+  V_zero: &id001
+    seq: CMU__143__143_25_stageii
+    seg: 4
+    start: 200
+    end: 270
+    sec: 2.33
+    label: wave with both arms
+    auto_picked: true
+    V_pred: 0.5469317243415371
+    A_pred: 0.9990475732052295
+    D_pred: -0.17599196606496686
+    origin_distance: 1.1524771306789032
+    dataset_penalty: 1.0
+    effective_distance: 1.1524771306789032
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD

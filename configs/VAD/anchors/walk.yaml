@@ -1,0 +1,47 @@
+primitive: walk
+calibration_version: v1.5
+last_auto_picked: 2026-05-13_v2
+last_calibrated: TBD
+taxonomy_class: walking
+anchors:
+  V_zero: &id001
+    seq: CMU__137__137_28_stageii
+    seg: 1
+    start: 31
+    end: 76
+    sec: 1.5
+    label: one step forward
+    auto_picked: true
+    V_pred: -0.0934964410924976
+    A_pred: -0.22072699292557854
+    D_pred: -0.1249840564582193
+    origin_distance: 0.270338684378841
+    dataset_penalty: 1.0
+    effective_distance: 0.270338684378841
+    note: auto_pick_v2 2026-05-13 (side-lean+jerk filter + dataset pref)
+  A_zero: *id001
+  D_zero: *id001
+  V_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  V_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  A_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_pos1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
+  D_neg1:
+    seq: TBD
+    seg: TBD
+    note: manual TBD
