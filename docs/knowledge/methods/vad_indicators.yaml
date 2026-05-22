@@ -1,0 +1,87 @@
+# VAD indicator definitions (v1.5)
+# Declarative spec mirrored by code in src/data_pipeline/vad/regressor_3x3.py.
+# Edit this file to change weights / time-aggregation / formula description.
+# (Note: actual numpy formulas live in regressor_3x3.py; this yaml is
+# human-readable spec + machine-readable for tooling.)
+
+schema_version: v1.5
+last_updated: 2026-05-13
+
+# ──── Fusion weights (sum=1 per dim → fused VAD ∈ [-1, +1]³) ────
+fusion:
+  V: {V1: 0.40, V2: 0.35, V3: 0.25}
+  A: {A1: 1.00}
+  D: {D1: 0.40, D2: 0.60}
+
+# ──── Per-indicator spec ────
+indicators:
+  V1:
+    name: motion_amplitude_ee
+    formula: top-2 mean over 4 EE of (sliding-window median of 3D BBox diagonal)
+    keypoints: [L_wrist (21), R_wrist (28), L_ankle (5), R_ankle (11)]
+    frame: pelvis_local
+    time_aggregation: sliding_window_median
+    window_frames: 15      # ~0.5s @ 30fps, covers ~1 wave cycle
+    function: data_pipeline.vad.regressor_3x3._motion_amplitude_ee_sliding_median
+    physical_channel: EE Cartesian motion span (filter raise/lower transient via window median)
+
+  V2:
+    name: root_height
+    formula: mean over t of pelvis world z
+    frame: world
+    time_aggregation: mean
+    function: data_pipeline.vad.regressor_3x3._root_height
+    physical_channel: pelvis 世界 z (postural elevation)
+
+  V3:
+    name: body_openness
+    formula: mean over t of (Σ_{i<j ∈ 5pts} ‖p_i.[y,z] − p_j.[y,z]‖)
+    keypoints: [L_wrist (21), R_wrist (28), L_elbow (18), R_elbow (25), chest = (L_shoulder + R_shoulder) / 2]
+    frame: pelvis_local
+    plane: yz (frontal)              # x excluded — reserved for D1 channel
+    time_aggregation: mean
+    function: data_pipeline.vad.regressor_3x3._body_openness_5pt_yz_distsum
+    physical_channel: 上身 5 点 frontal-plane 10-pair 距离和
+
+  A1:
+    name: energy_per_frame
+    formula: mean over t of (Σ_{j ∈ 29 DOFs} v_j(t)²)
+    frame: dof_velocity
+    time_aggregation: mean
+    function: data_pipeline.vad.regressor_3x3._energy_per_frame
+    physical_channel: DOF kinetic-energy proxy (Camurri 2003 QoM)
+
+  D1:
+    name: reach_extension
+    formula: top-25% mean (sign-aware) of max(0, ½·(x_L_wrist + x_R_wrist))
+    keypoints: [L_wrist (21), R_wrist (28)]
+    frame: pelvis_local
+    plane: x_only (forward)
+    time_aggregation: top_quartile_mean    # captures sustained peak, filters approach/retract
+    function: data_pipeline.vad.regressor_3x3._reach_extension
+    physical_channel: wrist forward extension (sustained peak)
+
+  D2:
+    name: forward_lean
+    formula: top-25% mean (sign-aware) of sin(pitch_root(t))
+    frame: world
+    time_aggregation: top_quartile_mean
+    function: data_pipeline.vad.regressor_3x3._forward_lean
+    physical_channel: root pitch (signed; forward = +D, backward = -D)
+
+# ──── Decoupling matrix ────
+# Each indicator measured on a different physical channel.
+decoupling:
+  V1: EE 3D motion span (sliding window)
+  V2: pelvis world z (mean)
+  V3: upper-body 5-pt yz distance sum (mean)
+  A1: DOF velocity squared sum (mean)
+  D1: bilateral wrist forward x (top-25%)
+  D2: root pitch sin (top-25% sign-aware)
+# Smoke test (110 wave_hand clip, v1.5): V-A r = +0.006, V-D r = -0.081, A-D r = -0.151.
+
+# ──── Normalization ────
+normalization:
+  formula: f_norm = tanh((raw - mu) / sigma)
+  defaults_path: configs/vad/norm_params_by_action.yaml
+  per_action_calibration: configs/vad/anchors/<primitive>.yaml  # 9 anchors → (μ, σ)

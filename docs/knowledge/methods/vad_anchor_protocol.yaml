@@ -1,0 +1,121 @@
+# VAD anchor calibration protocol (v1.5)
+# Defines HOW to select anchor clips per primitive, and the math for converting
+# anchors → (μ, σ) calibration parameters.
+#
+# Workflow:
+#   1. For each primitive in motion_lib.yaml, pick 9 anchor clips (3 dim × 3 level)
+#   2. Save to configs/vad/anchors/<primitive>.yaml
+#   3. Run scripts/calibrate_from_anchors.py
+#   4. Output appended to configs/vad/norm_params_by_action.yaml
+
+schema_version: v1.5
+
+# ──── Anchor count ────
+anchors_per_primitive: 9       # 3 dim × 3 level
+levels: [-1, 0, +1]
+dimensions: [V, A, D]
+
+# Same physical clip may serve as anchor for multiple (dim, level) — e.g. a
+# "joyful big fast wave" can simultaneously be V_pos1 AND A_pos1. So unique
+# clip count per primitive is typically 5-9, not necessarily 9.
+
+# ──── Calibration math (per-indicator μ, σ from per-dim anchors) ────
+calibration_math:
+  per_indicator:
+    # For each fusion-level anchor (V_pos1, V_zero, V_neg1 etc.), compute the
+    # raw value of EACH indicator on that anchor's clip. Then:
+    mu_formula:    "raw_i at <dim>_zero anchor"
+    sigma_formula: "max(|raw_i at <dim>_pos1 - mu|, |raw_i at <dim>_neg1 - mu|) / 2"
+    rationale: |
+      tanh(±2) ≈ ±0.96 → ±1 anchors saturate at ~95%.
+      σ = max-spread-from-μ ÷ 2 ensures both ±1 anchors hit ~0.96 after norm.
+
+  # If user doesn't provide _zero anchor: μ = (raw_pos1 + raw_neg1) / 2 (midpoint).
+  # If user only provides ±1 (no _zero): same midpoint fallback.
+
+  # NOTE: V/A/D are fused from multiple indicators. A single anchor clip's
+  # FUSED V being +0.96 requires multiple indicators' (μ, σ) to be consistent.
+  # We set each indicator's (μ, σ) independently from its raw-on-anchor values;
+  # the fused V on anchor may differ slightly from ±0.96 due to weight averaging.
+  # Acceptable as long as anchors land in the correct halfspace (+ or -).
+
+# ──── Anchor semantic guidelines (帮助 user 视觉判断) ────
+semantic_guidelines:
+  V_pos1: joyful · 大幅 · 开放 · upright · pride-display
+  V_zero: neutral / typical / 朴素
+  V_neg1: sad · 小幅 · 收缩 · slumped · defensive
+
+  A_pos1: fast · 能量高 · 急促 · 节奏快
+  A_zero: moderate / 正常速度
+  A_neg1: slow · 能量低 · 沉稳 · calm
+
+  D_pos1: outward · 前倾 · 接近 target · assertive · 占空间大
+  D_zero: neutral / balanced
+  D_neg1: inward · 后倾 · 退缩 · submissive · 占空间小
+
+# ──── Anchor selection workflow ────
+selection_workflow:
+  step1_scan:
+    description: scan all candidate clips (BABEL + BONES) for the primitive
+    output: data/motion_lib/perceptual_bench/<primitive>/anchor_candidates.yaml
+    script: scripts/list_anchor_candidates.py
+
+  step2_render:
+    description: render top/mid/bot N clips per dimension for visual review
+    output: data/motion_lib/perceptual_bench/<primitive>/anchors/<dim>/
+    n_per_position: 7              # top-7, mid-7, bot-7 per V/A/D = 63 MP4s
+    script: scripts/render_anchor_candidates.py
+
+  step3_user_select:
+    description: |
+      User browses MP4s, picks 9 anchors (V±1/zero, A±1/zero, D±1/zero).
+      Fill configs/vad/anchors/<primitive>.yaml.
+    template: configs/vad/anchors/wave_hand.yaml
+
+  step4_calibrate:
+    description: read anchors yaml, compute (μ, σ), write to norm_params_by_action.yaml
+    script: scripts/calibrate_from_anchors.py
+
+  step5_validate:
+    description: |
+      Rescore anchors with new (μ, σ); each anchor should output V/A/D ≈ (-1, 0, +1).
+      Then rescore the full 15-clip bench and visually validate new ranking.
+    script: scripts/rescore_bench.py
+
+# ──── Iteration ────
+# If anchors don't yield clean ±1 / 0:
+# - Anchor clips may not be extreme enough → pick more extreme candidates
+# - Indicator may saturate too soon → adjust σ
+# - Multiple indicators in same dim disagree → pick anchors satisfying ALL
+#   indicators (typically possible if anchor is genuinely "joyful big fast wave")
+
+priority_primitives:
+  # Tier 1 (highest training-data frequency, do first)
+  - wave_hand
+  - walk
+  - bow
+  - clap
+  - salute
+  # Tier 2 (medium frequency, do after Tier 1 validation)
+  - jog
+  - run
+  - jump
+  - punch
+  - handshake
+  # Tier 3 (lower frequency, optional manual / fall back to BONES stats)
+  - thumbs_up      # BABEL/BONES empty — synthesize or skip
+  - shake_head
+  - nod
+  - point
+  - beckon
+  - kick
+  # Tier 4 (locomotion auxiliaries)
+  - turn
+  - stand
+  - crouch
+  - sit
+  - climb
+  - crawl
+  # gesture supplementary
+  - shrug
+  - wave_hands
