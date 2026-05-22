@@ -22,7 +22,7 @@ I'm preparing **Figure 1** for a Nature Machine Intelligence paper titled "Nuanc
 
 ### Paper hero claim (frames the figure)
 
-VADBridge is a humanoid robot system that delivers task-coupled nuanced expressive interaction across both **non-physical** (gesture) and **physical** (handover) channels of human–robot interaction, controlled through a hierarchical social-variable framework grounded in dual-process social cognition.
+Universal Control Variables (UCV) is a humanoid robot system that delivers task-coupled nuanced expressive interaction across both **non-physical** (gesture) and **physical** (handover) channels of human–robot interaction, controlled through a hierarchical social-variable framework grounded in dual-process social cognition.
 
 ### Figure 1 should communicate 3 things in 1 visual
 
@@ -90,11 +90,11 @@ The figure should hint at this dual-process mapping (e.g., labeling tiers "delib
 - DON'T show specific psychology citation paper covers
 - DON'T show user-study photos or actual hardware photos (those go to Figure 5+)
 - DON'T show neural network architecture / AdaLN details (those go to method section figures)
-- DON'T put VADBridge logo prominently — system name appears in caption, not as branding
+- DON'T put UCV logo prominently — system name appears in caption, not as branding
 
 ### Caption draft (for context — won't appear in figure itself)
 
-> **Fig. 1 | VADBridge delivers nuanced expressive humanoid–human interaction across contact and non-contact channels.** **a**, Current humanoid robots execute identical motion regardless of social context. **b**, VADBridge introduces a 3-tier social control hierarchy: a deliberative ACP layer (Agency, Communion, Proxemics) maps to a reactive VAD style code, dispatched across decoupled motor skills (locomotion, gesture, manipulation). **c**, The same VAD command produces perceptually consistent affect across both gesture (non-physical) and handover (physical) interaction channels — the first cross-channel demonstration on a humanoid robot.
+> **Fig. 1 | UCV delivers nuanced expressive humanoid–human interaction across contact and non-contact channels.** **a**, Current humanoid robots execute identical motion regardless of social context. **b**, UCV introduces a 3-tier social control hierarchy: a deliberative ACP layer (Agency, Communion, Proxemics) maps to a reactive VAD style code, dispatched across decoupled motor skills (locomotion, gesture, manipulation). **c**, The same VAD command produces perceptually consistent affect across both gesture (non-physical) and handover (physical) interaction channels — the first cross-channel demonstration on a humanoid robot.
 
 ### Output deliverable
 

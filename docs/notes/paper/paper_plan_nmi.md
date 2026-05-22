@@ -1,7 +1,7 @@
 # FlowBot → NMI Paper Plan (VAD + Social Handover)
 
 **Target venue**: Nature Machine Intelligence
-**Working title**: *VADBridge: Unified Valence-Arousal-Dominance Representation for Affective Social Handover on Humanoid Robots*
+**Working title**: *Universal Control Variables (UCV): Unified Valence-Arousal-Dominance Representation for Affective Social Handover on Humanoid Robots*
 **Primary submission target (hard DDL)**: **2026-07-15 to 2026-07-20** (13 weeks from 2026-04-20)
 **Extension target (soft fallback)**: 2026-10-15 (21-24 weeks) if MVP quality insufficient
 **Success probability**:
@@ -15,9 +15,9 @@
 
 > Mirrored in `CLAUDE.md` for agent context. **Update HERE first**, then sync CLAUDE.md. Older 4/23 handover-only seed and 4/28 dual-channel ELLMER table are superseded (git history preserves them).
 
-Human–human interaction is mediated by nuanced expressive cues — micro-modulations of posture, gesture, voice, and contact dynamics that signal affective intent and shape how an exchange feels. While humanoid robots can now reliably complete instrumental tasks such as locomotion, gesturing, and object handover, they remain affectively flat: the same action is executed identically whether the context calls for warmth, urgency, hesitation, or assertion. We present **VADBridge**, a humanoid robot system that delivers task-coupled nuanced expressive interaction across both **non-physical** (gesture, posture, gaze) and **physical** (handover, contact-mediated exchange) channels of human–robot interaction. At its core is a continuous **valence–arousal–dominance (VAD) latent** — grounded in affective psychology — that conditions a unified flow-matching motion generation model, allowing the same instrumental action to be modulated along three perceptually meaningful dimensions. VADBridge integrates multimodal user-affect perception, VAD-conditioned motion generation on the Unitree G1 humanoid platform, and closed-loop deployment that updates expression to the user's state in real time. In an N=30 user study spanning gesture and handover scenarios, participants distinguished VAD targets at above-chance accuracy and, critically, perceived the same VAD command as conveying coherent affect **across both interaction channels** — the first demonstration of cross-channel affective consistency on a humanoid robot. By unifying expressive control across contact and non-contact interaction, VADBridge moves humanoid robotics from *completing* tasks toward *inhabiting* them with expressive nuance.
+Human–human interaction is mediated by nuanced expressive cues — micro-modulations of posture, gesture, voice, and contact dynamics that signal affective intent and shape how an exchange feels. While humanoid robots can now reliably complete instrumental tasks such as locomotion, gesturing, and object handover, they remain affectively flat: the same action is executed identically whether the context calls for warmth, urgency, hesitation, or assertion. We present **UCV**, a humanoid robot system that delivers task-coupled nuanced expressive interaction across both **non-physical** (gesture, posture, gaze) and **physical** (handover, contact-mediated exchange) channels of human–robot interaction. At its core is a continuous **valence–arousal–dominance (VAD) latent** — grounded in affective psychology — that conditions a unified flow-matching motion generation model, allowing the same instrumental action to be modulated along three perceptually meaningful dimensions. UCV integrates multimodal user-affect perception, VAD-conditioned motion generation on the Unitree G1 humanoid platform, and closed-loop deployment that updates expression to the user's state in real time. In an N=30 user study spanning gesture and handover scenarios, participants distinguished VAD targets at above-chance accuracy and, critically, perceived the same VAD command as conveying coherent affect **across both interaction channels** — the first demonstration of cross-channel affective consistency on a humanoid robot. By unifying expressive control across contact and non-contact interaction, UCV moves humanoid robotics from *completing* tasks toward *inhabiting* them with expressive nuance.
 
-**RAL contribution split (review-time defense, NOT for abstract / Figure 1):** VADBridge builds on prior in-lab work that established V–A conditioned motion generation on the G1 humanoid [Undergrad et al., RAL 2026, Lingfan = 2nd author]. This work extends that foundation with (1) the **dominance** dimension, (2) the **physical (handover)** channel, (3) **closed-loop** deployment, and (4) the **N=30 cross-channel** user study. Method comparison lives in §2 / §6, not the lead pitch.
+**RAL contribution split (review-time defense, NOT for abstract / Figure 1):** UCV builds on prior in-lab work that established V–A conditioned motion generation on the G1 humanoid [Undergrad et al., RAL 2026, Lingfan = 2nd author]. This work extends that foundation with (1) the **dominance** dimension, (2) the **physical (handover)** channel, (3) **closed-loop** deployment, and (4) the **N=30 cross-channel** user study. Method comparison lives in §2 / §6, not the lead pitch.
 
 **Load-bearing risks (must hold or paper bends):**
 - Cross-channel consistency must show r > 0.3 on V and A in pilot (sprint Day 4) — if not, the headline collapses
@@ -81,7 +81,7 @@ Human–human interaction is mediated by nuanced expressive cues — micro-modul
     └──────┬───────┘                         └──────▲───────────┘
            │                                        │
            │        ┌───────────────────────┐       │
-           └───────►│  VADBridge (3D cont.) ├───────┘
+           └───────►│  UCV (3D cont.) ├───────┘
                     │  shared latent        │
                     └───────────────────────┘
 
@@ -379,7 +379,7 @@ Week 13 (7/13-7/19):  Final polish + proofread
 | EMOTE | ✓ face only | × | categorical | × | × | × | small |
 | HandoverSim | × | × | × | ✓ handover sim | × | sim | × |
 | Kismet legacy | basic | rule-based | categorical | × | ✓ | head robot | small |
-| **VADBridge** | ✓ FM+VAD | ✓ multimodal+VAD | ✓ continuous 3D | ✓ social handover | ✓ | ✓ G1 | **N=50** |
+| **UCV** | ✓ FM+VAD | ✓ multimodal+VAD | ✓ continuous 3D | ✓ social handover | ✓ | ✓ G1 | **N=50** |
 
 ## Appendix B: Five Social Scenarios (user study)
 

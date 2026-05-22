@@ -1,4 +1,4 @@
-# VADBridge Paper Draft — Narrative Tracker
+# Universal Control Variables (UCV) Paper Draft — Narrative Tracker
 
 **Target venue**: Nature Machine Intelligence
 **Hard DDL**: 2026-07-19 · **Soft DDL**: 2026-10-15
@@ -56,14 +56,14 @@ Short title (running head, in `\title[...]`):
 - *Affect-coherent humanoid behaviour across contact and non-contact interaction channels* (10 words — punchy compound but loses the human–human framing)
 - *Continuous affective conditioning enables expressive humanoid–human interaction across contact and non-contact channels* (12 words — ELLMER-style "enables" pattern)
 - *Embodied affective interaction on a humanoid robot through valence–arousal–dominance control* (12 words — names platform, but no channel distinction)
-- *VADBridge: a unified affective code for humanoid–human social interaction* (system-led, NMI dislikes colons)
+- *UCV: a unified affective code for humanoid–human social interaction* (system-led, NMI dislikes colons)
 
 ### Title checklist (NMI house style, from deep-research synthesis)
 
 - [x] ≤ 15 words
 - [x] Leads with capability / outcome, not method
 - [x] Names the construct precisely (affective modulation; both channels named)
-- [ ] Avoid acronyms in title (VADBridge stays as system-name in abstract)
+- [ ] Avoid acronyms in title (UCV stays as system-name in abstract)
 - [ ] No colon (Nature dislikes them in titles)
 
 ---
@@ -85,11 +85,11 @@ Word target: **200–250** (NMI tolerates up to 250, current ~235). Was 4/28 dua
 |---|---|---|
 | 1 | Phenomenon (hook) | Human–human interaction is mediated by nuanced expressive cues — micro-modulations of posture, gesture, voice, and contact dynamics that signal affective intent and shape how an exchange feels. |
 | 2 | Status quo gap | While humanoid robots can now reliably complete instrumental tasks such as locomotion, gesturing, and object handover, they remain affectively flat: the same action is executed identically whether the context calls for warmth, urgency, hesitation, or assertion. |
-| 3 | Our system + scope | We present **VADBridge**, a humanoid robot system that delivers task-coupled nuanced expressive interaction across both **non-physical** (gesture, posture, gaze) and **physical** (handover, contact-mediated exchange) channels of human–robot interaction. |
+| 3 | Our system + scope | We present **UCV**, a humanoid robot system that delivers task-coupled nuanced expressive interaction across both **non-physical** (gesture, posture, gaze) and **physical** (handover, contact-mediated exchange) channels of human–robot interaction. |
 | 4 | Bio/psych premise + apparatus | At its core is a continuous **valence–arousal–dominance (VAD) latent** — grounded in affective psychology — that conditions a unified flow-matching motion generation model, allowing the same instrumental action to be modulated along three perceptually meaningful dimensions. |
-| 5 | System integration | VADBridge integrates multimodal user-affect perception, VAD-conditioned motion generation on the Unitree G1 humanoid platform, and closed-loop deployment that updates expression to the user's state in real time. |
+| 5 | System integration | UCV integrates multimodal user-affect perception, VAD-conditioned motion generation on the Unitree G1 humanoid platform, and closed-loop deployment that updates expression to the user's state in real time. |
 | 6 | Validation + cross-channel headline | In an N=30 user study spanning gesture and handover scenarios, participants distinguished VAD targets at above-chance accuracy and, critically, perceived the same VAD command as conveying coherent affect **across both interaction channels** — the first demonstration of cross-channel affective consistency on a humanoid robot. |
-| 7 | Capability closing | By unifying expressive control across contact and non-contact interaction, VADBridge moves humanoid robotics from *completing* tasks toward *inhabiting* them with expressive nuance. |
+| 7 | Capability closing | By unifying expressive control across contact and non-contact interaction, UCV moves humanoid robotics from *completing* tasks toward *inhabiting* them with expressive nuance. |
 
 **Iteration notes:**
 - Specific numbers (r > 0.6, p < 0.001) deliberately removed — pilot Day 4 (sprint Tue 5/5) determines what we can defensibly claim. Re-introduce after pilot.
@@ -125,7 +125,7 @@ and (b) the "first on humanoid" lit-search is closed.
 
 - [x] Opens with problem stake, not method
 - [x] Has the deictic "Here we report"
-- [x] System name appears (`VADBridge`)
+- [x] System name appears (`UCV`)
 - [x] Validation has explicit numbers (N=30, r>0.6, p<0.001, 50ms)
 - [x] Closes with "marks a step towards…" capability claim
 - [x] Bridges to non-engineering field (psychology + ethology)
@@ -178,7 +178,7 @@ old handover-only frame could not deliver.
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│   (a) PRIOR PARADIGM             (b) VADBridge                  │
+│   (a) PRIOR PARADIGM             (b) UCV                  │
 │   socially flat motion           VAD-modulated motion           │
 │   ┌──────────────┐              ┌──────────────┐                │
 │   │ same prompt  │              │ same prompt  │                │

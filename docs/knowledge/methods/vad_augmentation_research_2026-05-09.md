@@ -2,7 +2,7 @@
 
 # VAD-Style Motion Augmentation: Literature + Recipe
 
-> External survey for the VADBridge augmentation pipeline. Pairs with the in-repo design at `docs/notes/vad/vad_augmentation_v2_framework_2026-05-20.md` (5-primitive composable axes; supersedes the earlier 10-op draft archived at `docs/notes/legacy/vad_augmentation_2026-04-24.md`) and the op bodies in `src/data_pipeline/vad/augment.py`. Goal: (a) ground each op in prior art, (b) decide offline-vs-online-vs-conditional, (c) lock validation methodology before NMI submission.
+> External survey for the Universal Control Variables (UCV) augmentation pipeline. Pairs with the in-repo design at `docs/notes/vad/vad_augmentation_v2_framework_2026-05-20.md` (5-primitive composable axes; supersedes the earlier 10-op draft archived at `docs/notes/legacy/vad_augmentation_2026-04-24.md`) and the op bodies in `src/data_pipeline/vad/augment.py`. Goal: (a) ground each op in prior art, (b) decide offline-vs-online-vs-conditional, (c) lock validation methodology before NMI submission.
 
 ## TL;DR
 
@@ -43,7 +43,7 @@
 
 **Coverage check vs the 5–6 papers user already knew**: confirmed Unuma 1995, Brand & Hertzmann 2000, Holden PFNN 2017, Aristidou (LMA→VAD), Aberman 2020 are present. **Added**: Knight & Simmons (humanoid robot Laban), STEP/EWalk (validation-relevant), MoGlow, 100STYLE, Motion Puzzle, MotionAug, AMUSE, GenMoStyle, MotionS-canonical, EMOTION, HIAER, **LaMoGen** (closest analogue), EmoDiffGes, Pollick, Wallbott, Camurri (foundational psychology).
 
-**Humanoid-specific takeaway**: **EMOTION (Apple), HIAER (same lab), Knight & Simmons** are the only directly humanoid-applicable systems. None of them use VAD. **This is our differentiator.** EMOTION uses LLM-emitted joint traj (style emerges from prompt, no explicit affect axis); HIAER uses 6 categorical interaction labels (Greeting/Supportive/Neutral/Defensive/Ambiguous/Aggressive). VADBridge is the first to put a continuous V/A/D conditioning signal on a real humanoid platform — survives the "first on humanoid" claim from CLAUDE.md load-bearing risks.
+**Humanoid-specific takeaway**: **EMOTION (Apple), HIAER (same lab), Knight & Simmons** are the only directly humanoid-applicable systems. None of them use VAD. **This is our differentiator.** EMOTION uses LLM-emitted joint traj (style emerges from prompt, no explicit affect axis); HIAER uses 6 categorical interaction labels (Greeting/Supportive/Neutral/Defensive/Ambiguous/Aggressive). UCV is the first to put a continuous V/A/D conditioning signal on a real humanoid platform — survives the "first on humanoid" claim from CLAUDE.md load-bearing risks.
 
 ## §2 Kinematic Operator Catalog
 
@@ -128,7 +128,7 @@ Train the generator with a style/affect conditioning channel, sample at any targ
   - **Flow** = `max_t Σ_endeff ‖j‖` (jerk peaks, bound↔free)
   - **Shape** = `max_t V_t` (3D bbox volume, near↔far)
 - EmoDiffGes 2025: progressive synergistic per-region diffusion, dynamic emotion-alignment module. Per-limb emotion = exactly Motion Puzzle's lesson generalized to diffusion.
-- HIAER 2025 (Bao et al., same lab): DART diffusion conditioned on **6 categorical** intent labels via VLM. **No continuous affect axis** — VADBridge fills exactly this gap.
+- HIAER 2025 (Bao et al., same lab): DART diffusion conditioned on **6 categorical** intent labels via VLM. **No continuous affect axis** — UCV fills exactly this gap.
 
 ### Bridge between families
 
@@ -148,12 +148,12 @@ Train the generator with a style/affect conditioning channel, sample at any targ
 
 **Pitfall to avoid**: using only the kinematic regressor to validate the kinematic-op augmentation = circular. A regressor that says jerk↑ ⇒ A↑ will rate jitter-noise-augmented clips as high A by construction. **The regressor probe is meaningful only on labeled external data** (E-Gait, EWalk, ABEE, Kinematic Dataset of Actors).
 
-**Recommended validation tier for VADBridge paper**:
+**Recommended validation tier for UCV paper**:
 1. **Internal sanity**: regressor on `KineDataset of Actors 2020` (1402 trials, 6 emotions, kinematic dataset of actors expressing emotions, Scientific Data 2020) — check that regressor agrees with provided VAD labels. If r > 0.5 per axis, regressor is calibrated; we can use it on augmented data.
 2. **External classifier probe**: ST-GCN classifier trained on E-Gait (publicly available STEP code) — apply to our augmented motions, report classification accuracy by VAD octant.
 3. **Headline perceptual study**: N=15–20 participants × 30 motion pairs (anchor vs augmented), 7-point V/A/D Likert. Cohen's d between target octants. **This is what makes the section reviewable for NMI**.
 
-## §5 Recommended Recipe for VADBridge
+## §5 Recommended Recipe for UCV
 
 ### Step 0 · Calibrate the kinematic regressor on labeled data (1 day)
 

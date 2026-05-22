@@ -1,5 +1,5 @@
 % =============================================================================
-%  VADBridge — Report Section
+%  Universal Control Variables (UCV) — Report Section
 %  Covers: (1) VAD definition + math, (2) kinematic VAD computation,
 %          (3) data augmentation framework.
 %  Author: Lingfan Bao   Date: 2026-05-20
@@ -12,7 +12,7 @@
 \subsection{Definition}
 \label{sec:vad-def}
 
-VADBridge represents the affective style of any motion primitive as a continuous
+UCV represents the affective style of any motion primitive as a continuous
 three--dimensional latent
 \begin{equation}
   \mathrm{VAD} \;=\; (V,\,A,\,D) \;\in\; [-1,+1]^3,
@@ -36,7 +36,7 @@ perceptually meaningful, psychologically grounded modulation of body movement:
     \emph{acceleration peak} (Laban Weight).
   \item[\textbf{Dominance} ($D$)] -- the ``active--passive'' engagement with
     a target. $D>0$: assertive / target--directed. $D<0$: hesitant / withdrawn.
-    In VADBridge we deliberately depart from the traditional \emph{static
+    In UCV we deliberately depart from the traditional \emph{static
     expansion} framing (which collapses with $V$
     per Wallbott's PCA~\cite{wallbott1998bodily}) and define $D$ as
     \emph{outward action}: forward approach
