@@ -11,7 +11,7 @@ Pipeline per clip (same recipe as babel_smooth_sonic_compare.py, NO rendering):
   7. Resample 50fps→30fps to match original BABEL framing
   8. Save NPZ with metadata for filter decisions
 
-Output: data/G1_Filtered_DATA/babel_npz_sonic_simmed/<seq>.npz
+Output: data/G1_Filtered_DATA/babel_npz_sonic_simmed_v3/<seq>.npz
   Fields (same schema as babel_npz/*.npz):
     root_pos: (T, 3) float32
     root_quat: (T, 4) float32 xyzw
@@ -22,7 +22,7 @@ Output: data/G1_Filtered_DATA/babel_npz_sonic_simmed/<seq>.npz
     _sonic_warmup_residual_dof: float (rad)
     _ground_fix_dz: float (m, how much was lifted)
     _orig_seq: str (source BABEL stem)
-  Plus a sidecar manifest: babel_npz_sonic_simmed/_manifest.csv
+  Plus a sidecar manifest: babel_npz_sonic_simmed_v3/_manifest.csv
 
 Env vars (override defaults):
   CLIPS  = "seq1 seq2 ..."   (default: all motion clips in babel_npz/)
@@ -32,7 +32,7 @@ Env vars (override defaults):
   BLEND_SEC = "0.5"
   WARMUP_SEC = "1.5"
   GROUND_CUSHION = "0.005"
-  OUT_DIR = "data/G1_Filtered_DATA/babel_npz_sonic_simmed"
+  OUT_DIR = "data/G1_Filtered_DATA/babel_npz_sonic_simmed_v3"
   RESUME = "1"  (skip clips that already have an output npz; default on)
 """
 from __future__ import annotations
@@ -75,7 +75,7 @@ if SHOULDER_KP_SCALE != 1.0:
 # ---- Paths ----
 G1_XML_PATH = _DART_ROOT / 'third_party/gmr/assets/unitree_g1/g1_mocap_29dof.xml'
 BABEL_DIR   = _DART_ROOT / 'data/G1_Filtered_DATA/babel_npz'
-OUT_DIR     = Path(os.environ.get('OUT_DIR', _DART_ROOT / 'data/G1_Filtered_DATA/babel_npz_sonic_simmed'))
+OUT_DIR     = Path(os.environ.get('OUT_DIR', _DART_ROOT / 'data/G1_Filtered_DATA/babel_npz_sonic_simmed_v3'))
 DEPLOY_DIR  = '/home/lingfanb/Gitcode/GR00T-WholeBodyControl/gear_sonic_deploy'
 
 # ---- Params (matching babel_smooth_sonic_compare.py validated recipe) ----

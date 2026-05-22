@@ -1,4 +1,4 @@
-"""Action taxonomy for VADBridge augmentation primitives.
+"""Action taxonomy for UCV augmentation primitives.
 
 4 classes based on Kendon (2004) gesture phases + DMP discrete-vs-rhythmic
 distinction (Ijspeert/Schaal; Saveriano et al. IJRR 2023):

@@ -11,7 +11,7 @@ import torch as _torch  # noqa: F401
 from . import _pytorch3d_shim as _p3d_shim
 _p3d_shim.install_shim()
 
-"""Optimization-based motion augmentation for VADBridge.
+"""Optimization-based motion augmentation for UCV.
 
 Public API
 ----------

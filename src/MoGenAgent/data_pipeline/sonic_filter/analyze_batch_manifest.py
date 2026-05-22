@@ -1,6 +1,6 @@
 """Analyze SONIC batch manifest and produce problem categorization for user review.
 
-Reads:  data/G1_Filtered_DATA/babel_npz_sonic_simmed/_manifest.csv
+Reads:  data/G1_Filtered_DATA/babel_npz_sonic_simmed_v3/_manifest.csv
         (+ NPZ files in that dir)
 
 Produces:
@@ -35,7 +35,7 @@ from collections import defaultdict, Counter
 import numpy as np
 
 DART_ROOT = Path(__file__).resolve().parents[4]
-SIMMED_DIR = DART_ROOT / os.environ.get('SIMMED_DIR_REL', 'data/G1_Filtered_DATA/babel_npz_sonic_simmed')
+SIMMED_DIR = DART_ROOT / os.environ.get('SIMMED_DIR_REL', 'data/G1_Filtered_DATA/babel_npz_sonic_simmed_v3')
 OUT_DIR    = DART_ROOT / os.environ.get('ANALYSIS_DIR_REL', 'data/motion_lib/dataset_qa/sonic_batch_analysis')
 
 # Thresholds (calibrated against earlier per-clip diagnostics)

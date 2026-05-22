@@ -3,7 +3,7 @@
 Reads:
   data/motion_lib/dataset_qa/sonic_batch_analysis/review_list.txt
   data/motion_lib/dataset_qa/sonic_batch_analysis/reject_list.txt
-  + NPZ pairs from babel_npz/ (orig) and babel_npz_sonic_simmed/ (filtered)
+  + NPZ pairs from babel_npz/ (orig) and babel_npz_sonic_simmed_v3/ (filtered)
 
 Writes:
   data/motion_lib/dataset_qa/sonic_batch_analysis/review_mp4/<seq>.mp4
@@ -33,7 +33,7 @@ from PIL import Image, ImageDraw, ImageFont
 DART_ROOT = Path(__file__).resolve().parents[4]
 G1_XML = DART_ROOT / 'third_party/gmr/assets/unitree_g1/g1_mocap_29dof.xml'
 BABEL_DIR  = DART_ROOT / 'data/G1_Filtered_DATA/babel_npz'
-SIMMED_DIR = DART_ROOT / os.environ.get('SIMMED_DIR_REL', 'data/G1_Filtered_DATA/babel_npz_sonic_simmed')
+SIMMED_DIR = DART_ROOT / os.environ.get('SIMMED_DIR_REL', 'data/G1_Filtered_DATA/babel_npz_sonic_simmed_v3')
 ANALYSIS_DIR = DART_ROOT / os.environ.get('ANALYSIS_DIR_REL', 'data/motion_lib/dataset_qa/sonic_batch_analysis')
 
 MAX_REVIEW = int(os.environ.get('MAX_REVIEW', '50'))
