@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 import pandas as pd
 
-DART_ROOT = Path(__file__).resolve().parents[2]
+DART_ROOT = Path(__file__).resolve().parents[4]
 SONIC_OUT = DART_ROOT / 'data/G1_Filtered_DATA/BONES_filtered'
 WHITELIST_PATH = DART_ROOT / 'configs/MoGen/data/bones_whitelist.txt'
 META_PATH = SONIC_OUT / 'meta.json'

@@ -9,7 +9,6 @@ For each of the 22 action classes:
 Output: data/verify/sonic_per_class/
 """
 import os
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -17,14 +16,15 @@ import imageio
 import yaml
 import mujoco as mj
 
-_DART_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(_DART_ROOT / 'scripts/sonic_filter'))
+_DART_ROOT = Path(__file__).resolve().parents[4]
 os.environ.setdefault('MUJOCO_GL', 'egl')
 os.environ.setdefault('OMP_NUM_THREADS', '1')
 
 G1_XML_PATH = str(_DART_ROOT / 'third_party/gmr/general_motion_retargeting/../assets/unitree_g1/g1_mocap_29dof.xml')
 
-from batch_sim_record_bones import evaluate_episode, OnnxModel, _ensure_cu12_ld_path  # noqa
+from MoGenAgent.data_pipeline.sonic_filter.batch_sim_record_bones import (
+    evaluate_episode, OnnxModel, _ensure_cu12_ld_path,
+)  # noqa
 
 ORIG_DIR  = _DART_ROOT / 'data/raw/bones_sonic_input'
 LBL_DIR   = _DART_ROOT / 'data/processed/bones_npz'
