@@ -13,7 +13,7 @@ import os
 
 import numpy as np
 
-from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
+from MoGenAgent.utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
 
 
 # ── Module-level config ───────────────────────────────────────────
@@ -36,7 +36,7 @@ _SAFETY_HEADROOM = 0.95
 #
 # These limits are GLOBAL and ALWAYS applied as the final clamp in every
 # primitive. To use raw mechanical limits, pass G1_JOINT_LIMITS_LOWER/UPPER
-# from utils.g1_utils directly.
+# from MoGenAgent.utils.g1_utils directly.
 _LEFT_ELBOW_DOF, _RIGHT_ELBOW_DOF = 18, 25
 _LEFT_KNEE_DOF,  _RIGHT_KNEE_DOF  = 3, 9
 _MIN_ELBOW_FLEX = 0.10    # ~5.7°  (always slight bend, never straight)

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 
-from data_pipeline.vad.regressor_3x3 import compute_vad_3x3, compute_vad_3x3_batch
+from MoGenAgent.data_pipeline.vad.regressor_3x3 import compute_vad_3x3, compute_vad_3x3_batch
 
 
 def main():

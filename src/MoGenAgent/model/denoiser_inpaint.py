@@ -26,7 +26,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from VADFlowMoGen.model.denoiser import PositionalEncoding, TimestepEmbedder
+from MoGenAgent.model.denoiser import PositionalEncoding, TimestepEmbedder
 
 
 class DenoiserTransformerInpaint(nn.Module):

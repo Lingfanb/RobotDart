@@ -44,7 +44,7 @@ eval_one() {
     return 0  # already rendered
   fi
   echo "[$(date +%H:%M)] RENDER $exp_name → $out_tag" | tee -a "$LOG_FILE"
-  CUDA_VISIBLE_DEVICES=0 MUJOCO_GL=egl python -m VADFlowMoGen.render.g1_35 \
+  CUDA_VISIBLE_DEVICES=0 MUJOCO_GL=egl python -m MoGenAgent.render.g1_35 \
     --denoiser-checkpoint "$ckpt_path" \
     --inference-steps 50 --solver heun --guidance-param 2.5 \
     --init-idx $INIT_IDX \

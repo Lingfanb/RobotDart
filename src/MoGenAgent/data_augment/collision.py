@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from data_augment.constants import (
+from MoGenAgent.data_augment.constants import (
     G1_GROUND_FOOT_Z,
     G1_L_ANKLE_LINK, G1_R_ANKLE_LINK,
 )

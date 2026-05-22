@@ -33,7 +33,7 @@ echo "===== ${EXP_NAME} started at $(date) on $(hostname) ====="
 echo "Job ID: $SLURM_JOB_ID  Stage: ${STAGE1}/${STAGE2}/${STAGE3}"
 nvidia-smi || true
 
-python -m VADFlowMoGen.train.g1_35 \
+python -m MoGenAgent.train.g1_35 \
   --exp-name "${EXP_NAME}" \
   --data-dir $RUNTIME/data/processed/mp_data_g1_69_babel_8class/Canonicalized_h2_f16_num1_fps30/ \
   --train-args.batch-size 256 \

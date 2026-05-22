@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import torch
 
-from data_pipeline.vad.regressor_3x3 import (
+from MoGenAgent.data_pipeline.vad.regressor_3x3 import (
     FUSION_WEIGHTS, NORM_PARAMS,
     LEFT_WRIST_LINK_IDX, RIGHT_WRIST_LINK_IDX,
     LEFT_SHOULDER_LINK_IDX, RIGHT_SHOULDER_LINK_IDX,

@@ -20,16 +20,21 @@ import yaml
 
 _DART_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_DART_ROOT / 'src'))
-from data_pipeline.vad.regressor_3x3 import extract_features_3x3
-from data_pipeline.vad.action_taxonomy import canonicalize_act_cats, ACTION_CLASSES
+from MoGenAgent.data_pipeline.vad.regressor_3x3 import extract_features_3x3
+from MoGenAgent.data_pipeline.vad.action_taxonomy import canonicalize_act_cats, ACTION_CLASSES
 
-DATA_PKL = _DART_ROOT / 'data' / 'processed' / 'bones_mp_data' / 'train.pkl'
-OUT_YAML = _DART_ROOT / 'src' / 'data_pipeline' / 'vad' / 'norm_params_by_action.yaml'
+DATA_PKL = (_DART_ROOT / 'data' / 'processed' / 'mp_data_g1_69_bones_clean_v2'
+            / 'Canonicalized_h2_f16_num1_fps30' / 'train.pkl')
+OUT_YAML = _DART_ROOT / 'configs' / 'vad' / 'norm_params_by_action.yaml'
 
+# v1.5 (13 features: v1.5 fusion + legacy)
+# Fusion indicators (v1.5): energy_per_frame, motion_amplitude_ee, root_height,
+# body_openness, reach_extension, forward_lean
 FEATURE_NAMES = [
-    'mean_speed', 'jerk_l1', 'accel_peak',
-    'smoothness', 'body_contraction', 'spine_uprightness',
-    'reach_extension', 'forward_approach', 'directness',
+    'mean_speed', 'jerk_l1', 'accel_peak', 'energy_per_frame',
+    'motion_amplitude', 'motion_amplitude_ee', 'smoothness',
+    'body_contraction', 'body_openness', 'chest_height', 'root_height',
+    'reach_extension', 'forward_lean',
 ]
 
 
@@ -64,10 +69,23 @@ def main():
         n = len(by_action.get(cls, []))
         print(f'  {cls:20s} {n:>10,d}')
 
-    # For each (action, feature) compute median + IQR/2 of raw feature value.
-    # NOTE: link_pos_local is None — body_contraction uses arm-DOF proxy and
-    # reach_extension is 0. Calibration for these two will be inaccurate from
-    # this pass; can re-run later when FK is wired into the full pipeline.
+    # v1.5 indicators (13 features: v1.5 fusion + legacy back-compat).
+    # link_pos_local in primitive dict (mp_data_g1_69_bones_clean_v2) enables
+    # V1 EE bbox, V3 5-pt openness, D1 reach all via real FK.
+    def _featvec(p):
+        lpl = p.get('link_pos_local')
+        if lpl is not None:
+            lpl = lpl.astype(np.float32)
+        feats = extract_features_3x3(p['features_69'].astype(np.float32),
+                                      link_pos_local=lpl)
+        return [
+            feats.mean_speed, feats.jerk_l1, feats.accel_peak, feats.energy_per_frame,
+            feats.motion_amplitude, feats.motion_amplitude_ee, feats.smoothness,
+            feats.body_contraction, feats.body_openness, feats.chest_height, feats.root_height,
+            feats.reach_extension, feats.forward_lean,
+        ]
+    n_feats = 13
+
     norm_params: dict[str, dict[str, list[float]]] = {}
 
     for cls in ACTION_CLASSES:
@@ -75,43 +93,33 @@ def main():
         if len(prims) < 100:
             print(f'[skip] {cls}: only {len(prims)} primitives — too few for stable stats')
             continue
-        # Collect 9 features for each primitive
-        feat_arr = np.zeros((len(prims), 9), dtype=np.float32)
+        feat_arr = np.zeros((len(prims), n_feats), dtype=np.float32)
         for i, p in enumerate(prims):
-            feats = extract_features_3x3(p['features_69'])
-            feat_arr[i] = [
-                feats.mean_speed, feats.jerk_l1, feats.accel_peak,
-                feats.smoothness, feats.body_contraction, feats.spine_uprightness,
-                feats.reach_extension, feats.forward_approach, feats.directness,
-            ]
-        # Median + IQR/2
+            feat_arr[i] = _featvec(p)
         median = np.median(feat_arr, axis=0)
         q25 = np.percentile(feat_arr, 25, axis=0)
         q75 = np.percentile(feat_arr, 75, axis=0)
         iqr_half = (q75 - q25) / 2.0
-        # Clamp σ so it doesn't go to 0 (e.g. degenerate features in idle classes)
         iqr_half = np.maximum(iqr_half, 1e-3)
-
         norm_params[cls] = {
             name: [float(median[i]), float(iqr_half[i])]
             for i, name in enumerate(FEATURE_NAMES)
         }
+        # Indices into v1.5 FEATURE_NAMES (13 features): see top of file.
+        # mean_speed=0, energy_per_frame=3, motion_amplitude_ee=5, body_openness=8,
+        # root_height=10, reach_extension=11, forward_lean=12.
         print(f'[calib] {cls:20s} ({len(prims):>8,} prim): '
-              f'speed_μ={median[0]:.4f}σ={iqr_half[0]:.4f}  '
-              f'jerk_μ={median[1]:.4f}σ={iqr_half[1]:.4f}')
+              f'energy_μ={median[3]:.4f}σ={iqr_half[3]:.4f}  '
+              f'amp_ee_μ={median[5]:.4f}σ={iqr_half[5]:.4f}  '
+              f'openness_μ={median[8]:.3f}σ={iqr_half[8]:.3f}  '
+              f'root_h_μ={median[10]:.3f}  '
+              f'reach_μ={median[11]:.3f}  lean_μ={median[12]:+.3f}')
 
-    # Add a 'global' fallback (all classes pooled) for unknown / 'other'
     all_feats = []
     for prims in by_action.values():
-        if not prims:
-            continue
+        if not prims: continue
         for p in prims:
-            f = extract_features_3x3(p['features_69'])
-            all_feats.append([
-                f.mean_speed, f.jerk_l1, f.accel_peak,
-                f.smoothness, f.body_contraction, f.spine_uprightness,
-                f.reach_extension, f.forward_approach, f.directness,
-            ])
+            all_feats.append(_featvec(p))
     all_arr = np.asarray(all_feats, dtype=np.float32)
     g_med = np.median(all_arr, axis=0)
     g_iqr = (np.percentile(all_arr, 75, axis=0)

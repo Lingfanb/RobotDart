@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Visualize GMR_filtered motions — renders MP4 videos via MuJoCo offscreen.
 
-Supports both PKL (original GMR retarget, 43-DOF) and NPZ (sim_recorded, 29-DOF) formats.
+Supports both PKL (original GMR retarget, 43-DOF) and NPZ (AMASS_filtered, 29-DOF) formats.
 
 Usage:
     cd ~/Gitcode/DART
@@ -23,7 +23,7 @@ import imageio
 
 _DART_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, _DART_ROOT)
-from utils.g1_utils import G1_XML_PATH
+from MoGenAgent.utils.g1_utils import G1_XML_PATH
 
 FILTERED_DIR = os.path.join(_DART_ROOT, 'data', 'G1_DATA', 'GMR_filtered')
 VIDEO_DIR = os.path.join(_DART_ROOT, 'data', 'verify_g1', 'filtered_vis')

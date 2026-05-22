@@ -24,8 +24,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from utils.g1_utils import G1_SELECTED_LINKS
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.utils.g1_utils import G1_SELECTED_LINKS
 
 
 # Ankle link indices into G1_SELECTED_LINKS (29 links)

@@ -10,16 +10,25 @@ import os
 import json
 import pickle
 import random
+import sys
 import time
 from os.path import join as pjoin
 
 import numpy as np
+
+# Compat shim: pkls saved on Isambard (numpy 2.x) reference 'numpy._core',
+# which doesn't exist in numpy 1.x. Alias it to numpy.core before unpickling.
+if not hasattr(np, '_core'):
+    sys.modules.setdefault('numpy._core', np.core)
+    sys.modules.setdefault('numpy._core.multiarray', np.core.multiarray)
+    sys.modules.setdefault('numpy._core.numeric', np.core.numeric)
+
 import torch
 from tqdm import tqdm
 from collections import Counter
 
-from utils.g1_utils import G1PrimitiveUtility, G1PrimitiveUtility69
-from utils.misc_util import load_and_freeze_clip, encode_text
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility, G1PrimitiveUtility69
+from MoGenAgent.utils.misc_util import load_and_freeze_clip, encode_text
 
 
 class G1PrimitiveSequenceDataset:

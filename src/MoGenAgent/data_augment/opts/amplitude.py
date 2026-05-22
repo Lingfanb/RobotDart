@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from data_augment.constants import G1_ANATOMICAL_LIMITS_LO, G1_ANATOMICAL_LIMITS_HI
+from MoGenAgent.data_augment.constants import G1_ANATOMICAL_LIMITS_LO, G1_ANATOMICAL_LIMITS_HI
 
 
 def p1_scale_deviation(dof_motion: np.ndarray,

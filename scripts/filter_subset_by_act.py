@@ -72,7 +72,7 @@ def main():
         print(f'  [config] copied to {dst_cfg}')
 
     print('\nDone. Train with:')
-    print(f'  python -m VADFlowMoGen.train.legacy.g1_65 --data_dir {dst_dir}/ ...')
+    print(f'  python -m MoGenAgent.train.legacy.g1_65 --data_dir {dst_dir}/ ...')
 
 
 if __name__ == '__main__':

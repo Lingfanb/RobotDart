@@ -23,7 +23,7 @@ Key design choices:
   - Single-segment consistency (no multi-segment — simpler first).
 
 Usage:
-    python -m VADFlowMoGen.train.legacy.g1_cfm \
+    python -m MoGenAgent.train.legacy.g1_cfm \
         --exp_name g1_fm_cfm_v1 \
         --train_args.stage1_steps 80000 \
         --train_args.stage2_steps 100000 \
@@ -49,10 +49,10 @@ import yaml
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.flow_matching.sampler import FMSampler
-from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.flow_matching.sampler import FMSampler
+from MoGenAgent.utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
 
 
 # ── Dataclasses ──────────────────────────────────────────────────────────────
@@ -341,7 +341,7 @@ class G1FMCFMTrainer:
         x_t1 = self.fm.q_sample(future_motion_gt, t1, noise)
         x_t2 = self.fm.q_sample(future_motion_gt, t2, noise)
 
-        from VADFlowMoGen.flow_matching.sampler import _continuous_to_discrete_t
+        from MoGenAgent.flow_matching.sampler import _continuous_to_discrete_t
         t_int_1 = _continuous_to_discrete_t(t1)
         t_int_2 = _continuous_to_discrete_t(t2)
 

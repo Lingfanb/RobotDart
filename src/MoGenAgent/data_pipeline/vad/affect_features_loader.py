@@ -1,7 +1,7 @@
 """Load affect_features.yaml for programmatic access.
 
 Usage:
-    from data_pipeline.vad.affect_features_loader import load_features, by_tier, by_dim
+    from MoGenAgent.data_pipeline.vad.affect_features_loader import load_features, by_tier, by_dim
 
     feats = load_features()
     tier2 = by_tier(2)       # features to implement next

@@ -1,7 +1,7 @@
 from _legacy.model.mdm import MDM
 from _legacy.diffusion import gaussian_diffusion as gd
 from _legacy.diffusion.respace import SpacedDiffusion, space_timesteps
-from utils.parser_util import get_cond_mode
+from _legacy.utils.parser_util import get_cond_mode
 import torch
 
 

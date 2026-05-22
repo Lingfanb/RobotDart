@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import pickle
 import json
-from utils.smpl_utils import *
+from _legacy.utils.smpl_utils import *
 from scipy.spatial.transform import Rotation as R
 
 debug = 0

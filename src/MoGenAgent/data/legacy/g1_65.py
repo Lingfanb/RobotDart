@@ -178,7 +178,7 @@ class G1PrimitiveDataset65:
 
         # Always ensure clip_model is loaded — render script needs it for new prompts.
         if not hasattr(self, 'clip_model') or self.clip_model is None:
-            from utils.misc_util import load_and_freeze_clip
+            from MoGenAgent.utils.misc_util import load_and_freeze_clip
             self.clip_model = load_and_freeze_clip(self.clip_version, device=self.device)
 
         unique_texts = list(self.text_to_emb.keys())
@@ -216,7 +216,7 @@ class G1PrimitiveDataset65:
     def _encode_texts_to_cache(self, texts):
         # Keep clip_model as attribute so render script can encode new prompts.
         if not hasattr(self, 'clip_model') or self.clip_model is None:
-            from utils.misc_util import load_and_freeze_clip
+            from MoGenAgent.utils.misc_util import load_and_freeze_clip
             self.clip_model = load_and_freeze_clip(self.clip_version, device=self.device)
         import clip
         with torch.no_grad():

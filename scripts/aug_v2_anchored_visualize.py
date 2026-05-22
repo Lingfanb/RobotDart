@@ -22,14 +22,14 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from data_augment import load_from_npz
-from data_augment.primitives import (
+from MoGenAgent.data_augment import load_from_npz
+from MoGenAgent.data_augment.primitives import (
     p1_scale_deviation,
     build_anchor_interpolated_reference,
     per_cycle_normalize_deviation,
 )
-from data_augment.phases import auto_segment_phases, kendon_k_schedule, detect_valleys_all
-from utils.g1_utils import G1PrimitiveUtility, G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
+from MoGenAgent.data_augment.phases import auto_segment_phases, kendon_k_schedule, detect_valleys_all
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility, G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
 
 
 def fk_hand_dist(util, rp, rq, dof):

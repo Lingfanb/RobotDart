@@ -19,7 +19,7 @@ from _legacy.diffusion.nn import mean_flat, sum_flat
 from _legacy.diffusion.losses import normal_kl, discretized_gaussian_log_likelihood
 from _legacy.data_loaders.humanml.scripts import motion_process
 try:
-    from utils.smpl_utils import get_smplx_param_from_6d
+    from _legacy.utils.smpl_utils import get_smplx_param_from_6d
 except (ImportError, ValueError):
     get_smplx_param_from_6d = None  # Not needed for G1 pipeline
 from pytorch3d import transforms

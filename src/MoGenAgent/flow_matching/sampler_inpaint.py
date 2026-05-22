@@ -7,7 +7,7 @@ at every step (and inside q_sample for training):
 This guarantees the observed (history) region is byte-identical to the GT
 context — eliminating primitive-seam jumps by construction.
 
-Lifted from `VADFlowMoGen.flow_matching.sampler.FMSampler` and extended; kept as a
+Lifted from `MoGenAgent.flow_matching.sampler.FMSampler` and extended; kept as a
 separate file so the existing 35 / 63 / 65-dim non-inpainting code paths are
 unaffected.
 """

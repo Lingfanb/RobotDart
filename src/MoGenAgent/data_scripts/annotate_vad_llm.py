@@ -4,7 +4,7 @@ Real code lives in data_pipeline/vad/llm_annotator.py. This wrapper preserves
 the `python -m data_scripts.annotate_vad_llm ...` CLI entry point mentioned
 in earlier logs.
 """
-from data_pipeline.vad.llm_annotator import (
+from MoGenAgent.data_pipeline.vad.llm_annotator import (
     Args,
     SYSTEM_PROMPT,
     USER_PROMPT_TEMPLATE,

@@ -5,7 +5,7 @@
 **Purpose:** Every action class in our skill library needs a structured *VAD card* that defines its affective calibration. The card drives three downstream uses:
 
 1. **Optimization-based augmentation** ([scripts/aug_opt_arousal_hands.py](../../../scripts/aug_opt_arousal_hands.py)) — converts `target_unit ∈ [-1, +1]` to raw VAD via μ/σ, so the user can say "give me a wave at A = +0.5" with a human-readable meaning.
-2. **Conditional generation** ([src/VADFlowMoGen/flow_matching/sampler.py](../../../src/VADFlowMoGen/flow_matching/sampler.py)) — the FM model conditions on VAD, but the conditioning scale must be calibrated per-action, otherwise "same VAD" across actions is incommensurable.
+2. **Conditional generation** ([src/MoGenAgent/flow_matching/sampler.py](../../../src/MoGenAgent/flow_matching/sampler.py)) — the FM model conditions on VAD, but the conditioning scale must be calibrated per-action, otherwise "same VAD" across actions is incommensurable.
 3. **Cross-channel consistency (N=30 user study)** — for the NMI headline claim, a participant rating "high arousal wave" and "high arousal handover" needs them to be objectively *equally* aroused. Per-action calibration is what makes them comparable.
 
 Without these cards, raw A numbers are uninterpretable (e.g., BONES wave A = 0.0028 vs BABEL wave A = 0.00028 — 10× gap purely from root-motion contamination).

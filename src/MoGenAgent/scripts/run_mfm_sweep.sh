@@ -3,9 +3,9 @@
 # Re-uses production no_s1 ckpt (sf=0.21). No retraining.
 #
 # Output: outputs/eval/35_mfm_<config>/<prompt>/{video.mp4,data.npz}
-# Eval:   python src/VADFlowMoGen/scripts/eval_mfm_sweep.py
+# Eval:   python src/MoGenAgent/scripts/eval_mfm_sweep.py
 set -o pipefail
-# Script lives at src/VADFlowMoGen/scripts/, so cd up 3 levels to repo root.
+# Script lives at src/MoGenAgent/scripts/, so cd up 3 levels to repo root.
 cd "$(dirname "$0")/../../.."
 
 source ~/miniforge3/etc/profile.d/conda.sh
@@ -25,7 +25,7 @@ run_one() {
     return 0
   fi
   echo "[$(date +%H:%M)] render → $tag"
-  CUDA_VISIBLE_DEVICES=0 MUJOCO_GL=egl python -m VADFlowMoGen.render.g1_35 \
+  CUDA_VISIBLE_DEVICES=0 MUJOCO_GL=egl python -m MoGenAgent.render.g1_35 \
     --denoiser-checkpoint "$CKPT" \
     $BASE_ARGS \
     --output-dir "$out_dir" \

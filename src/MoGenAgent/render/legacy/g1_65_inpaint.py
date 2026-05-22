@@ -7,7 +7,7 @@ takes the FULL (history + future) sequence with `obs_mask = 1` over history
 and `obs_x0` containing the clean history.
 
 Usage:
-    MUJOCO_GL=egl python -m VADFlowMoGen.render.legacy.g1_65_inpaint \\
+    MUJOCO_GL=egl python -m MoGenAgent.render.legacy.g1_65_inpaint \\
         --denoiser_checkpoint ./outputs/checkpoints/mld_denoiser/g1_fm_65_inpaint_v1/checkpoint_280000.pt \\
         --prompts "stand" "walk forward" "run" "kick" \\
         --num_rollout_steps 25 \\
@@ -29,20 +29,20 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1_XML_PATH, G1_NUM_BODY_DOFS, G1_SELECTED_LINKS, G1_CANON_Z_OFFSET,
 )
-from utils.misc_util import encode_text
-from VADFlowMoGen.data.legacy.g1_65 import G1PrimitiveDataset65, FEATURE_DIM_65
-from VADFlowMoGen.train.legacy.g1_65_inpaint import (
+from MoGenAgent.utils.misc_util import encode_text
+from MoGenAgent.data.legacy.g1_65 import G1PrimitiveDataset65, FEATURE_DIM_65
+from MoGenAgent.train.legacy.g1_65_inpaint import (
     G1FM65InpaintArgs, DenoiserMLPArgs, DenoiserTransformerArgs,
 )
-from VADFlowMoGen.render.legacy.g1_65 import (
+from MoGenAgent.render.legacy.g1_65 import (
     inverse_features_65, plot_joints_over_time, plot_root_over_time,
     plot_full_analysis,
 )
-from VADFlowMoGen.model.denoiser_inpaint import DenoiserTransformerInpaint
-from VADFlowMoGen.flow_matching.sampler_inpaint import FMSamplerInpaint
+from MoGenAgent.model.denoiser_inpaint import DenoiserTransformerInpaint
+from MoGenAgent.flow_matching.sampler_inpaint import FMSamplerInpaint
 
 
 # ── Load checkpoint ──────────────────────────────────────────────────────────

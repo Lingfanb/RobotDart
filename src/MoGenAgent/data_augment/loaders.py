@@ -22,7 +22,7 @@ if not hasattr(np, '_core'):
     sys.modules.setdefault('numpy._core.numeric', np.core.numeric)
 
 
-_DART_ROOT = Path(__file__).resolve().parent.parent.parent
+_DART_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 # Default BABEL pure-wave sequence (all consecutive primitives have
 # act_cats == ['wave_right_hand'], no walking contamination).
@@ -132,7 +132,7 @@ def render_mp4(root_pos, root_quat_xyzw, dof_pos, out_path,
     os.environ.setdefault('MUJOCO_GL', 'egl')
     import mujoco as mj
     import imageio
-    from utils.g1_utils import G1_XML_PATH
+    from MoGenAgent.utils.g1_utils import G1_XML_PATH
 
     model = mj.MjModel.from_xml_path(str(G1_XML_PATH))
     renderer = mj.Renderer(model, height=size[1], width=size[0])

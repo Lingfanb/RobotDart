@@ -36,7 +36,7 @@ echo "  root_smooth=${ROOT_SMOOTH} boundary=${BOUNDARY} ema_decay=${EMA_DECAY}"
 echo "  stage = ${S1}/${S2}/${S3}"
 nvidia-smi || true
 
-python -m VADFlowMoGen.train.g1_35 \
+python -m MoGenAgent.train.g1_35 \
   --exp-name "${EXP_NAME}" \
   --data-dir $RUNTIME/data/processed/mp_data_g1_69_babel_8class/Canonicalized_h2_f16_num1_fps30/ \
   --train-args.batch-size 256 \

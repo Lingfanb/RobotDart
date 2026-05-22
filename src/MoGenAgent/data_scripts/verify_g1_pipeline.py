@@ -27,7 +27,7 @@ _GMR_ROOT = os.path.join(_DART_ROOT, 'third_party', 'gmr')
 
 # ─── Load GMR params (bypass __init__.py) ────────────────────────────────
 sys.path.insert(0, _DART_ROOT)
-from utils.g1_utils import G1_XML_PATH, G1_NUM_BODY_DOFS
+from MoGenAgent.utils.g1_utils import G1_XML_PATH, G1_NUM_BODY_DOFS
 
 # ─── Configuration ───────────────────────────────────────────────────────
 SEQ_DATA_DIR = os.path.join(_DART_ROOT, 'data', 'seq_data_g1')

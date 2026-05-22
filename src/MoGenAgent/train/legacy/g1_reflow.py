@@ -1,7 +1,7 @@
 """Train 2-Rectified Flow on teacher-generated (noise, motion) pairs.
 
 Usage:
-    MUJOCO_GL=egl python -m VADFlowMoGen.train.legacy.g1_reflow \
+    MUJOCO_GL=egl python -m MoGenAgent.train.legacy.g1_reflow \
         --exp_name g1_fm_reflow_v1 \
         --pairs_path ./data/processed/reflow_pairs_v1_80k.pt \
         --train_args.stage1_steps 100000 \
@@ -34,9 +34,9 @@ import yaml
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.flow_matching.sampler import FMSampler, _continuous_to_discrete_t
-from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.flow_matching.sampler import FMSampler, _continuous_to_discrete_t
+from MoGenAgent.utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
 
 
 # ── Dataclasses ──────────────────────────────────────────────────────────────

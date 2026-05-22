@@ -25,15 +25,15 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from data_augment import load_from_npz
-from data_augment.primitives import (
+from MoGenAgent.data_augment import load_from_npz
+from MoGenAgent.data_augment.primitives import (
     p_openness,
     G1_L_WRIST_LINK, G1_R_WRIST_LINK,
     G1_L_ELBOW_LINK, G1_R_ELBOW_LINK,
 )
-from data_augment.phases import auto_segment_by_ee_dev
-from data_augment.taxonomy import ACTION_SUBCLASS, SUBCLASS_EE_LINKS
-from utils.g1_utils import G1PrimitiveUtility
+from MoGenAgent.data_augment.phases import auto_segment_by_ee_dev
+from MoGenAgent.data_augment.taxonomy import ACTION_SUBCLASS, SUBCLASS_EE_LINKS
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility
 
 
 def resolve_seed_npz(action):

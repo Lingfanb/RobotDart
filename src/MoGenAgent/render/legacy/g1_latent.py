@@ -6,7 +6,7 @@ Differences vs render_g1_rollout_fm.py (motion-space FM):
 - Same ODE-step configurability + CFG
 
 Usage:
-    MUJOCO_GL=egl python -m VADFlowMoGen.render.legacy.g1_latent \
+    MUJOCO_GL=egl python -m MoGenAgent.render.legacy.g1_latent \
         --denoiser_checkpoint ./outputs/checkpoints/mld_denoiser/g1_fm_latent_v1/checkpoint_280000.pt \
         --prompts "stand" "walk forward" "run" "kick" \
         --num_rollout_steps 25 \
@@ -26,17 +26,17 @@ import imageio
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as Rot
 
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1_XML_PATH, G1_NUM_BODY_DOFS, G1_SELECTED_LINKS,
     G1PrimitiveUtility69,
 )
-from utils.misc_util import encode_text
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from VADFlowMoGen.train.legacy.g1_latent import G1FMLatentArgs, DenoiserMLPArgs
+from MoGenAgent.utils.misc_util import encode_text
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.train.legacy.g1_latent import G1FMLatentArgs, DenoiserMLPArgs
 from _legacy.mld.train_g1_mvae import Args as G1MVAEArgs
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
-from VADFlowMoGen.flow_matching.sampler import FMSampler
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.model.legacy.vae import AutoMldVae
+from MoGenAgent.flow_matching.sampler import FMSampler
 
 
 JOINT_GROUPS = {

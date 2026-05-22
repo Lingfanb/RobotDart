@@ -1,10 +1,10 @@
 *Date: 2026-05-09 · Owner: Lingfan · Type: LIVE · Status: v2 (MFM seam-anchor added 5/9 evening)*
 
-## VADFlowMoGen Production Recipe (Tier 1.2 Motion Gen)
+## MoGenAgent Production Recipe (Tier 1.2 Motion Gen)
 
 Frozen after 16 ablations on 5/8 + 5/9. **sf=0.164** on BABEL 8-class autoregressive rollout (-12% vs friend's V-A DDIM ref 0.186), render bug-fixed, MFM seam-anchor at inference. Use this as the default for any downstream work (VAD conditioning, handover composition, user study).
 
-> **Module rename (5/9 evening)**: All FM code reorganized under `src/VADFlowMoGen/`. Production paths: `VADFlowMoGen.flow_matching.sampler`, `VADFlowMoGen.train.g1_35`, `VADFlowMoGen.render.g1_35`, `VADFlowMoGen.data.g1_35`, `VADFlowMoGen.model.denoiser`. Legacy variants (65-dim, latent, cfm, etc.) live in `VADFlowMoGen/{train,render,data,model}/legacy/`.
+> **Module rename (5/9 evening)**: All FM code reorganized under `src/MoGenAgent/`. Production paths: `MoGenAgent.flow_matching.sampler`, `MoGenAgent.train.g1_35`, `MoGenAgent.render.g1_35`, `MoGenAgent.data.g1_35`, `MoGenAgent.model.denoiser`. Legacy variants (65-dim, latent, cfm, etc.) live in `MoGenAgent/{train,render,data,model}/legacy/`.
 
 ## Recipe
 
@@ -27,7 +27,7 @@ Frozen after 16 ablations on 5/8 + 5/9. **sf=0.164** on BABEL 8-class autoregres
 ## Run command (reference)
 
 ```bash
-python -m VADFlowMoGen.train.g1_35 \
+python -m MoGenAgent.train.g1_35 \
   --exp-name g1_fm_35_no_s1 \
   --data-dir ./data/processed/mp_data_g1_69_babel_8class/Canonicalized_h2_f16_num1_fps30/ \
   --train-args.batch-size 256 \
@@ -42,7 +42,7 @@ python -m VADFlowMoGen.train.g1_35 \
 
 Render:
 ```bash
-MUJOCO_GL=egl python -m VADFlowMoGen.render.g1_35 \
+MUJOCO_GL=egl python -m MoGenAgent.render.g1_35 \
   --denoiser-checkpoint <ckpt.pt> \
   --inference-steps 50 --solver heun --guidance-param 2.5 \
   --init-idx 5754 \
@@ -86,7 +86,7 @@ The last 3 flags enable **MFM seam-anchor** — at every ODE step, the first 2 f
 
 35-dim `dataset.all_motion_tensor` stores **RAW** features (unlike 65-dim which stores **normalized**). Earlier render code re-normalized → frame 0 z = 0.06 m (z-score interpreted as meters) → robot "fell from sky" + sf artificially low (rescue behavior).
 
-Fix at [render_g1_rollout_fm_35.py:348-355](../../../src/VADFlowMoGen/render/g1_35.py#L348-L355):
+Fix at [render_g1_rollout_fm_35.py:348-355](../../../src/MoGenAgent/render/g1_35.py#L348-L355):
 ```python
 init_features_35 = dataset.all_motion_tensor[args.init_idx]   # RAW
 init_history_unnorm = init_features_35[:history_length, :]
@@ -152,5 +152,5 @@ Training-side hard constraints (boundary×20, root_smooth×5) all retreated. Rem
 
 - Source-of-truth experiment log: [What I am doing.md](../../../What%20I%20am%20doing.md) (5/8 entry)
 - Architecture context: [skill_decoupled_architecture_2026-05-04.md](../decisions/skill_decoupled_architecture_2026-05-04.md)
-- Render bug fix commit: see [render_g1_rollout_fm_35.py:348-355](../../../src/VADFlowMoGen/render/g1_35.py#L348-L355)
+- Render bug fix commit: see [render_g1_rollout_fm_35.py:348-355](../../../src/MoGenAgent/render/g1_35.py#L348-L355)
 - Friend's V-A DDIM (RAL 2026 prior, NMI building block): `third_party/VA_motion_generation/`

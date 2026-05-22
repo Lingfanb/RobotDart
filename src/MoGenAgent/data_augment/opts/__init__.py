@@ -7,11 +7,11 @@ Each opt is a separate file:
   - time_warp.py    Opt 4 — A energy_per_frame
   - forward_lean.py Opt 5 — D[1] forward_lean
 """
-from data_augment.opts.amplitude import p1_scale_deviation
-from data_augment.opts.squat import p_squat, probe_knee_sign_for_lowering
-from data_augment.opts.openness import p_openness
-from data_augment.opts.time_warp import p2_time_warp_extend
-from data_augment.opts.forward_lean import p_forward_lean
+from MoGenAgent.data_augment.opts.amplitude import p1_scale_deviation
+from MoGenAgent.data_augment.opts.squat import p_squat, probe_knee_sign_for_lowering
+from MoGenAgent.data_augment.opts.openness import p_openness
+from MoGenAgent.data_augment.opts.time_warp import p2_time_warp_extend
+from MoGenAgent.data_augment.opts.forward_lean import p_forward_lean
 
 __all__ = [
     'p1_scale_deviation',

@@ -14,7 +14,7 @@ channel), no joint_limit, no freq penalties.
 
 Usage:
     cd ~/Gitcode/DART
-    python -m VADFlowMoGen.train.legacy.g1_37 \\
+    python -m MoGenAgent.train.legacy.g1_37 \\
         --exp_name g1_fm_37_v1 \\
         --train_args.batch_size 1024 \\
         --train_args.use_amp 1 \\
@@ -42,9 +42,9 @@ import yaml
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from VADFlowMoGen.data.legacy.g1_37 import G1PrimitiveDataset37, FEATURE_DIM_37
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.flow_matching.sampler import FMSampler
+from MoGenAgent.data.legacy.g1_37 import G1PrimitiveDataset37, FEATURE_DIM_37
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.flow_matching.sampler import FMSampler
 
 
 # ── Dataclasses ──────────────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ class G1FM35Trainer:
 
         # Load 35-dim dataset — either from our pkl or VA's NPZ corpus
         if args.data_source == 'va_npz':
-            from VADFlowMoGen.data.legacy.g1_37_va import G1PrimitiveDataset37VA
+            from MoGenAgent.data.legacy.g1_37_va import G1PrimitiveDataset37VA
             train_dataset = G1PrimitiveDataset37VA(
                 npz_dir=args.data_dir, split='train', device=device,
                 source_fps=args.source_fps, target_fps=30.0,
@@ -371,7 +371,7 @@ class G1FM35Trainer:
         noise = torch.randn_like(future_motion_gt)
         x_t = self.fm.q_sample(future_motion_gt, t, noise)
 
-        from VADFlowMoGen.flow_matching.sampler import _continuous_to_discrete_t
+        from MoGenAgent.flow_matching.sampler import _continuous_to_discrete_t
         t_int = _continuous_to_discrete_t(t)
 
         y = {

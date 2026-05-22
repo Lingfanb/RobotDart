@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Iterator
 
-from data_pipeline.format.base import DatasetParser, RawClip
+from MoGenAgent.data_pipeline.format.base import DatasetParser, RawClip
 
 
 class AmassBabelParser(DatasetParser):

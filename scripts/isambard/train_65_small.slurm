@@ -26,7 +26,7 @@ nvidia-smi || echo "(no nvidia-smi)"
 
 # 65-dim FlowDART, small batch sanity (200 stage1 steps, no rollout, no save)
 # Data: 69-dim pkl auto-decoded to 65-dim on load (rp_trig → raw pitch/roll)
-python -m VADFlowMoGen.train.legacy.g1_65 \
+python -m MoGenAgent.train.legacy.g1_65 \
   --exp-name small_65_isambard_$(date +%Y%m%d_%H%M) \
   --train-args.batch-size 32 \
   --train-args.stage1-steps 500 \

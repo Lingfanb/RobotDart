@@ -5,7 +5,7 @@ primitives. Inverse: accumulate yaw from yaw_vel, accumulate xy from xy_vel
 rotated by yaw, reconstruct root_quat from (yaw, pitch, roll) via ZYX euler.
 
 Usage:
-    MUJOCO_GL=egl python -m VADFlowMoGen.render.g1_35 \\
+    MUJOCO_GL=egl python -m MoGenAgent.render.g1_35 \\
         --denoiser_checkpoint ./outputs/checkpoints/mld_denoiser/g1_fm_35_v1/checkpoint_280000.pt \\
         --prompts "stand" "walk forward" "run" "kick" \\
         --num_rollout_steps 25 \\
@@ -29,14 +29,14 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from scipy.spatial.transform import Rotation as Rot
 
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1_XML_PATH, G1_NUM_BODY_DOFS, G1_SELECTED_LINKS, G1_CANON_Z_OFFSET,
 )
-from utils.misc_util import encode_text
-from VADFlowMoGen.data.g1_35 import G1PrimitiveDataset35, FEATURE_DIM_35
-from VADFlowMoGen.train.g1_35 import G1FM35Args, DenoiserMLPArgs
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.flow_matching.sampler import FMSampler
+from MoGenAgent.utils.misc_util import encode_text
+from MoGenAgent.data.g1_35 import G1PrimitiveDataset35, FEATURE_DIM_35
+from MoGenAgent.train.g1_35 import G1FM35Args, DenoiserMLPArgs
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.flow_matching.sampler import FMSampler
 
 
 # ── Joint groups for plotting ────────────────────────────────────────────────

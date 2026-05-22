@@ -27,15 +27,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
 from _legacy.mld.render_g1_rollout import load_mld
 from _legacy.mld.train_g1_mld import create_gaussian_diffusion
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1_NUM_BODY_DOFS,
     G1_SELECTED_LINKS,
     dof_6d_to_qpos,
 )
-from utils.misc_util import encode_text
+from MoGenAgent.utils.misc_util import encode_text
 
 # Joint groups (idx into 29-DOF arrays) — match the order in G1_SELECTED_LINKS
 JOINT_GROUPS = {

@@ -32,14 +32,14 @@ import mujoco.viewer as mjv
 from pytorch3d import transforms
 from scipy.spatial.transform import Rotation as Rot
 
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from utils.g1_utils import (
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.model.legacy.vae import AutoMldVae
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.utils.g1_utils import (
     G1PrimitiveUtility, G1_XML_PATH, G1_NUM_BODY_DOFS,
     G1_CANON_Z_OFFSET, dof_6d_to_qpos, set_mujoco_from_features,
 )
-from utils.misc_util import encode_text
+from MoGenAgent.utils.misc_util import encode_text
 from _legacy.mld.train_g1_mvae import Args as G1MVAEArgs
 from _legacy.mld.train_g1_mld import (
     G1MLDArgs, DenoiserMLPArgs, DenoiserTransformerArgs,

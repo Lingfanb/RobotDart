@@ -22,7 +22,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from data_pipeline.retarget.base import Retargeter, RetargetResult
+from MoGenAgent.data_pipeline.retarget.base import Retargeter, RetargetResult
 
 
 # Env-var override lets different users/machines point elsewhere.

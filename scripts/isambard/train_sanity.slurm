@@ -35,7 +35,7 @@ nvidia-smi || echo "(no nvidia-smi)"
 
 # Verify FlowDART trainer + new NPZ dataloader can stand up
 # 100 steps, batch_size 16, no rollout — purely a smoke test
-python -m VADFlowMoGen.train.g1_35 \
+python -m MoGenAgent.train.g1_35 \
   --exp-name sanity_isambard_$(date +%Y%m%d_%H%M) \
   --data-source va_npz \
   --source-fps 30.0 \

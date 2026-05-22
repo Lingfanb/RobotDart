@@ -18,10 +18,10 @@ from pathlib import Path
 from tqdm import tqdm
 import copy
 
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
+from MoGenAgent.model.legacy.vae import AutoMldVae
 from _legacy.data_loaders.humanml.data.dataset import PrimitiveSequenceDataset, WeightedPrimitiveSequenceDataset, WeightedPrimitiveSequenceDatasetV2
 from _legacy.data_loaders.humanml.data.dataset_hml3d import HML3dDataset
-from utils.smpl_utils import get_smplx_param_from_6d
+from _legacy.utils.smpl_utils import get_smplx_param_from_6d
 from pytorch3d import transforms
 from _legacy.diffusion.nn import mean_flat, sum_flat
 

@@ -26,9 +26,9 @@ echo "===== fm35_routeA_v4 (Isambard) started at $(date) on $(hostname) ====="
 echo "Job ID: $SLURM_JOB_ID"
 nvidia-smi || true
 
-python -m VADFlowMoGen.train.legacy.g1_65 --help > /dev/null && echo "import OK" || { echo "import FAIL"; exit 1; }
+python -m MoGenAgent.train.legacy.g1_65 --help > /dev/null && echo "import OK" || { echo "import FAIL"; exit 1; }
 
-python -m VADFlowMoGen.train.g1_35 \
+python -m MoGenAgent.train.g1_35 \
   --exp-name g1_fm_35_babel_8class_routeA_v4_isb \
   --data-dir $RUNTIME/data/processed/mp_data_g1_69_babel_8class/Canonicalized_h2_f16_num1_fps30/ \
   --train-args.batch-size 256 \

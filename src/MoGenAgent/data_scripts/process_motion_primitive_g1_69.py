@@ -35,13 +35,13 @@ _DART_ROOT = os.path.dirname(os.path.dirname(_SCRIPT_DIR))
 if _DART_ROOT not in sys.path:
     sys.path.insert(0, _DART_ROOT)
 
-from utils.g1_utils import G1PrimitiveUtility69, G1_NUM_BODY_DOFS
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility69, G1_NUM_BODY_DOFS
 
 # ─── Configuration ───────────────────────────────────────────────────────
-HISTORY_LENGTH = 2
-FUTURE_LENGTH = 8
-N_MPS = 1
-TARGET_FPS = 30
+HISTORY_LENGTH = int(os.environ.get('HISTORY_LENGTH', 2))
+FUTURE_LENGTH = int(os.environ.get('FUTURE_LENGTH', 8))
+N_MPS = int(os.environ.get('N_MPS', 1))
+TARGET_FPS = int(os.environ.get('TARGET_FPS', 30))
 
 SEQ_DATA_DIR = os.path.join(_DART_ROOT, 'data', 'seq_data_g1')
 OUTPUT_DIR = os.path.join(

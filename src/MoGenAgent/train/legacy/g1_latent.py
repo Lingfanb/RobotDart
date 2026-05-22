@@ -21,7 +21,7 @@ Differences vs train_g1_fm.py (FM in motion space):
 
 Usage:
     cd ~/Gitcode/DART
-    python -m VADFlowMoGen.train.legacy.g1_latent \
+    python -m MoGenAgent.train.legacy.g1_latent \
         --exp_name g1_fm_latent_v1 \
         --denoiser_args.mvae_path ./outputs/checkpoints/mvae/g1_feature/checkpoint_300000.pt \
         --train_args.batch_size 1024 \
@@ -49,12 +49,12 @@ import yaml
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.model.legacy.vae import AutoMldVae
 from _legacy.mld.train_g1_mvae import Args as G1MVAEArgs
-from VADFlowMoGen.flow_matching.sampler import FMSampler
-from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
+from MoGenAgent.flow_matching.sampler import FMSampler
+from MoGenAgent.utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
 
 
 # ── Dataclasses ──────────────────────────────────────────────────────────────
@@ -349,7 +349,7 @@ class G1FMLatentTrainer:
         noise_latent = torch.randn_like(latent_gt)
         x_t_latent = self.fm.q_sample(latent_gt, t, noise_latent)
 
-        from VADFlowMoGen.flow_matching.sampler import _continuous_to_discrete_t
+        from MoGenAgent.flow_matching.sampler import _continuous_to_discrete_t
         t_int = _continuous_to_discrete_t(t)
 
         y = {

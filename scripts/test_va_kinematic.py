@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from utils.va_kinematic import compute_vad
+from MoGenAgent.utils.va_kinematic import compute_vad
 
 
 def main():

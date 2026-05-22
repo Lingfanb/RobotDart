@@ -22,11 +22,11 @@ import json
 import copy
 import trimesh
 
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.model.legacy.vae import AutoMldVae
 from _legacy.data_loaders.humanml.data.dataset import WeightedPrimitiveSequenceDataset, SinglePrimitiveDataset
-from utils.smpl_utils import *
-from utils.misc_util import encode_text, compose_texts_with_and
+from _legacy.utils.smpl_utils import *
+from MoGenAgent.utils.misc_util import encode_text, compose_texts_with_and
 from pytorch3d import transforms
 from _legacy.diffusion import gaussian_diffusion as gd
 from _legacy.diffusion.respace import SpacedDiffusion, space_timesteps

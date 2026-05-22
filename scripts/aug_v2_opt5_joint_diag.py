@@ -26,10 +26,10 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from data_augment import load_from_npz
-from data_augment.primitives import p_forward_lean
-from data_augment.phases import auto_segment_by_ee_dev
-from utils.g1_utils import G1PrimitiveUtility
+from MoGenAgent.data_augment import load_from_npz
+from MoGenAgent.data_augment.primitives import p_forward_lean
+from MoGenAgent.data_augment.phases import auto_segment_by_ee_dev
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility
 
 # G1 DOF indices
 WAIST_PITCH = 14

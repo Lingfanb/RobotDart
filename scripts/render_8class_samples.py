@@ -27,8 +27,8 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from VADFlowMoGen.data.legacy.g1_65 import convert_69_to_65, FEATURE_DIM_65
-from utils.g1_utils import G1_XML_PATH
+from MoGenAgent.data.legacy.g1_65 import convert_69_to_65, FEATURE_DIM_65
+from MoGenAgent.utils.g1_utils import G1_XML_PATH
 
 
 SRC_PKL = _DART_ROOT / 'data' / 'processed' / 'mp_data_g1_69_bones_clean_8class' / 'Canonicalized_h2_f16_num1_fps30' / 'train.pkl'

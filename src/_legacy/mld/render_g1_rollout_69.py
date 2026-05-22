@@ -29,18 +29,18 @@ import imageio
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as Rot
 
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1_XML_PATH, G1_NUM_BODY_DOFS, G1_SELECTED_LINKS,
     G1PrimitiveUtility69,
 )
-from utils.misc_util import encode_text
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.utils.misc_util import encode_text
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
 from _legacy.mld.train_g1_mld import (
     G1MLDArgs, G1MVAEArgs, DenoiserMLPArgs,
     create_gaussian_diffusion,
 )
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.model.legacy.vae import AutoMldVae
 
 JOINT_GROUPS = {
     'left_leg':  list(range(0, 6)),

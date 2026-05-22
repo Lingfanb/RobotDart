@@ -394,7 +394,7 @@ print('all imports OK')
 ```
 
 If all imports succeed, **no import path changes are needed in source code**.
-`python -m mld.train_g1_fm` still works. `from utils.g1_utils import G1PrimitiveUtility69` still works.
+`python -m mld.train_g1_fm` still works. `from MoGenAgent.utils.g1_utils import G1PrimitiveUtility69` still works.
 
 ### Phase 5 · Build outputs/ symlinks
 
@@ -452,7 +452,7 @@ print('PASS: all imports')
 # Test 2: G1PrimitiveUtility69 still works
 $PY -c "
 import os; os.environ['MUJOCO_GL']='egl'
-from utils.g1_utils import G1PrimitiveUtility69
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility69
 u = G1PrimitiveUtility69()
 print(f'PASS: G1 util loads, feature_dim={u.feature_dim}')
 "

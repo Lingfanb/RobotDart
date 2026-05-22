@@ -37,8 +37,8 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from data_augment import load_from_npz, render_mp4, compute_va_torch
-from data_augment.primitives import (
+from MoGenAgent.data_augment import load_from_npz, render_mp4, compute_va_torch
+from MoGenAgent.data_augment.primitives import (
     p1_scale_deviation,
     build_mu_for_seed,
     per_cycle_normalize_deviation,
@@ -47,16 +47,16 @@ from data_augment.primitives import (
     resolve_hard_via_abduction,
     G1_ANATOMICAL_LIMITS_LO, G1_ANATOMICAL_LIMITS_HI,
 )
-from data_augment.optimize import COLLISION_PAIRS_FULL_BODY
-from data_augment.phases import (
+from MoGenAgent.data_augment.optimize import COLLISION_PAIRS_FULL_BODY
+from MoGenAgent.data_augment.phases import (
     detect_valleys_all, kendon_k_schedule, auto_segment_by_ee_dev,
 )
-from data_augment.taxonomy import (
+from MoGenAgent.data_augment.taxonomy import (
     ACTION_SUBCLASS, SUBCLASS_MU_CHOICE, ANCHOR_SIGNAL_PER_SUBCLASS,
     ACTIVE_DOF_PER_SUBCLASS, SUBCLASS_EE_LINKS,
 )
-from data_pipeline.vad.regressor_3x3 import get_norm_params_for_action
-from utils.g1_utils import G1PrimitiveUtility, G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
+from MoGenAgent.data_pipeline.vad.regressor_3x3 import get_norm_params_for_action
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility, G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
 
 
 def _safe_rel(p: Path) -> str:
@@ -235,7 +235,7 @@ def process_action(action: str, k_values: list[float], couple: float,
 
         # Split pairs by mode: hard pairs use abduction (smooth temporal);
         # soft pairs use seed-aware lerp (preserves contact poses).
-        from data_augment.primitives import _parse_pair as _pp
+        from MoGenAgent.data_augment.primitives import _parse_pair as _pp
         hard_pairs = [p for p in COLLISION_PAIRS_FULL_BODY if _pp(p)[3] == 'hard']
         soft_pairs = [p for p in COLLISION_PAIRS_FULL_BODY if _pp(p)[3] != 'hard']
         # Soft seed-aware pass (clap wrist-wrist, torso, etc.)

@@ -176,7 +176,7 @@ BONES 已经 retarget 到 G1，**跳过 T4**。
 ```python
 # 旧路径仍可用
 from data_scripts.annotate_vad_llm import main  # shim
-from utils.va_kinematic import ...              # shim
+from MoGenAgent.utils.va_kinematic import ...              # shim
 
 # 新路径 (推荐)
 from data_pipeline.vad.llm_annotator import ...

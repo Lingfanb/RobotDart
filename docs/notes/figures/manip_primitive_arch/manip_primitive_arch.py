@@ -70,7 +70,8 @@ def line(ax, src, dst, *, color="#444", lw=0.9, style="-"):
 def main():
     W, H = 22.0, 14.0   # canvas units (figure inches scale linearly)
     fig, ax = plt.subplots(figsize=(11.5, 7.3))
-    ax.set_xlim(0, W); ax.set_ylim(0, H)
+    # Extend left limit to fit the VAD L-path that runs in the left margin
+    ax.set_xlim(-3.0, W); ax.set_ylim(0, H)
     ax.set_aspect("equal"); ax.axis("off")
 
     # ===== Row 1: inputs =====
@@ -132,10 +133,12 @@ def main():
 
     # FIX P2 (round 3): VAD branch — single 3-segment L-path with rounded
     # joins. Goes LEFT (along figure top) → DOWN (along left margin) → RIGHT
-    # into generator. Never overlaps any other box.
+    # into generator. Vertical leg pushed CLEAR of the leftmost primitive.
     from matplotlib.path import Path as MplPath
     vad_x = 4.25
-    wp_x = 1.0
+    # wp_x must be < leftmost primitive's left edge.  With W=22, primitives
+    # start at x≈0.33, so use wp_x = -0.7 (well clear, in the extended margin).
+    wp_x = -0.7
     wp_y = gen_y + gen_h / 2
     top_y = 12.2
 
@@ -147,8 +150,8 @@ def main():
         color=C_VAD.edge, lw=1.6, mutation_scale=1, joinstyle="round",
     )
     ax.add_patch(vad_arrow)
-    # Label: horizontal, just above the bottom-left corner of the L, clear area
-    ax.text(wp_x - 0.1, wp_y + 0.55, "classifier\nguidance",
+    # Label: horizontal, sitting just outside the L on the left, clear area
+    ax.text(wp_x - 0.2, wp_y + 0.55, "classifier\nguidance",
             ha="right", va="center", fontsize=8.5,
             color=C_VAD.edge, style="italic")
 
@@ -159,24 +162,25 @@ def main():
          fontsize=9.5)
     arrow(ax, (11.0, gen_y), (11.0, 2.4))
 
-    # ===== Legend (compact, top-right corner) =====
+    # ===== Legend (compact single row, sized to fit canvas) =====
     legend_items = [
-        (C_VAD,   "VAD condition (classifier guidance)"),
-        (C_INPUT, "Structured task input"),
-        (C_DISP,  "Tier 2 dispatcher"),
+        (C_VAD,   "VAD"),
+        (C_INPUT, "Task input"),
+        (C_DISP,  "Dispatcher"),
         (C_PRIM,  "Motion primitive"),
-        (C_MODEL, "Shared diffusion backbone"),
+        (C_MODEL, "Diffusion backbone"),
     ]
-    lx, ly = 0.4, 0.3
+    lx, ly = -2.0, 0.3
+    spacing = 4.5
     for i, (pal, label) in enumerate(legend_items):
         rect = FancyBboxPatch(
-            (lx + i * 4.45, ly), 0.4, 0.3,
+            (lx + i * spacing, ly), 0.35, 0.28,
             boxstyle="round,pad=0.01,rounding_size=0.06",
             facecolor=pal.fill, edgecolor=pal.edge, lw=0.7,
         )
         ax.add_patch(rect)
-        ax.text(lx + i * 4.45 + 0.55, ly + 0.15, label,
-                ha="left", va="center", fontsize=8.0)
+        ax.text(lx + i * spacing + 0.5, ly + 0.14, label,
+                ha="left", va="center", fontsize=7.5)
 
     # ===== save =====
     out_dir = os.path.dirname(os.path.abspath(__file__))

@@ -12,7 +12,7 @@ Reads the SAME pkl files from mp_data_g1_69/ — conversion happens in __init__.
 No velocity channel, no foot_contact, no dz — just the essentials.
 
 Usage:
-    from VADFlowMoGen.data.g1_35 import G1PrimitiveDataset35
+    from MoGenAgent.data.g1_35 import G1PrimitiveDataset35
     ds = G1PrimitiveDataset35(dataset_path='./data/processed/mp_data_g1_69/Canonicalized_h2_f8_num1_fps30/')
 """
 import os
@@ -35,7 +35,7 @@ import torch
 from tqdm import tqdm
 from collections import Counter
 
-from utils.misc_util import load_and_freeze_clip, encode_text
+from MoGenAgent.utils.misc_util import load_and_freeze_clip, encode_text
 
 
 FEATURE_DIM_35 = 35

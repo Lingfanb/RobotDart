@@ -1,7 +1,7 @@
 import torch
 import pickle
 from pytorch3d import transforms
-from data_scripts.process_motion_primitive_babel import *
+from MoGenAgent.data_scripts.process_motion_primitive_babel import *
 
 yup_to_zup = torch.eye(4)
 yup_to_zup[:3, :3] = torch.tensor([[1, 0, 0],

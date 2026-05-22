@@ -27,7 +27,7 @@ echo "===== fm35_amass_babel started at $(date) on $(hostname) ====="
 echo "Job ID: $SLURM_JOB_ID"
 nvidia-smi || true
 
-python -m VADFlowMoGen.train.g1_35 \
+python -m MoGenAgent.train.g1_35 \
   --exp-name g1_fm_35_amass_babel_v5 \
   --data-source va_npz \
   --source-fps 30.0 \

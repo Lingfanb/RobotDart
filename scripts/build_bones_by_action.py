@@ -56,9 +56,9 @@ import pandas as pd
 
 _DART_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_DART_ROOT / 'src'))
-from utils.g1_utils import G1_XML_PATH
-from data_pipeline.format.bones_csv_parser import load_bones_csv, BONES_FPS
-from data_pipeline.vad.action_taxonomy import (
+from MoGenAgent.utils.g1_utils import G1_XML_PATH
+from MoGenAgent.data_pipeline.format.bones_csv_parser import load_bones_csv, BONES_FPS
+from MoGenAgent.data_pipeline.vad.action_taxonomy import (
     _GESTURE_RE, _MANIPULATION_RE,
 )
 

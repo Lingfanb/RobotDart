@@ -11,7 +11,7 @@ echo "[queue 35dim] $(date +%H:%M:%S) ckpt detected, sleeping 15s for flush"
 sleep 15
 
 echo "[queue 35dim] $(date +%H:%M:%S) rendering 8 prompts"
-MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=0 /home/lingfanb/miniforge3/envs/DART/bin/python -m VADFlowMoGen.render.g1_35 \
+MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=0 /home/lingfanb/miniforge3/envs/DART/bin/python -m MoGenAgent.render.g1_35 \
     --denoiser-checkpoint "$CKPT" \
     --output-dir outputs/eval/35dim_v1_80k
 

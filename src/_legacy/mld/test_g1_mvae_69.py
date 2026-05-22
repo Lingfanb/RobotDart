@@ -25,9 +25,9 @@ import mujoco as mj
 import imageio
 from scipy.spatial.transform import Rotation as Rot
 
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from utils.g1_utils import G1_NUM_BODY_DOFS, G1_XML_PATH, G1PrimitiveUtility69
+from MoGenAgent.model.legacy.vae import AutoMldVae
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.utils.g1_utils import G1_NUM_BODY_DOFS, G1_XML_PATH, G1PrimitiveUtility69
 from _legacy.mld.train_g1_mvae import Args
 
 

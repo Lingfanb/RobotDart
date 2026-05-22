@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from data_augment.constants import (
+from MoGenAgent.data_augment.constants import (
     G1_ANKLE_PITCH_DOF_L, G1_ANKLE_PITCH_DOF_R,
     G1_HIP_PITCH_DOF_L, G1_HIP_PITCH_DOF_R,
     G1_WAIST_PITCH_DOF,
@@ -71,7 +71,7 @@ def p_forward_lean(dof: np.ndarray,
         dof_aug, root_pos_aug, root_quat_aug
     """
     import torch
-    from data_augment.phases import kendon_k_schedule
+    from MoGenAgent.data_augment.phases import kendon_k_schedule
 
     T_clip = dof.shape[0]
     if abs(k_lean) < 1e-6:

@@ -32,10 +32,10 @@ import tyro
 import yaml
 from tqdm import tqdm
 
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from VADFlowMoGen.train.legacy.g1 import G1FMArgs, DenoiserMLPArgs
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.flow_matching.sampler import FMSampler
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.train.legacy.g1 import G1FMArgs, DenoiserMLPArgs
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.flow_matching.sampler import FMSampler
 
 
 @dataclass
@@ -191,7 +191,7 @@ def _lookup_text_embeddings(dataset, indices, device):
             out.append(te.to(device))
         else:
             # Fallback: encode on the fly via dataset.clip_model
-            from utils.misc_util import encode_text
+            from MoGenAgent.utils.misc_util import encode_text
             txts = item.get('texts', [''])
             te = encode_text(dataset.clip_model, [txts[0]], force_empty_zero=True)
             out.append(te.squeeze(0).to(device))

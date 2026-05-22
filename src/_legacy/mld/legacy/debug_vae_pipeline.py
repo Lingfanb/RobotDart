@@ -19,9 +19,9 @@ from dataclasses import asdict
 from pathlib import Path
 import mujoco as mj, imageio, yaml, tyro
 
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from utils.g1_utils import G1PrimitiveUtility, G1_XML_PATH, G1_NUM_BODY_DOFS
+from MoGenAgent.model.legacy.vae import AutoMldVae
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility, G1_XML_PATH, G1_NUM_BODY_DOFS
 from _legacy.mld.train_g1_mvae import Args as G1MVAEArgs
 
 device = 'cuda'

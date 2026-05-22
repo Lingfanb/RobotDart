@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from data_augment.constants import (
+from MoGenAgent.data_augment.constants import (
     G1_L_SHOULDER_ROLL, G1_R_SHOULDER_ROLL,
     G1_L_SHOULDER_LINK, G1_R_SHOULDER_LINK,
     G1_L_ELBOW_LINK, G1_R_ELBOW_LINK,
@@ -23,7 +23,7 @@ from data_augment.constants import (
     G1_MECH_LO, G1_MECH_HI,
     _SAFETY_HEADROOM, _VERBOSE,
 )
-from data_augment.utils import swivel_circle_target
+from MoGenAgent.data_augment.utils import swivel_circle_target
 
 
 def p_openness(dof: np.ndarray,
@@ -63,7 +63,7 @@ def p_openness(dof: np.ndarray,
         dof_aug: (T, 29) modified (only arm DOFs touched)
     """
     import torch
-    from data_augment.phases import kendon_k_schedule
+    from MoGenAgent.data_augment.phases import kendon_k_schedule
 
     T_clip = dof.shape[0]
     if abs(k_open) < 1e-6:

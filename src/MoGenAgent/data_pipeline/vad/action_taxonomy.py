@@ -81,14 +81,23 @@ def canonicalize(content_type_of_movement: str | None) -> str:
 
 
 def canonicalize_act_cats(act_cats: list[str] | None) -> str:
-    """Wrapper that pulls `content_type_of_movement` (act_cats[1]) and canonicalizes.
+    """Pull `content_type_of_movement` from a primitive's act_cats and canonicalize.
 
-    bones_mp_data primitives store act_cats = [category, content_type_of_movement,
-    content_body_position]. Index 1 is the right granularity for VAD calibration.
+    Two schemas exist:
+      - Legacy bones_mp_data:  [category, content_type_of_movement, content_body_position]
+        (length 3) — index 1 is content_type_of_movement.
+      - New mp_data_g1_69_bones_clean: bones_npz segment_act_cat is a single
+        string (length 1) — index 0 IS content_type_of_movement.
+
+    Both index into content_type_of_movement at the right granularity for
+    per-action VAD calibration. (Pre-2026-05-09 versions required len >= 2,
+    which silently routed every new-schema primitive to 'other' — fixed now.)
     """
-    if not act_cats or len(act_cats) < 2:
+    if not act_cats:
         return 'other'
-    return canonicalize(act_cats[1])
+    if len(act_cats) >= 2:
+        return canonicalize(act_cats[1])
+    return canonicalize(act_cats[0])
 
 
 # ════════════════════════════════════════════════════════════════
@@ -283,7 +292,7 @@ import re as _re_v2
 import os as _os_v2
 
 _V2_YAML_PATH = _os_v2.path.join(
-    _os_v2.path.dirname(__file__), '..', '..', '..',
+    _os_v2.path.dirname(__file__), '..', '..', '..', '..',
     'configs', 'act_classes.yaml',
 )
 
@@ -390,6 +399,182 @@ def match_class_idx_v2(segment_label: str | None,
         if regex.search(corpus):
             return CLASS_IDX_OF_NAME_V2[name]
     return NULL_ACT_CLASS_IDX_V2
+
+
+# ════════════════════════════════════════════════════════════════
+# Target-based classification (transition-aware)
+# ════════════════════════════════════════════════════════════════
+#
+# Inference paradigm: user sequentially inputs target classes (e.g. run, stand)
+# without a "transition" input. The model must learn transitions implicitly
+# from (history, target_class) pairs. So at training time, transition primitives
+# get labeled with their *target* state, not their current motion type.
+#
+# Rules:
+#   1. BABEL `act_cat == "transition"` → look at neighbor segments:
+#      - prefer next non-transition neighbor's class (target the model is moving INTO)
+#      - fallback to previous non-transition neighbor (sequence-end transitions)
+#      - fallback NULL
+#   2. BONES text matches transition pattern → extract target from text:
+#      - "stops X and Y" → Y
+#      - "from Xing into Y" → Y
+#      - "transitioning into Y" → Y
+#      - "stops Xing" / "comes to a stop" alone → stand (implicit)
+#   3. "starts to X" / "begins X" → keep in X (start phase belongs to target action)
+#   4. Else → normal match_class_idx_v2
+
+# Patterns that signal "this segment is a transition (NOT a steady action)".
+# Conservative: ONLY decel/pure-transition phrases. Start phrases ("starts to X")
+# are intentionally excluded — we keep those in their target X class.
+_TRANSITION_PATTERNS_V2 = [
+    r'\btransition(s|ing|ed)?\b',
+    r'\bstops?\s+\w+ing\b',                                # "stops walking"
+    r'\bcomes?\s+to\s+(a\s+|an\s+)?(stop|halt|standstill)\b',
+    r'gradually\s+(slows?\s+down|stops?)\b',
+    r'from\s+\w+ing\s+(and|to|into|comes?)\b',             # "from walking and"
+]
+_TRANSITION_RE_V2 = _re_v2.compile('|'.join(_TRANSITION_PATTERNS_V2), _re_v2.IGNORECASE)
+
+# Patterns to extract the explicit *target* of a transition. Tried in order;
+# the first match's captured group is what we re-classify against the 22-class
+# regex (via match_class_idx_v2).
+_TARGET_EXTRACT_PATTERNS_V2 = [
+    r'(?:and\s+then|and|then)\s+([a-z]+(?:\s+[a-z]+){0,3})',          # "and stands [upright]"
+    r'(?:into|to)\s+(?:an?\s+)?([a-z]+(?:\s+[a-z]+){0,3})',           # "into an idle stance"
+    r'transition(?:s|ing|ed)?\s+(?:from\s+\w+\s+)?(?:in)?to\s+([a-z]+(?:\s+[a-z]+){0,3})',
+]
+_TARGET_EXTRACT_RE_V2 = [_re_v2.compile(p, _re_v2.IGNORECASE) for p in _TARGET_EXTRACT_PATTERNS_V2]
+
+
+def is_transition_text_v2(text: str | None) -> bool:
+    """True if text describes a transition (decel / pure transition)."""
+    if not isinstance(text, str) or not text.strip():
+        return False
+    return bool(_TRANSITION_RE_V2.search(text))
+
+
+def classify_segment_target_v2(
+    segment_label: str | None,
+    content_type_of_movement: str | None = None,
+    neighbor_classes: tuple[int | None, int | None] = (None, None),
+    natural_desc_1: str | None = None,
+) -> int:
+    """Target-based classification: transition segments get their target state's class.
+
+    Args:
+        segment_label: BABEL raw_label / BONES short_description.
+        content_type_of_movement: BABEL act_cat / BONES content_type_of_movement.
+        neighbor_classes: (prev_class_idx, next_class_idx) for BABEL-style lookup.
+            None for either side if no qualified neighbor exists. Both are
+            already-classified class indices of the neighboring NON-TRANSITION
+            segments (so a "transition" right after another "transition" must
+            scan past both).
+        natural_desc_1: optional BONES long description.
+
+    Returns:
+        class_idx in [0, NUM_ACT_CLASSES_V2-1], or NULL_ACT_CLASS_IDX_V2.
+    """
+    if not _V2_LOADED:
+        _load_v2()
+
+    txt = str(segment_label) if segment_label else ''
+    ac = str(content_type_of_movement) if content_type_of_movement else ''
+    txt_l = txt.lower().strip()
+    ac_l = ac.lower().strip()
+    prev_cls, next_cls = neighbor_classes
+
+    # 1. BABEL pure-transition act_cat → use neighbors
+    is_babel_pure_trans = (ac_l == 'transition') or (txt_l == 'transition')
+    if is_babel_pure_trans:
+        if next_cls is not None and next_cls != NULL_ACT_CLASS_IDX_V2:
+            return next_cls
+        if prev_cls is not None and prev_cls != NULL_ACT_CLASS_IDX_V2:
+            return prev_cls
+        return NULL_ACT_CLASS_IDX_V2
+
+    # 2. BONES transition text → extract target from text
+    full_text = (txt_l + ' ' + ac_l).strip()
+    if is_transition_text_v2(full_text):
+        # Try to extract explicit target ("and Y", "into Y", "to Y")
+        for regex in _TARGET_EXTRACT_RE_V2:
+            m = regex.search(full_text)
+            if m:
+                target_phrase = m.group(1)
+                target_idx = match_class_idx_v2(target_phrase, None, None)
+                if target_idx != NULL_ACT_CLASS_IDX_V2:
+                    return target_idx
+        # Fallback: implicit target = stand (most decel/stops settle to stand)
+        stand_idx = CLASS_IDX_OF_NAME_V2.get('stand', NULL_ACT_CLASS_IDX_V2)
+        return stand_idx
+
+    # 3. Not a transition — normal classification.
+    # Match the legacy cli.py behavior: when segment_label has content, use ONLY
+    # the label (act_cat is too broad — e.g. content_type='climbing' would label
+    # any "stands on platform" text as climb). Fall back to act_cat only when
+    # label is empty.
+    if txt_l:
+        return match_class_idx_v2(segment_label, None, natural_desc_1)
+    return match_class_idx_v2(segment_label, content_type_of_movement, natural_desc_1)
+
+
+def classify_segments_v2(
+    segment_labels: list,
+    segment_act_cats: list,
+) -> list[int]:
+    """Classify a sequence of segments with target-based logic + neighbor lookup.
+
+    Two-pass:
+      1. Tentative classify each segment ignoring transition-as-target rule
+         (just match_class_idx_v2; pure-transition segs get their literal match,
+         which is NULL).
+      2. Re-classify each segment with neighbor context.
+
+    For neighbor lookup we skip over consecutive transition segments to find
+    the closest non-transition neighbor on each side.
+    """
+    if not _V2_LOADED:
+        _load_v2()
+
+    n = len(segment_labels)
+
+    # Tentative classification (no transition handling) — used only to identify
+    # which neighbors are NOT transitions for the lookup.
+    tentative = []
+    is_trans = []
+    for i in range(n):
+        txt = str(segment_labels[i]) if segment_labels[i] is not None else ''
+        ac = str(segment_act_cats[i]) if segment_act_cats[i] is not None else ''
+        ac_l = ac.lower().strip()
+        txt_l = txt.lower().strip()
+        babel_trans = (ac_l == 'transition') or (txt_l == 'transition')
+        bones_trans = is_transition_text_v2(txt + ' ' + ac)
+        is_trans.append(babel_trans or bones_trans)
+        # Tentative: just normal regex; pure-transition segs become NULL here
+        tentative.append(match_class_idx_v2(txt, ac if not txt_l else None, None))
+
+    final = []
+    for i in range(n):
+        # Find prev non-transition neighbor (skip consecutive trans)
+        prev_cls = None
+        for j in range(i - 1, -1, -1):
+            if not is_trans[j]:
+                prev_cls = tentative[j]
+                break
+        # Find next non-transition neighbor
+        next_cls = None
+        for j in range(i + 1, n):
+            if not is_trans[j]:
+                next_cls = tentative[j]
+                break
+
+        cls = classify_segment_target_v2(
+            segment_label=segment_labels[i],
+            content_type_of_movement=segment_act_cats[i],
+            neighbor_classes=(prev_cls, next_cls),
+        )
+        final.append(cls)
+
+    return final
 
 
 def family_of_class_idx_v2(class_idx: int) -> str:

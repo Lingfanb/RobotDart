@@ -12,7 +12,10 @@ from copy import deepcopy
 import importlib.util
 
 # ─── Import GMR's KinematicsModel (bypass __init__.py to avoid mink dep) ─
-_DART_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# File is at src/MoGenAgent/utils/g1_utils.py → 4 dirname()s reach repo root
+# (utils/ → MoGenAgent/ → src/ → DART/).  Was 3 levels when this lived at
+# src/utils/g1_utils.py; bumped 2026-05-22 with the utils relocation.
+_DART_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 _GMR_ROOT = os.path.join(_DART_ROOT, 'third_party', 'gmr')
 _GMR_PKG_DIR = os.path.join(_GMR_ROOT, 'general_motion_retargeting')
 

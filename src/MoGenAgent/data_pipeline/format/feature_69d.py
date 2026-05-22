@@ -18,7 +18,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from utils.g1_utils import G1PrimitiveUtility69
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility69
 
 
 def _resample_linear(arr: np.ndarray, src_fps: int, dst_fps: int) -> np.ndarray:

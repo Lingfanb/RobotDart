@@ -13,7 +13,7 @@ from typing import Optional
 
 import numpy as np
 
-from data_pipeline.segment.base import Segment
+from MoGenAgent.data_pipeline.segment.base import Segment
 
 
 # DART default — 0.33s per primitive at 30fps
@@ -30,6 +30,7 @@ class Primitive:
     act_cats: list[str] = field(default_factory=list)
     styles: list[str] = field(default_factory=list)  # BONES-style tags (deduped)
     vad: Optional[np.ndarray] = None   # (3,) if already labeled
+    link_pos_local: Optional[np.ndarray] = None   # (H+F, 29, 3) pelvis-local FK
     seq_name: str = ""
     window_start_t: float = 0.0
     fps: int = TARGET_FPS
@@ -45,7 +46,8 @@ def slice_primitives(motion_features_69: np.ndarray,
                      seq_name: str = "",
                      fps: int = TARGET_FPS,
                      history_length: int = HISTORY_LENGTH,
-                     future_length: int = FUTURE_LENGTH) -> list[Primitive]:
+                     future_length: int = FUTURE_LENGTH,
+                     link_pos_local: Optional[np.ndarray] = None) -> list[Primitive]:
     """Slide (H+F)-frame window over 69-d features; inherit labels from segments.
 
     Args:
@@ -54,6 +56,8 @@ def slice_primitives(motion_features_69: np.ndarray,
         seq_name: identifier propagated to each Primitive
         fps: framerate of the features (Segment times are in seconds)
         history_length, future_length: frames per window; stride = future_length
+        link_pos_local: optional (T, 29, 3) pelvis-local FK link positions —
+            if provided, sliced into each primitive for downstream V2/D1 indicators.
 
     Returns:
         list[Primitive], empty if T < H+F.
@@ -63,6 +67,9 @@ def slice_primitives(motion_features_69: np.ndarray,
     window = history_length + future_length
     if T < window:
         return []
+    if link_pos_local is not None:
+        assert link_pos_local.shape[0] == T, \
+            f'link_pos_local T={link_pos_local.shape[0]} mismatches features T={T}'
 
     out: list[Primitive] = []
     t = 0
@@ -82,11 +89,15 @@ def slice_primitives(motion_features_69: np.ndarray,
                     styles.append(seg.style)
                 act_cats.extend(seg.act_cats)
 
+        lpl_slice = (link_pos_local[t:t + window].copy()
+                     if link_pos_local is not None else None)
+
         out.append(Primitive(
             features_69=motion_features_69[t:t + window].copy(),
             texts=texts,
             act_cats=list(dict.fromkeys(act_cats)),  # dedupe, preserve order
             styles=list(dict.fromkeys(styles)),
+            link_pos_local=lpl_slice,
             seq_name=seq_name,
             window_start_t=t / fps,
             fps=fps,

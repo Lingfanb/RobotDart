@@ -1,6 +1,6 @@
 # This code is based on https://github.com/Mathux/ACTOR.git
 import torch
-import utils.rotation_conversions as geometry
+import MoGenAgent.utils.rotation_conversions as geometry
 
 
 from _legacy.model.smpl import SMPL, JOINTSTYPE_ROOT

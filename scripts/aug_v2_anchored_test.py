@@ -35,15 +35,15 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from data_augment import load_from_npz, render_mp4, compute_va_torch
-from data_augment.primitives import (
+from MoGenAgent.data_augment import load_from_npz, render_mp4, compute_va_torch
+from MoGenAgent.data_augment.primitives import (
     p1_scale_deviation,
     build_anchor_interpolated_reference,
     per_cycle_normalize_deviation,
 )
-from data_augment.phases import auto_segment_phases, kendon_k_schedule, detect_valleys_all
-from data_pipeline.vad.regressor_3x3 import get_norm_params_for_action
-from utils.g1_utils import G1PrimitiveUtility, G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
+from MoGenAgent.data_augment.phases import auto_segment_phases, kendon_k_schedule, detect_valleys_all
+from MoGenAgent.data_pipeline.vad.regressor_3x3 import get_norm_params_for_action
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility, G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
 
 
 def main():

@@ -28,8 +28,8 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.transform import Rotation as R
 
-from data_pipeline.format.base import DatasetParser, RawClip
-from data_pipeline.segment.base import Segment
+from MoGenAgent.data_pipeline.format.base import DatasetParser, RawClip
+from MoGenAgent.data_pipeline.segment.base import Segment
 
 
 BONES_FPS = 120

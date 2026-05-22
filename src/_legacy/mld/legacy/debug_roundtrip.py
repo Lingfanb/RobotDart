@@ -11,7 +11,7 @@ from pathlib import Path
 import mujoco as mj, imageio
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils.g1_utils import G1PrimitiveUtility, G1_XML_PATH, G1_NUM_BODY_DOFS
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility, G1_XML_PATH, G1_NUM_BODY_DOFS
 
 device = 'cuda'
 

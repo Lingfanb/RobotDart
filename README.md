@@ -21,7 +21,7 @@ conda activate DART
 export CUDA_HOME=/usr/local/cuda-12.9   # adjust to your system
 pip install --no-build-isolation "git+https://github.com/facebookresearch/pytorch3d.git"
 
-# 3. register src/ as editable install so `from utils.g1_utils import ...`
+# 3. register src/ as editable install so `from MoGenAgent.utils.g1_utils import ...`
 #    and `python -m mld.train_g1_fm` both work from repo root
 pip install -e .
 
@@ -201,7 +201,7 @@ DART/
 - Quaternion conventions: GMR uses **xyzw**, MuJoCo uses **wxyz**, pytorch3d uses **wxyz**. Convert explicitly.
 - `G1_CANON_Z_OFFSET = -0.1027` must be added back when rendering canonical features (the canonicalization shifts root by `left_hip_pitch_link` offset).
 - Headless: `MUJOCO_GL=egl` + `PyOpenGL>=3.1.7`.
-- Rename Plan B (2026-04-24): imports stay bare (`from utils.g1_utils import ...`), not `from src.utils.g1_utils`. `pyproject.toml` handles it via `pip install -e .`.
+- Rename Plan B (2026-04-24): imports stay bare (`from MoGenAgent.utils.g1_utils import ...`), not `from src.utils.g1_utils`. `pyproject.toml` handles it via `pip install -e .`.
 
 ---
 

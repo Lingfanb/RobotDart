@@ -14,7 +14,7 @@ channel), no joint_limit, no freq penalties.
 
 Usage:
     cd ~/Gitcode/DART
-    python -m VADFlowMoGen.train.legacy.g1_69 \\
+    python -m MoGenAgent.train.legacy.g1_69 \\
         --exp_name g1_fm_69_v1 \\
         --train_args.batch_size 1024 \\
         --train_args.use_amp 1 \\
@@ -42,9 +42,9 @@ import yaml
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from VADFlowMoGen.data.legacy.g1_69 import G1PrimitiveDataset69, FEATURE_DIM_69
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.flow_matching.sampler import FMSampler
+from MoGenAgent.data.legacy.g1_69 import G1PrimitiveDataset69, FEATURE_DIM_69
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.flow_matching.sampler import FMSampler
 
 
 # ── Dataclasses ──────────────────────────────────────────────────────────────
@@ -371,7 +371,7 @@ class G1FM35Trainer:
         noise = torch.randn_like(future_motion_gt)
         x_t = self.fm.q_sample(future_motion_gt, t, noise)
 
-        from VADFlowMoGen.flow_matching.sampler import _continuous_to_discrete_t
+        from MoGenAgent.flow_matching.sampler import _continuous_to_discrete_t
         t_int = _continuous_to_discrete_t(t)
 
         y = {

@@ -19,7 +19,7 @@ Differences vs train_g1_mld.py (DDPM in latent space):
 
 Usage:
     cd ~/Gitcode/DART
-    python -m VADFlowMoGen.train.legacy.g1 \
+    python -m MoGenAgent.train.legacy.g1 \
         --exp_name g1_fm_v1 \
         --train_args.batch_size 1024 \
         --train_args.use_amp 1 \
@@ -48,10 +48,10 @@ import yaml
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.flow_matching.sampler import FMSampler
-from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.flow_matching.sampler import FMSampler
+from MoGenAgent.utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER, G1_NUM_BODY_DOFS
 
 
 # ── Dataclasses ──────────────────────────────────────────────────────────────
@@ -461,7 +461,7 @@ class G1FMTrainer:
         x_t = self.fm.q_sample(future_motion_gt, t, noise)
 
         # Discretize t for TimestepEmbedder
-        from VADFlowMoGen.flow_matching.sampler import _continuous_to_discrete_t
+        from MoGenAgent.flow_matching.sampler import _continuous_to_discrete_t
         t_int = _continuous_to_discrete_t(t)
 
         # Denoiser forward: outputs x0_pred or v_pred depending on parameterization

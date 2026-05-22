@@ -36,12 +36,12 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from data_augment import load_from_npz, render_mp4, compute_va_torch
-from data_augment.primitives import (
+from MoGenAgent.data_augment import load_from_npz, render_mp4, compute_va_torch
+from MoGenAgent.data_augment.primitives import (
     p_squat, probe_knee_sign_for_lowering,
 )
-from data_pipeline.vad.regressor_3x3 import get_norm_params_for_action
-from utils.g1_utils import G1PrimitiveUtility
+from MoGenAgent.data_pipeline.vad.regressor_3x3 import get_norm_params_for_action
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility
 
 
 def resolve_seed_npz(action: str) -> tuple[Path, int, int]:

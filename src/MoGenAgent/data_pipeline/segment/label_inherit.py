@@ -11,7 +11,7 @@ from typing import Optional
 
 import numpy as np
 
-from data_pipeline.segment.base import Segmenter, Segment
+from MoGenAgent.data_pipeline.segment.base import Segmenter, Segment
 
 
 class BabelLabelSegmenter(Segmenter):

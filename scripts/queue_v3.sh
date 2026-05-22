@@ -14,7 +14,7 @@ sleep 30
 
 echo "[queue v3] $(date +%H:%M:%S) rendering v3 (8 prompts) — full ckpt"
 MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=1 conda run --no-capture-output -n DART \
-    python -m VADFlowMoGen.render.legacy.g1 \
+    python -m MoGenAgent.render.legacy.g1 \
         --denoiser-checkpoint "$V3_CKPT" \
         --output-dir outputs/eval/smooth_v3_280k
 
@@ -22,7 +22,7 @@ MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=1 conda run --no-capture-output -n DART \
 if [ ! -f "outputs/eval/smooth_v3_280k/walk_forward/data.npz" ]; then
     echo "[queue v3] $(date +%H:%M:%S) 280k render incomplete, trying 150k fallback"
     MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=1 conda run --no-capture-output -n DART \
-        python -m VADFlowMoGen.render.legacy.g1 \
+        python -m MoGenAgent.render.legacy.g1 \
             --denoiser-checkpoint "outputs/checkpoints/mld_denoiser/g1_fm_smooth_v3/checkpoint_150000.pt" \
             --output-dir outputs/eval/smooth_v3_150k
 fi

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from data_augment.constants import _SAFETY_HEADROOM
+from MoGenAgent.data_augment.constants import _SAFETY_HEADROOM
 
 
 # ──────────────────────────────────────────────────────────────────

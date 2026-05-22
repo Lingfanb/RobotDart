@@ -22,8 +22,8 @@ import json
 import multiprocessing as mp
 
 from config_files.data_paths import *
-from utils.smpl_utils import *
-from utils.misc_util import have_overlap, get_overlap, load_and_freeze_clip, encode_text, compose_texts_with_and
+from _legacy.utils.smpl_utils import *
+from MoGenAgent.utils.misc_util import have_overlap, get_overlap, load_and_freeze_clip, encode_text, compose_texts_with_and
 import torch.nn.functional as F
 
 # import spacy

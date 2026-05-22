@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from data_pipeline.retarget.base import Retargeter, RetargetResult
+from MoGenAgent.data_pipeline.retarget.base import Retargeter, RetargetResult
 
 
 class GMRAdapter(Retargeter):

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from data_augment.constants import (
+from MoGenAgent.data_augment.constants import (
     G1_KNEE_DOF_L, G1_KNEE_DOF_R,
     G1_HIP_PITCH_DOF_L, G1_HIP_PITCH_DOF_R,
     G1_HIP_ROLL_DOF_L, G1_HIP_ROLL_DOF_R,

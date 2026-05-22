@@ -35,7 +35,7 @@ if _GMR_ROOT not in sys.path:
 if _DART_ROOT not in sys.path:
     sys.path.insert(0, _DART_ROOT)
 
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1_NUM_BODY_DOFS, G1_SELECTED_LINKS, G1PrimitiveUtility,
     get_selected_link_indices,
 )

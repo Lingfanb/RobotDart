@@ -13,7 +13,7 @@ sleep 15
 
 echo "[queue inpaint-F16] $(date +%H:%M:%S) rendering 8 prompts"
 MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=0 /home/lingfanb/miniforge3/envs/DART/bin/python \
-    -m VADFlowMoGen.render.legacy.g1_65_inpaint \
+    -m MoGenAgent.render.legacy.g1_65_inpaint \
     --denoiser-checkpoint "$CKPT" \
     --output-dir "$OUT_DIR"
 

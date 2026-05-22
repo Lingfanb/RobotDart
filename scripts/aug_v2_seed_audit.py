@@ -27,9 +27,9 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from data_augment import load_from_npz
-from data_augment.primitives import G1_ANATOMICAL_LIMITS_LO, G1_ANATOMICAL_LIMITS_HI
-from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
+from MoGenAgent.data_augment import load_from_npz
+from MoGenAgent.data_augment.primitives import G1_ANATOMICAL_LIMITS_LO, G1_ANATOMICAL_LIMITS_HI
+from MoGenAgent.utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
 
 
 G1_DOF_NAMES = [

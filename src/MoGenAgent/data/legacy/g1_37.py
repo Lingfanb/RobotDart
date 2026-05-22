@@ -26,7 +26,7 @@ import torch
 from tqdm import tqdm
 from collections import Counter
 
-from utils.misc_util import load_and_freeze_clip, encode_text
+from MoGenAgent.utils.misc_util import load_and_freeze_clip, encode_text
 
 
 FEATURE_DIM_37 = 37

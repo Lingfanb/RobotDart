@@ -100,7 +100,7 @@ primitive (10, 69)
 ## 关键 API
 
 ```python
-from utils.g1_utils import G1PrimitiveUtility69
+from MoGenAgent.utils.g1_utils import G1PrimitiveUtility69
 
 util = G1PrimitiveUtility69(device='cpu')
 print(util.feature_dim)      # 69

@@ -32,9 +32,9 @@ def _process_bones(args: argparse.Namespace) -> int:
     from scipy.spatial.transform import Rotation as R
     from tqdm import tqdm
 
-    from data_pipeline.format.bones_csv_parser import BonesSeedParser
-    from data_pipeline.format.feature_69d import motion_to_features_69
-    from data_pipeline.segment.primitive_slicer import (
+    from MoGenAgent.data_pipeline.format.bones_csv_parser import BonesSeedParser
+    from MoGenAgent.data_pipeline.format.feature_69d import motion_to_features_69
+    from MoGenAgent.data_pipeline.segment.primitive_slicer import (
         slice_primitives, HISTORY_LENGTH, FUTURE_LENGTH, TARGET_FPS,
     )
 
@@ -237,7 +237,7 @@ def _process_bones(args: argparse.Namespace) -> int:
     print(f"  unique texts (train): {len(unique_texts):,}")
     print(f"  unique styles: {unique_styles}")
     print(f"\n→ Train with:")
-    print(f"    python -m VADFlowMoGen.train.legacy.g1 --exp_name bones_fm_v1 "
+    print(f"    python -m MoGenAgent.train.legacy.g1 --exp_name bones_fm_v1 "
           f"--data_dir {out_dir}/")
     return 0
 
@@ -271,7 +271,7 @@ def _process_amass_babel_npz(args: argparse.Namespace) -> int:
     import pickle
     import numpy as np
     from tqdm import tqdm
-    from data_pipeline.format.feature_69d import motion_to_features_69
+    from MoGenAgent.data_pipeline.format.feature_69d import motion_to_features_69
 
     HISTORY = 2
     FUTURE = 8
@@ -425,8 +425,8 @@ def _process_bones_npz(args: argparse.Namespace) -> int:
     import numpy as np
     from tqdm import tqdm
 
-    from data_pipeline.format.bones_csv_parser import BonesSeedParser
-    from data_pipeline.format.feature_69d import motion_to_features_69
+    from MoGenAgent.data_pipeline.format.bones_csv_parser import BonesSeedParser
+    from MoGenAgent.data_pipeline.format.feature_69d import motion_to_features_69
 
     HISTORY = 2
     FUTURE = 8
@@ -496,7 +496,7 @@ def _process_bones_npz(args: argparse.Namespace) -> int:
             # ── Segment metadata (raw, no class_idx) ──
             segments = clip.segments
             if not segments:
-                from data_pipeline.segment.base import Segment
+                from MoGenAgent.data_pipeline.segment.base import Segment
                 short_desc = row.get('content_short_description', '') or ''
                 segments = [Segment(
                     start_t=0.0,
@@ -604,8 +604,8 @@ def cmd_label_npz(args: argparse.Namespace) -> int:
     """
     import numpy as np
     from tqdm import tqdm
-    from data_pipeline.vad.regressor_3x3 import compute_vad_3x3
-    from data_pipeline.vad.action_taxonomy import (
+    from MoGenAgent.data_pipeline.vad.regressor_3x3 import compute_vad_3x3
+    from MoGenAgent.data_pipeline.vad.action_taxonomy import (
         classify_segments_v2, canonicalize_act_cats, NULL_ACT_CLASS_IDX_V2,
     )
 

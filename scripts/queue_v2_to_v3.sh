@@ -14,7 +14,7 @@ sleep 30
 
 echo "[queue] $(date +%H:%M:%S) rendering v2 (8 prompts)"
 MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=1 conda run --no-capture-output -n DART \
-    python -m VADFlowMoGen.render.legacy.g1 \
+    python -m MoGenAgent.render.legacy.g1 \
         --denoiser-checkpoint "$V2_CKPT" \
         --output-dir outputs/eval/smooth_v2_280k
 echo "[queue] $(date +%H:%M:%S) v2 render done"
@@ -22,7 +22,7 @@ echo "[queue] $(date +%H:%M:%S) v2 render done"
 echo "[queue] $(date +%H:%M:%S) launching v3 (drop_foot_contact=True) in tmux"
 tmux kill-session -t fm_smooth_v3 2>/dev/null || true
 tmux new-session -d -s fm_smooth_v3 -c /home/lingfanb/Gitcode/DART \
-"CUDA_VISIBLE_DEVICES=1 conda run --no-capture-output -n DART python -m VADFlowMoGen.train.legacy.g1 \
+"CUDA_VISIBLE_DEVICES=1 conda run --no-capture-output -n DART python -m MoGenAgent.train.legacy.g1 \
     --exp_name g1_fm_smooth_v3 \
     --train_args.batch_size 1024 \
     --train_args.use_amp 1 \
@@ -39,7 +39,7 @@ sleep 30
 
 echo "[queue] $(date +%H:%M:%S) rendering v3 (8 prompts)"
 MUJOCO_GL=egl CUDA_VISIBLE_DEVICES=1 conda run --no-capture-output -n DART \
-    python -m VADFlowMoGen.render.legacy.g1 \
+    python -m MoGenAgent.render.legacy.g1 \
         --denoiser-checkpoint "$V3_CKPT" \
         --output-dir outputs/eval/smooth_v3_280k
 echo "[queue] $(date +%H:%M:%S) v3 render done — QUEUE COMPLETE"

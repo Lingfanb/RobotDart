@@ -32,8 +32,8 @@ from pathlib import Path
 from tqdm import tqdm
 import copy
 
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.model.legacy.vae import AutoMldVae
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
 from pytorch3d import transforms
 
 

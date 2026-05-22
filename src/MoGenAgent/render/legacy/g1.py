@@ -6,7 +6,7 @@ Differences vs render_g1_rollout_69.py (latent + DDPM):
 - Configurable inference step count (default 1 = single-step Euler)
 
 Usage:
-    MUJOCO_GL=egl python -m VADFlowMoGen.render.legacy.g1 \
+    MUJOCO_GL=egl python -m MoGenAgent.render.legacy.g1 \
         --denoiser_checkpoint ./outputs/checkpoints/mld_denoiser/g1_fm_v1/checkpoint_280000.pt \
         --prompts "stand" "walk forward" "run" "kick" \
         --num_rollout_steps 25 \
@@ -27,25 +27,25 @@ import imageio
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as Rot
 
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1_XML_PATH, G1_NUM_BODY_DOFS, G1_SELECTED_LINKS,
     G1PrimitiveUtility69,
 )
-from utils.misc_util import encode_text
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
-from VADFlowMoGen.train.legacy.g1 import G1FMArgs, DenoiserMLPArgs
+from MoGenAgent.utils.misc_util import encode_text
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.train.legacy.g1 import G1FMArgs, DenoiserMLPArgs
 try:
-    from VADFlowMoGen.train.legacy.g1_cfm import G1FMCFMArgs, DenoiserMLPArgs as DenoiserMLPArgsCFM
+    from MoGenAgent.train.legacy.g1_cfm import G1FMCFMArgs, DenoiserMLPArgs as DenoiserMLPArgsCFM
 except ImportError:
     G1FMCFMArgs = None
     DenoiserMLPArgsCFM = None
 try:
-    from VADFlowMoGen.train.legacy.g1_reflow import G1FMReflowArgs, DenoiserMLPArgs as DenoiserMLPArgsReflow
+    from MoGenAgent.train.legacy.g1_reflow import G1FMReflowArgs, DenoiserMLPArgs as DenoiserMLPArgsReflow
 except ImportError:
     G1FMReflowArgs = None
     DenoiserMLPArgsReflow = None
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.flow_matching.sampler import FMSampler
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.flow_matching.sampler import FMSampler
 
 
 JOINT_GROUPS = {

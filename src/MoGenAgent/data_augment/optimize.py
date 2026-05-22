@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import torch
 
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1PrimitiveUtility,
     G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER,
 )
-from data_pipeline.vad.regressor_3x3 import get_norm_params_for_action
+from MoGenAgent.data_pipeline.vad.regressor_3x3 import get_norm_params_for_action
 
 from .regressor_torch import compute_va_torch
 
@@ -199,7 +199,7 @@ def body_openness(link_pos_world):
     regularizer (preserve openness near seed → forces optimizer to push V via
     motion_amplitude_ee, not by spreading arms wide).
     """
-    from data_pipeline.vad.regressor_3x3 import (
+    from MoGenAgent.data_pipeline.vad.regressor_3x3 import (
         LEFT_WRIST_LINK_IDX, RIGHT_WRIST_LINK_IDX,
         LEFT_ELBOW_LINK_IDX, RIGHT_ELBOW_LINK_IDX,
         LEFT_SHOULDER_LINK_IDX, RIGHT_SHOULDER_LINK_IDX,

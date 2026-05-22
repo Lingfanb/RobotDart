@@ -59,4 +59,4 @@ Layer 4 · Output:       O-Robot + O-Voice
 
 ## Per-Module Build Status
 
-（见 [../../notes/module_build_list.md](../../notes/module_build_list.md)）
+（见 [../../notes/architecture/module_build_list.md](../../notes/architecture/module_build_list.md)）

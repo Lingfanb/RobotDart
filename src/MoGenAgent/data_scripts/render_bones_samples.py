@@ -43,7 +43,7 @@ import mujoco as mj
 import imageio
 from scipy.spatial.transform import Rotation as R
 
-from utils.g1_utils import G1_XML_PATH  # noqa: E402
+from MoGenAgent.utils.g1_utils import G1_XML_PATH  # noqa: E402
 
 
 BONES_ROOT = os.path.join(_DART_ROOT, 'data', 'bones_seed')

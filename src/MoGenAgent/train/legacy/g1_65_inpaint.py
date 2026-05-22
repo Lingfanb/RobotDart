@@ -19,7 +19,7 @@ Why this fixes the seam jump:
 
 Usage:
     cd ~/Gitcode/DART
-    python -m VADFlowMoGen.train.legacy.g1_65_inpaint \\
+    python -m MoGenAgent.train.legacy.g1_65_inpaint \\
         --exp_name g1_fm_65_inpaint_v1 \\
         --train_args.batch_size 1024 \\
         --train_args.use_amp 1 \\
@@ -44,13 +44,13 @@ import yaml
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-from VADFlowMoGen.data.legacy.g1_65 import (
+from MoGenAgent.data.legacy.g1_65 import (
     G1PrimitiveDataset65, FEATURE_DIM_65, ROOT_POSE_INDICES_65,
     DOF_ANGLE_SLICE_65, DOF_VELOCITY_SLICE_65,
 )
-from VADFlowMoGen.model.denoiser import DenoiserMLP
-from VADFlowMoGen.model.denoiser_inpaint import DenoiserTransformerInpaint
-from VADFlowMoGen.flow_matching.sampler_inpaint import FMSamplerInpaint, _continuous_to_discrete_t
+from MoGenAgent.model.denoiser import DenoiserMLP
+from MoGenAgent.model.denoiser_inpaint import DenoiserTransformerInpaint
+from MoGenAgent.flow_matching.sampler_inpaint import FMSamplerInpaint, _continuous_to_discrete_t
 
 
 # ── Dataclasses ──────────────────────────────────────────────────────────────

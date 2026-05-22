@@ -17,7 +17,7 @@ Output (matches G1PrimitiveDataset35 interface):
     text_embedding (B, 512) — CLIP-encoded text label
 
 Usage in trainer:
-    from VADFlowMoGen.data.legacy.g1_37_va import G1PrimitiveDataset37VA
+    from MoGenAgent.data.legacy.g1_37_va import G1PrimitiveDataset37VA
 
     train = G1PrimitiveDataset37VA(
         npz_dir='/path/to/VA/balanced_reassembled_sim/successful',
@@ -333,7 +333,7 @@ class G1PrimitiveDataset37VA:
             from _legacy.model.text_encoder import precompute_text_embeddings
         except ImportError:
             try:
-                from VADFlowMoGen.model.denoiser import build_clip_text_encoder
+                from MoGenAgent.model.denoiser import build_clip_text_encoder
                 # Fallback: minimal CLIP encoding
                 precompute_text_embeddings = None
             except ImportError:

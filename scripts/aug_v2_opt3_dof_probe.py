@@ -22,12 +22,12 @@ _DART_ROOT = Path(__file__).resolve().parent.parent
 if str(_DART_ROOT / 'src') not in sys.path:
     sys.path.insert(0, str(_DART_ROOT / 'src'))
 
-from data_augment import load_from_npz, render_mp4
-from data_augment.primitives import (
+from MoGenAgent.data_augment import load_from_npz, render_mp4
+from MoGenAgent.data_augment.primitives import (
     G1_L_SHOULDER_PITCH, G1_L_SHOULDER_ROLL, G1_L_SHOULDER_YAW,
     G1_R_SHOULDER_PITCH, G1_R_SHOULDER_ROLL, G1_R_SHOULDER_YAW,
 )
-from utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
+from MoGenAgent.utils.g1_utils import G1_JOINT_LIMITS_LOWER, G1_JOINT_LIMITS_UPPER
 
 
 T = 90       # sweep frames

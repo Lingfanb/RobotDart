@@ -18,7 +18,7 @@ import imageio
 import matplotlib.pyplot as plt
 from pytorch3d import transforms
 
-from utils.g1_utils import (
+from MoGenAgent.utils.g1_utils import (
     G1_XML_PATH, G1_NUM_BODY_DOFS, G1_SELECTED_LINKS,
     G1PrimitiveUtility, dof_6d_to_qpos, set_mujoco_from_features,
 )
@@ -87,14 +87,14 @@ def plot_root_over_time(world_pos, history_length, save_path, title):
     plt.tight_layout()
     plt.savefig(save_path, dpi=100, bbox_inches='tight')
     plt.close()
-from utils.misc_util import load_and_freeze_clip, encode_text
-from VADFlowMoGen.data.g1 import G1PrimitiveSequenceDataset
+from MoGenAgent.utils.misc_util import load_and_freeze_clip, encode_text
+from MoGenAgent.data.g1 import G1PrimitiveSequenceDataset
 from _legacy.mld.train_g1_mld import (
     G1MLDArgs, G1MVAEArgs, DenoiserMLPArgs, DenoiserTransformerArgs,
     create_gaussian_diffusion,
 )
-from VADFlowMoGen.model.denoiser import DenoiserMLP, DenoiserTransformer
-from VADFlowMoGen.model.legacy.vae import AutoMldVae
+from MoGenAgent.model.denoiser import DenoiserMLP, DenoiserTransformer
+from MoGenAgent.model.legacy.vae import AutoMldVae
 
 import yaml
 from pathlib import Path

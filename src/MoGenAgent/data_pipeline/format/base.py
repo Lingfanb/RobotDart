@@ -12,7 +12,7 @@ from typing import Iterator, Optional
 
 import numpy as np
 
-from data_pipeline.segment.base import Segment
+from MoGenAgent.data_pipeline.segment.base import Segment
 
 
 @dataclass
