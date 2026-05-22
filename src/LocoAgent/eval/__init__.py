@@ -1,8 +1,6 @@
-"""Evaluation utilities.
+"""Evaluation utilities (currently empty).
 
-  - waypoint_eval.py   — wrap third_party/RoobotMimc/.../waypoint_navigation.py
-                          + log per-step state to CSV
-  - plot_tracking.py   — 4-panel figure (xy trajectory / distance-to-target / vel cmd / stability)
-
-Currently lives at scripts/bm_repro/ and will move here.
+Earlier eval scripts (`waypoint_eval.py`, `plot_tracking.py`) lived at
+`scripts/bm_repro/`. Deleted 2026-05-22 with the Loco descope; recoverable
+via `git checkout HEAD~1 -- scripts/bm_repro/` if Loco is revisited.
 """

@@ -1,8 +1,7 @@
-"""Helper scripts: dataset prep, batch eval, etc.
+"""Helper-script package (currently empty).
 
-  - batch_csv_to_npz.sh       — LAFAN1 CSV → IsaacLab NPZ (with IOMMU bypass)
-  - package_npz_to_pkl.py     — pack 18 NPZ into joblib pkl for MultiMotionLoader
-  - eval_and_plot.sh          — one-line eval wrapper
-
-Currently lives at scripts/bm_repro/ — will move here in the post-LAFAN1 graduate pass.
+Earlier prep / eval scripts lived at `scripts/bm_repro/` (CSV→NPZ batch,
+NPZ→pkl packaging, eval-and-plot). Deleted 2026-05-22 with the Loco descope;
+recoverable via `git checkout HEAD~1 -- scripts/bm_repro/` if Loco is
+revisited.
 """
