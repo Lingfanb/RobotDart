@@ -15,7 +15,7 @@ status: v1 (locked for NMI)
 
 ## TL;DR
 
-VADBridge 的核心 latent 是 **三维连续向量 [V, A, D] ∈ [-1, +1]³**, 直接锚定 Mehrabian PAD theory (1996), 描述任意 motion primitive 的**情感肢体语言风格**而非动作类别。
+Universal Control Variables (UCV) 的核心 latent 是 **三维连续向量 [V, A, D] ∈ [-1, +1]³**, 直接锚定 Mehrabian PAD theory (1996), 描述任意 motion primitive 的**情感肢体语言风格**而非动作类别。
 
 - **V** Valence (效价) — 这个动作"好-坏"。正向 = 愉悦/接近, 负向 = 不快/回避
 - **A** Arousal (唤醒度) — 这个动作"亢奋-沉静"。正向 = 紧张/活跃, 负向 = 平静/放松
@@ -62,7 +62,7 @@ VAD 不是 emotion label, 而是 **conditioning vector**: 训练时和 text prom
 
 #### 为什么这么定义 D (设计哲学, v1.2 corrected 2026-05-09)
 
-传统 affect literature (Mehrabian 1972, Coulson 2004, Tracy 2004) 倾向把 D 关联到 **静态姿态展开指标** (bbox 体积, 头高, 挺胸度, "I look big = dominant")。**VADBridge 故意拒绝这个 framing**, 选择 D = **pure outward-action / engagement to target**:
+传统 affect literature (Mehrabian 1972, Coulson 2004, Tracy 2004) 倾向把 D 关联到 **静态姿态展开指标** (bbox 体积, 头高, 挺胸度, "I look big = dominant")。**UCV 故意拒绝这个 framing**, 选择 D = **pure outward-action / engagement to target**:
 
 1. **数据上 openness 完全归 V** (Wallbott 1998 PCA) — 如果 D 用 expansion, 跟 V 的 contraction index 必然 collapse, 数据上不可分。**接受 PCA 数据而不 fight 它**。
 2. **NMI paper 的 cross-channel 故事 (gesture + handover) 需要 D 在两个 channel 都可计算且语义一致** — "approach + reach + direct" 三个量在 handover 和 gesture 都说得通; "static expansion" 在这两个 channel 信号都被 V 抢走。
@@ -137,7 +137,7 @@ Laban Weight 实质是 A 的 task-space 形式, 跟 joint-space A indicators 物
 | 7 | - | - | + | Disdainful (蔑视) | 慢 + 阴沉 + 主动 (e.g. 缓慢但威胁地接近) |
 | 8 | - | - | - | Bored (无聊/沮丧) | 慢 + 阴沉 + 被动 (e.g. 垂头瘫坐) |
 
-这 8 个 octant 是 VADBridge augmentation pipeline 的 target — 现有数据集主要在 octant 4 (温顺中性), 我们要靠 augmentation 把其他 7 个 octant 也填出来 (尤其 1 / 5 / 8 这种极端)。
+这 8 个 octant 是 UCV augmentation pipeline 的 target — 现有数据集主要在 octant 4 (温顺中性), 我们要靠 augmentation 把其他 7 个 octant 也填出来 (尤其 1 / 5 / 8 这种极端)。
 
 ## Mapping 到常见情绪词
 
@@ -157,7 +157,7 @@ Laban Weight 实质是 A 的 task-space 形式, 跟 joint-space A indicators 物
 
 注: 这些是**先验近似**, 不是 fit 出来的。NMI 论文 N=15 perceptual calibration 之后会用拟合系数替换。
 
-## VADBridge 中的具体使用
+## UCV 中的具体使用
 
 ### 1. 作为 conditioning vector
 
@@ -214,7 +214,7 @@ raw motion ∈ ℝ^(T × 36)     ← (root_pos, root_quat, dof_pos)
 | 中性带 | $\|x\| < 0.15$ | ⚠️ 待 calibration 验证 | 先验估计 |
 | Indicator 数 | 9 (3 per dim) | ✅ locked | 每个都有先验文献支持 |
 | Indicator 权重 | V/A 0.40/0.35/0.25; D 0.40/0.40/0.20 (v1.2) | ✅ locked v1.2 | 2026-05-09 corrected: reach + forward 同权; effort_weight (Laban Weight) 试错后剔除 (本质是 A 不是 D); directness (Laban Space-Direct) 保留作 0.20 修饰量 |
-| (μ, σ) 校准 | per-action (BONES 全量) | ✅ done | scripts/calibrate_vad_per_action.py |
+| (μ, σ) 校准 | per-action (BONES 全量) | ✅ done | scripts/anchor/calibrate_vad_per_action.py |
 | Octant target 数 | 8 | ✅ locked | Mehrabian 1996 |
 | 跨 channel 一致性 | gesture + handover (Tier 1.1, 1.2) | 🟡 pending | NMI paper headline; r > 0.3 load-bearing |
 | 跨 dataset 校准 | Kinematic Dataset of Actors 2020 | 🔴 todo | Step 0 of augmentation recipe |
@@ -245,9 +245,9 @@ raw motion ∈ ℝ^(T × 36)     ← (root_pos, root_quat, dof_pos)
 - **Laban, R., Lawrence, F. C.** (1947). *Effort: Economy of Human Movement*.
 - **Ekman, P., Friesen, W. V.** (1972). "Hand movements." *Semiotica* 15(4), 335-353.
 
-### 与 VADBridge 关系最近的 contemporaries
+### 与 UCV 关系最近的 contemporaries
 
-- **Bao et al.** (2025). "HIAER" arXiv 2506.01563 — same lab, same G1 platform, 但用 6 个 categorical interaction 标签而非连续 VAD → VADBridge 是这个 dimension 的 differentiator
+- **Bao et al.** (2025). "HIAER" arXiv 2506.01563 — same lab, same G1 platform, 但用 6 个 categorical interaction 标签而非连续 VAD → UCV 是这个 dimension 的 differentiator
 - **Kim et al.** (2025). "LaMoGen" arXiv 2509.24469 — inference-time Laban-Effort loss, no augmented data → reviewer 会问"为啥要 augment", 我们的 differentiator 是 extreme-octant coverage
 - **Bhattacharya et al.** (2020). "STEP" AAAI — ST-GCN classifier + CVAE for synthetic gait augmentation, 我们 augmentation pipeline 的最直接先例
 - **Chhatre et al.** (2024). "AMUSE" CVPR — emotion-disentangled latent diffusion, 我们 conditioning 设计的最直接先例
