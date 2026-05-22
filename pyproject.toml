@@ -10,6 +10,9 @@ requires-python = ">=3.10"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["mld*", "data_loaders*", "data_pipeline*", "data_scripts*",
-           "diffusion*", "flow_matching*", "utils*", "agent*",
-           "evaluation*", "visualize*", "model*"]
+# 3 skill agents (Tier 1 — production code) + _legacy (read-only archive,
+# kept so `from _legacy.utils.model_util import ...` resolves cleanly).
+# The 9 pre-reorg packages (mld / data_loaders / diffusion / flow_matching /
+# utils / agent / evaluation / visualize / model) were dissolved into the
+# 3 agents on 2026-05-22 — see git log around commit 7c68081 / 4f7a3f2.
+include = ["MoGenAgent*", "ManipAgent*", "LocoAgent*", "_legacy*"]
