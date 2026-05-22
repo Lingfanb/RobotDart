@@ -206,6 +206,14 @@ papers/
 .vscode/
 .idea/
 *.swp
-# External tools (pending submodule conversion)
-third_party/soma-retargeter/
-third_party/VA_motion_generation/
+# Ignore everything under third_party/ EXCEPT registered git submodules.
+# Vendored research repos (CHOIS 127 GB · RoobotMimc 41 GB · TextOp · GOAL ·
+# RHINO · beyondmimic · blender · VAD_Robot_Diffusion etc.) are out-of-tree
+# build bases, not part of this project's source.  Convert any one to a git
+# submodule if it becomes a stable build-time dep, then unignore it below.
+third_party/*
+!third_party/gmr/
+
+# Local LaTeX shadow of the Overleaf paper repo
+# (canonical source lives on Overleaf — this dir is a local build cache only)
+paper_draft/
