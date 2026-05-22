@@ -47,7 +47,7 @@ Tier 1 · Fundamental Skill Library
 
 - **Module dashboard / Long-term roadmap:** ⚠️ **being redone 2026-05-21** — old `docs/plan/{short_term,long_term}.md` removed, archived versions at `docs/notes/legacy/plan_*`
 - **Current sprint plan:** `~/.claude/plans/project-lead-agent-zazzy-rose.md` — Story Lock Sprint, 5 phases
-- **Active TODO** (user-maintained, do NOT edit): `LOG_README.md` at repo root
+- **Active TODO:** ⚠️ no current TODO tracker — old `LOG_README.md` was 4/23 dashboard for the TextOp-adaptation route (3 architectural pivots ago), archived 2026-05-22 to `logs/legacy/LOG_README_2026-04-23.md`. New tracker pending alongside the plan/ rewrite.
 - **Daily logs:** `logs/YYYY-MM-DD.md` (auto-written by `/log-notion`)
 
 ## Doc Organization
@@ -65,8 +65,7 @@ Tier 1 · Fundamental Skill Library
 1. This file — strategic framing + architecture
 2. `docs/notes/paper/paper_plan_nmi.md` — full paper plan, master source-of-truth
 3. `docs/notes/decisions/skill_decoupled_architecture_2026-05-04.md` — architecture details
-4. `LOG_README.md` — current TODO
-5. Most recent `logs/YYYY-MM-DD.md` — what just happened
+4. Most recent `logs/YYYY-MM-DD.md` — what just happened
 
 ## Repo Layout
 
@@ -272,7 +271,7 @@ data/ → DATASETS/PROCESSED_DATASET/DART_DATA (symlink)
 
 - **Local logs:** `logs/YYYY-MM-DD.md` — daily work logs (auto-written by `/log-notion`)
 - **Notion Experiments DB:** `3382d672-a3d2-8194-8bb8-d5810a56257f` (VA_MoGen project, auto-synced)
-- **TODO tracker:** `LOG_README.md` at repo root — user-maintained only, do NOT edit from skills
+- **TODO tracker:** none active — old `LOG_README.md` archived 2026-05-22 to `logs/legacy/LOG_README_2026-04-23.md`
 
 ## Output Delivery Rules
 

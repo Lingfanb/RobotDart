@@ -1,38 +1,34 @@
 ## docs/ — 项目文档总入口
 
-*Date: 2026-05-01 · Owner: Lingfan · Type: LIVE · Status: v1*
+*Date: 2026-05-22 · Owner: Lingfan · Type: LIVE · Status: v2 (3-dir taxonomy)*
 
-> 5 个顶层 dir,每个一个职责。**不要在错的 dir 里写错的内容** — 看 `sop/docs_organization.md` 的 decision tree。
+> 3 个顶层 dir,每个一个职责。`plan/` + `sop/` 已删,等重写;`LOG_README.md` 已归档到 `logs/legacy/`。
 
-## 5 个顶层 dir
+## 3 个顶层 dir
 
 | Dir | 装什么 | 何时打开 |
 |---|---|---|
 | [`knowledge/`](knowledge/) | **外部知识 + 总结** — papers / datasets / 别人的 method / external tools | 学新东西、查 spec、要 cite 外部工作时 |
-| [`notes/`](notes/) | **我的一切产出** — paper plan / 系统设计 / VAD 定义 / 实验分析 / 决策 | 想看"我自己已经做/想了什么"时 |
-| [`plan/`](plan/) | **我的计划** — long_term / short_term / weekly 周报 | 周一规划 / 周五 retro / 想知道"我下一步去哪" |
-| [`sop/`](sop/) | **执行 SOP** — 读论文 / 做实验 / 写周报 / 整理 docs 怎么做 | 开始一类重复任务前 |
+| [`notes/`](notes/) | **我的一切产出** — paper plan / 系统设计 / VAD 定义 / 实验分析 / 决策 / VAD 框架 | 想看"我自己已经做/想了什么"时 |
 | [`papers/`](papers/) | 读过的 PDF 原文 (REFERENCE) | 想看原文时 |
 
-## "乱了"时的 5 步重置坐标系
+`proposal/` 是一次性的 social HRI proposal 草稿(不进 3-dir taxonomy)。
 
-1. `LOG_README.md` (root) — 当下 TODO
-2. `plan/short_term.md` — 本周 focus
-3. `notes/paper/paper_plan_nmi.md` — paper 立意
-4. 最近 `logs/YYYY-MM-DD.md` — 最近发生了什么
-5. 4 个打架 → 按 `sop/docs_organization.md` § 4 优先级修最高的一个
+## "乱了"时的 4 步重置坐标系
+
+1. `../CLAUDE.md` — 战略 framing + architecture
+2. `notes/paper/paper_plan_nmi.md` — paper 立意(注意:framework-first pivot 后部分内容待 refresh)
+3. `notes/decisions/skill_decoupled_architecture_2026-05-04.md` — 3-tier 架构细节
+4. 最近 `../logs/YYYY-MM-DD.md` — 最近发生了什么
 
 ## 每个 dir 的细则
 
-详见各自 README:
-- [`knowledge/INDEX.md`](knowledge/INDEX.md) — 25 张外部知识卡分类索引
-- [`notes/README.md`](notes/README.md) — 7 个子文件夹各装什么
-- [`plan/README.md`](plan/README.md) — long/short/weekly 三个 plan doc 的分工
-- [`sop/README.md`](sop/README.md) — 4 个 SOP 索引
+详见各自 index:
+- [`knowledge/INDEX.md`](knowledge/INDEX.md) — 外部知识卡分类索引
+- [`notes/README.md`](notes/README.md) — 子文件夹各装什么
 
-## 根目录其他
+## 已退役
 
-- `CLAUDE.md` — Agent 指令 + Lark markdown 规则
-- `README.md` — repo entry
-- `LOG_README.md` — 当前 TODO + 完成记录 (LIVE,user-only)
-- `logs/YYYY-MM-DD.md` — 每日工作日志
+- `plan/` — 4 月 plan(milestones / module_status / risks / long_term / short_term)归档至 `notes/legacy/plan_*`;5 月 plan 全删,等重写
+- `sop/` — 4 个 SOP(docs_organization / read_paper / run_experiment / weekly_retro)2026-05-21 全删
+- 根目录 `LOG_README.md` — 4/23 手维护 dashboard,3 次架构 pivot 后过时,2026-05-22 归档至 `../logs/legacy/LOG_README_2026-04-23.md`

@@ -179,15 +179,14 @@ DART/
 ├── logs/               # daily work logs
 ├── environment.yml
 ├── pyproject.toml
-├── CLAUDE.md           # agent context / project instructions
-└── LOG_README.md       # active TODO + progress tracker
+└── CLAUDE.md           # agent context / project instructions
 ```
 
 ---
 
 ## Documentation
 
-- **Active TODO + progress**: [LOG_README.md](LOG_README.md) + [logs/](logs/)
+- **Progress logs**: [logs/](logs/) (daily `YYYY-MM-DD.md`) — active TODO tracker being redone 2026-05-21
 - **Agent context (for Claude/Codex)**: [CLAUDE.md](CLAUDE.md)
 - **Reference cards** (concise, topic-indexed): [docs/knowledge/INDEX.md](docs/knowledge/INDEX.md)
 - **Design docs + analyses**: [docs/notes/](docs/notes/)
